@@ -106,19 +106,21 @@ function TaskItem({ task, checked, onChange }) {
     <Stack
       direction="row"
       sx={{
-        px: 2,
-        py: 0.75,
+        px: 3,
+        py: 1,
         ...(checked && {
           color: 'text.disabled',
           textDecoration: 'line-through',
         }),
       }}
     >
-      <FormControlLabel
+      {/* 移除或注釋掉以下的FormControlLabel */}
+      {/* <FormControlLabel
         control={<Checkbox checked={checked} onChange={onChange} />}
         label={task.label}
         sx={{ flexGrow: 1, m: 0 }}
-      />
+      /> */}
+      <div style={{ flexGrow: 1, margin: 0 }}>{task.label}</div>
 
       <IconButton size="large" color="inherit" sx={{ opacity: 0.48 }} onClick={handleOpenMenu}>
         <Iconify icon={'eva:more-vertical-fill'} />
