@@ -13,7 +13,8 @@ const APP_BAR_DESKTOP = 92;
 
 const StyledRoot = styled('div')({
   display: 'flex',
-  minHeight: '100%',
+  minHeight: '100vh', // 视口高度
+  flexDirection: 'column',
   overflow: 'hidden',
 });
 
@@ -30,6 +31,12 @@ const Main = styled('div')(({ theme }) => ({
   },
 }));
 
+const Footer = styled('div')(({ theme }) => ({
+  backgroundColor: theme.palette.grey[200],
+  padding: theme.spacing(2),
+  textAlign: 'center',
+}));
+
 // ----------------------------------------------------------------------
 
 export default function DashboardLayout() {
@@ -43,7 +50,11 @@ export default function DashboardLayout() {
 
       <Main>
         <Outlet />
+        <Footer>
+        <p>© 2023 Your Company Name. All rights reserved.</p>
+      </Footer>
       </Main>
+
     </StyledRoot>
   );
 }

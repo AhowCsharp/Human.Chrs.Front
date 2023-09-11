@@ -11,6 +11,7 @@ import ProductsPage from './pages/ProductsPage';
 import DashboardAppPage from './pages/DashboardAppPage';
 
 import PersonalInfo from './staff/PersonalInfo';
+import PersonalDetail from './staff/PersonalDetail';
 
 // ----------------------------------------------------------------------
 
@@ -26,6 +27,7 @@ export default function Router() {
         { path: 'products', element: <ProductsPage /> },
         { path: 'blog', element: <BlogPage /> },
         { path: 'info', element: <PersonalInfo /> },
+        { path: 'detail', element: <PersonalDetail /> },
       ],
     },
     {

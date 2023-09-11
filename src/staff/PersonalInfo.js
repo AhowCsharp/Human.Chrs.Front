@@ -7,6 +7,8 @@ import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+import PermContactCalendarIcon from '@mui/icons-material/PermContactCalendar';
 import FactCheckIcon from '@mui/icons-material/FactCheck';
 import {
     AppTasks
@@ -79,9 +81,9 @@ export default function PersonalInfo() {
         <>
             {isMobile && (
             <Box sx={{ display: 'flex', flexDirection: 'row', width: '100%',position: 'relative' }}>
-                <Box sx={{width: '100%', height:`${windowDimensions.height*2}px`,backgroundColor:'black'}}>
+                <Box sx={{width: '100%', height:`${windowDimensions.height*1.3}px`,backgroundColor:'black'}}>
 
-                    <Box sx={{ width: '90%', height: `${windowDimensions.height/2}px`,backgroundColor:'red'
+                    <Box sx={{ width: '85%', height: `${windowDimensions.height/2}px`,backgroundColor:'white'
                     ,margin:'auto',borderRadius: '10px',padding:'25px',marginTop:'5%'}}>
                         <Box sx={{ flexGrow: 1 }}>
                             <Grid container spacing={2}>
@@ -106,8 +108,8 @@ export default function PersonalInfo() {
                                     </>
                                 )}
                                 <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold',marginTop:'10%' }}>     
-                                    <Button variant="contained" endIcon={<FactCheckIcon />} size="large">
-                                        Send
+                                    <Button variant="contained" endIcon={<FactCheckIcon />} size="large" style={{background:'black'}}>
+                                        打卡
                                     </Button>
                                 </Grid>      
                                 <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', fontWeight: 'bold' }}>     
@@ -127,32 +129,32 @@ export default function PersonalInfo() {
                         <Box sx={{ flexGrow: 1,margin:'5%' }}>
                             <Grid container spacing={1}>
                                 <Grid item xs={4} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center'}}>     
-                                    <Button variant="contained" endIcon={<FactCheckIcon />} size="large">
-                                        Send
+                                    <Button variant="contained" endIcon={<CalendarMonthIcon />} size="large" style={{background:'orange',whiteSpace: 'nowrap'}}>
+                                        行事
                                     </Button>
                                 </Grid>
                                 <Grid item xs={4} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>     
-                                    <Button variant="contained" endIcon={<FactCheckIcon />} size="large">
-                                        Send
+                                    <Button variant="contained" endIcon={<PermContactCalendarIcon />} size="large" style={{background:'orange',whiteSpace: 'nowrap'}}>
+                                        休假
                                     </Button>
                                 </Grid>
                                 <Grid item xs={4} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>     
-                                    <Button variant="contained" endIcon={<FactCheckIcon />} size="large">
-                                        Send
+                                    <Button variant="contained" endIcon={<FactCheckIcon />} size="large" style={{background:'orange',whiteSpace: 'nowrap'}}>
+                                        請款
                                     </Button>
                                 </Grid>
                                 <Grid item xs={4} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>     
-                                    <Button variant="contained" endIcon={<FactCheckIcon />} size="large">
-                                        Send
+                                    <Button variant="contained" endIcon={<FactCheckIcon />} size="large" style={{background:'orange',whiteSpace: 'nowrap'}}>
+                                        出勤
                                     </Button>
                                 </Grid>
                                 <Grid item xs={4} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>     
-                                    <Button variant="contained" endIcon={<FactCheckIcon />} size="large">
-                                        Send
+                                    <Button variant="contained" endIcon={<FactCheckIcon />} size="large" style={{background:'orange',whiteSpace: 'nowrap'}}>
+                                        薪資
                                     </Button>
                                 </Grid>
                                 <Grid item xs={4} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>     
-                                    <Button variant="contained" endIcon={<FactCheckIcon />} size="large">
+                                    <Button variant="contained" endIcon={<FactCheckIcon />} size="large" style={{background:'orange',whiteSpace: 'nowrap'}}>
                                         Send
                                     </Button>
                                 </Grid>
@@ -164,7 +166,7 @@ export default function PersonalInfo() {
                             <Grid container spacing={1}>
                                 <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center'}}>     
                                     <AppTasks
-                                    title="Tasks"
+                                    title="請假紀錄"
                                     list={[
                                         { id: '1', label: 'Create FireStone Logo' },
                                         { id: '2', label: 'Add SCSS and JS files if required' },

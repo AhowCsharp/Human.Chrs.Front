@@ -112,6 +112,7 @@ function TaskItem({ task, checked, onChange }) {
           color: 'text.disabled',
           textDecoration: 'line-through',
         }),
+        marginBottom:'1%'
       }}
     >
       {/* 移除或注釋掉以下的FormControlLabel */}
@@ -120,9 +121,9 @@ function TaskItem({ task, checked, onChange }) {
         label={task.label}
         sx={{ flexGrow: 1, m: 0 }}
       /> */}
-      <div style={{ flexGrow: 1, margin: 0 }}>{task.label}</div>
+      <div style={{ flexGrow: 1, margin: 10 }}>{task.label}</div>
 
-      <IconButton size="large" color="inherit" sx={{ opacity: 0.48 }} onClick={handleOpenMenu}>
+      {/* <IconButton size="large" color="inherit" sx={{ opacity: 0.48 }} onClick={handleOpenMenu}>
         <Iconify icon={'eva:more-vertical-fill'} />
       </IconButton>
 
@@ -164,7 +165,7 @@ function TaskItem({ task, checked, onChange }) {
           <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
           Delete
         </MenuItem>
-      </Popover>
+      </Popover> */}
     </Stack>
   );
 }
