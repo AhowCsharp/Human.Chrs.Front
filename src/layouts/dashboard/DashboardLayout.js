@@ -13,8 +13,7 @@ const APP_BAR_DESKTOP = 92;
 
 const StyledRoot = styled('div')({
   display: 'flex',
-  minHeight: '100vh', // 视口高度
-  flexDirection: 'column',
+  minHeight: '100%',
   overflow: 'hidden',
 });
 
@@ -50,11 +49,7 @@ export default function DashboardLayout() {
 
       <Main>
         <Outlet />
-        <Footer>
-        <p>© 2023 Your Company Name. All rights reserved.</p>
-      </Footer>
       </Main>
-
     </StyledRoot>
   );
 }

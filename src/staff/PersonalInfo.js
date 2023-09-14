@@ -10,9 +10,8 @@ import Button from '@mui/material/Button';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import PermContactCalendarIcon from '@mui/icons-material/PermContactCalendar';
 import FactCheckIcon from '@mui/icons-material/FactCheck';
-import {
-    AppTasks
-  } from '../sections/@dashboard/app';
+import {AppTasks} from '../sections/@dashboard/app';
+import Map from '../googleMap/Map'
 
 const Item = styled(Paper)(({ theme }) => ({
   backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
@@ -81,9 +80,9 @@ export default function PersonalInfo() {
         <>
             {isMobile && (
             <Box sx={{ display: 'flex', flexDirection: 'row', width: '100%',position: 'relative' }}>
-                <Box sx={{width: '100%', height:`${windowDimensions.height*1.3}px`,backgroundColor:'black'}}>
+                <Box sx={{width: '100%', height:`${windowDimensions.height*1.5}px`,backgroundColor:'black'}}>
 
-                    <Box sx={{ width: '85%', height: `${windowDimensions.height/2}px`,backgroundColor:'white'
+                    <Box sx={{ width: '85%', height: `${windowDimensions.height/1.3}px`,backgroundColor:'white'
                     ,margin:'auto',borderRadius: '10px',padding:'25px',marginTop:'5%'}}>
                         <Box sx={{ flexGrow: 1 }}>
                             <Grid container spacing={2}>
@@ -108,6 +107,9 @@ export default function PersonalInfo() {
                                     </>
                                 )}
                                 <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold',marginTop:'10%' }}>     
+                                    <Map/>
+                                </Grid>                               
+                                <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold',marginTop:'10%' }}>     
                                     <Button variant="contained" endIcon={<FactCheckIcon />} size="large" style={{background:'black'}}>
                                         打卡
                                     </Button>
@@ -125,7 +127,7 @@ export default function PersonalInfo() {
                             </Grid>
                         </Box>
                     </Box>
-                    <Box sx={{width: '100%', height:`${windowDimensions.height/5}px`,marginTop:'5%'}}>
+                    <Box sx={{width: '100%', height:`${windowDimensions.height/5}px`,marginTop:'2%'}}>
                         <Box sx={{ flexGrow: 1,margin:'5%' }}>
                             <Grid container spacing={1}>
                                 <Grid item xs={4} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center'}}>     

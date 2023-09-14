@@ -18,26 +18,43 @@ import PersonalDetail from './staff/PersonalDetail';
 export default function Router() {
   const routes = useRoutes([
     {
-      path: '/dashboard',
-      element: <DashboardLayout />,
-      children: [
-        { element: <Navigate to="/dashboard/app" />, index: true },
-        { path: 'app', element: <DashboardAppPage /> },
-        { path: 'user', element: <UserPage /> },
-        { path: 'products', element: <ProductsPage /> },
-        { path: 'blog', element: <BlogPage /> },
-        { path: 'info', element: <PersonalInfo /> },
-        { path: 'detail', element: <PersonalDetail /> },
-      ],
+      path: '/',
+      element: <Navigate to="/login" replace />,
     },
     {
       path: 'login',
       element: <LoginPage />,
     },
     {
+      path: '/staff',
+      element: <DashboardLayout />,
+      children: [
+        { element: <Navigate to="/staff/info" />, index: true },
+        // { path: 'app', element: <DashboardAppPage /> },
+        // { path: 'user', element: <UserPage /> },
+        // { path: 'products', element: <ProductsPage /> },
+        // { path: 'blog', element: <BlogPage /> },
+        { path: 'info', element: <PersonalInfo /> },
+        { path: 'detail', element: <PersonalDetail /> },
+      ],
+    },
+    {
+      path: '/admin',
+      element: <DashboardLayout isStudent/>,
+      children: [
+        { element: <Navigate to="/admin/manage" />, index: true },
+        // { path: 'app', element: <StudentDashboardAppPage /> },
+        // { path: 'test', element: <StudentTest /> },
+        // { path: 'log', element: <AnswerLog /> },
+        // { path: 'game', element: <StudentGame /> },
+        // { path: 'profile', element: <StudentProfile /> },
+        // { path: 'choose', element: <ChooseModel /> },
+      ],
+    },
+    {
       element: <SimpleLayout />,
       children: [
-        { element: <Navigate to="/dashboard/app" />, index: true },
+        { element: <Navigate to="login" />, index: true },
         { path: '404', element: <Page404 /> },
         { path: '*', element: <Navigate to="/404" /> },
       ],

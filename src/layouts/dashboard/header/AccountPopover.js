@@ -28,6 +28,11 @@ export default function AccountPopover() {
   const handleOpen = (event) => {
     setOpen(event.currentTarget);
   };
+  const handleLoginOut = () => {
+    sessionStorage.clear();
+    setOpen(null);
+    navigate('/login', { replace: true });
+  };
 
   const handleClose = () => {
     setOpen(null);
@@ -107,7 +112,7 @@ export default function AccountPopover() {
 
         <Divider sx={{ borderStyle: 'dashed' }} />
 
-        <MenuItem onClick={handleClose} sx={{ m: 1 }}>
+        <MenuItem onClick={handleLoginOut} sx={{ m: 1 }}>
           Logout
         </MenuItem>
       </Popover>
