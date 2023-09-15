@@ -57,7 +57,7 @@ export default function LoginForm() {
     }));
   };
 
-  const handleSubmit = async () => {
+    const handleSubmit = async () => {
     // 創建一個物件來存儲帳號和密碼
     // 設定 header 的 token
     const config = {
@@ -69,7 +69,7 @@ export default function LoginForm() {
     // 發送 POST 請求
     try {
       const response = await axios.post(`${appsetting.apiUrl}/login/verify`, loginRequest, config);
-      console.log("Login successful:", response.data);
+
       if(response.status === 200) {
           setIsLogin(true);
           if(response.data.AdminToken === null) {
@@ -80,7 +80,6 @@ export default function LoginForm() {
             sessionStorage.setItem('StaffNo',response.data.StaffNo);
             sessionStorage.setItem('Auth',response.data.Auth.toString());
             setIsStaff(true);
-            alert('員工')
           }
           else {
             sessionStorage.setItem('UserId',response.data.UserId);
@@ -91,7 +90,6 @@ export default function LoginForm() {
             sessionStorage.setItem('Auth',response.data.Auth.toString());
             sessionStorage.setItem('AdminToken',response.data.AdminToken);
             setIsStaff(false);
-            alert('管理者')
           }
       }
       setOpen(true);

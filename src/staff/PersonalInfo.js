@@ -2,6 +2,7 @@ import { isMobile, isTablet, isBrowser } from 'react-device-detect';
 import { useState,useRef,useEffect} from 'react';
 import { useLocation,useNavigate } from 'react-router-dom';
 import * as React from 'react';
+import axios from 'axios';
 import { styled } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
@@ -12,6 +13,7 @@ import PermContactCalendarIcon from '@mui/icons-material/PermContactCalendar';
 import FactCheckIcon from '@mui/icons-material/FactCheck';
 import {AppTasks} from '../sections/@dashboard/app';
 import Map from '../googleMap/Map'
+import appsetting from '../Appsetting';
 
 const Item = styled(Paper)(({ theme }) => ({
   backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
@@ -21,14 +23,32 @@ const Item = styled(Paper)(({ theme }) => ({
   color: theme.palette.text.secondary,
 }));
 
+const config = {
+    headers: {
+      'X-Ap-Token': appsetting.token,
+      'X-Ap-CompanyId': sessionStorage.getItem('CompanyId'),
+      'X-Ap-UserId': sessionStorage.getItem('UserId'),
+    }
+};
+
+
+
 export default function PersonalInfo() {
+    const [viewInfo, setViewInfo] = useState({
+        IsOverLocation:true,
+        IsCheckIn:false,
+        CheckInRange: "08:00:00~09:00:00",
+        CheckOutRange: "17:00:00~18:00:00",
+        AfternoonRange: "",
+        VacationLogDTOs: []
+    })
+    const [center, setCenter] = useState({lat: 41.3851, lng: 2.1734 });
+
     const [windowDimensions, setWindowDimensions] = useState({
         width: typeof window !== 'undefined' ? window.innerWidth : 0,
         height: typeof window !== 'undefined' ? window.innerHeight : 0,
     });
     const [currentTime, setCurrentTime] = useState(new Date());
-    const [isCheckIn, setIsCheckIn] = useState(false);
-        // 计算距离上班时间的剩余小时和分钟
     const workStartTime = new Date();
     workStartTime.setHours(8, 0, 0); // 设置上班时间为上午八点整
     const timeDiff = workStartTime - currentTime;
@@ -48,12 +68,45 @@ export default function PersonalInfo() {
     }
 
     useEffect(() => {
+
+        if ("geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition((position) => {
+                setCenter({
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                });
+            });
+        }
         const timerId = setInterval(updateCurrentTime, 1000);
 
         return () => {
             clearInterval(timerId);
-        };
+        };      
     }, []);
+
+    useEffect(() => {
+        if(center.lat < 26  &&  center.lat > 20 && center.lng < 125 && center.lng > 119) {
+            const fetchData = async () => {
+                try {
+                    const response = await axios.get(`${appsetting.apiUrl}/staff/view?longitude=${center.lng}&latitude=${center.lat}`, config);
+                    if(response.status === 200) {
+                        setViewInfo({
+                            IsOverLocation: response.data.IsOverLocation,
+                            IsCheckIn: response.data.IsOverLocation,
+                            CheckInRange: response.data.CheckInRange,
+                            CheckOutRange: response.data.CheckOutRange,
+                            AfternoonRange: "response.data.AfternoonRange",
+                            VacationLogDTOs: response.data.VacationLogDTOs,
+                          });
+                    }
+                } catch (error) {
+                  console.error('An error occurred while fetching data:', error);
+                }
+              };         
+              fetchData();  
+        }
+    }, [center]);
+
     const updateCurrentTime = () => {
         setCurrentTime(new Date());
     };
@@ -92,14 +145,14 @@ export default function PersonalInfo() {
                                 <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '30px' }}>     
                                     {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                                 </Grid>
-                                {!isCheckIn && (
+                                {!viewInfo.IsCheckIn && (
                                     <>
                                         <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>     
                                             {remainingTime}
                                         </Grid>
                                     </>
                                 )}
-                                {isCheckIn && (
+                                {viewInfo.IsCheckIn && (
                                     <>
                                         <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>     
                                             {remainingTime}
@@ -107,7 +160,7 @@ export default function PersonalInfo() {
                                     </>
                                 )}
                                 <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold',marginTop:'10%' }}>     
-                                    <Map/>
+                                    <Map center={center}/>
                                 </Grid>                               
                                 <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold',marginTop:'10%' }}>     
                                     <Button variant="contained" endIcon={<FactCheckIcon />} size="large" style={{background:'black'}}>
@@ -121,7 +174,7 @@ export default function PersonalInfo() {
                                     午休時間 12:00~1:00 
                                 </Grid>  
                                 <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', fontWeight: 'bold', fontSize: '15px' }}>     
-                                    上班時間 9:00~10:30 下班時間 6:00~7:30
+                                    上班時間 {viewInfo.CheckInRange} 下班時間 {viewInfo.CheckOutRange}
                                 </Grid> 
 
                             </Grid>
