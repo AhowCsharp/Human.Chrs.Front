@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types';
 import { useState } from 'react';
+import dayjs from 'dayjs';
 // form
 import { useForm, Controller } from 'react-hook-form';
 // @mui
@@ -15,7 +16,19 @@ import {
   FormControlLabel,
 } from '@mui/material';
 // components
-import Iconify from '../../../components/iconify';
+import { styled } from '@mui/material/styles';
+import Box from '@mui/material/Box';
+import Paper from '@mui/material/Paper';
+import Chip from '@mui/material/Chip';
+import Grid from '@mui/material/Grid';
+
+const Item = styled(Paper)(({ theme }) => ({
+  backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
+  ...theme.typography.body2,
+  padding: theme.spacing(0.5),
+  textAlign: 'left',
+  color: theme.palette.text.secondary,
+}));
 
 // ----------------------------------------------------------------------
 
@@ -33,8 +46,8 @@ export default function AppTasks({ title, subheader, list, ...other }) {
   });
 
   return (
-    <Card {...other}>
-      <CardHeader title={title} subheader={subheader} />
+    <Card {...other} style={{width:'90%'}}>
+      <CardHeader title={title} subheader={subheader} style={{marginBottom:'5%'}}/>
       <Controller
         name="taskCompleted"
         control={control}
@@ -46,10 +59,10 @@ export default function AppTasks({ title, subheader, list, ...other }) {
             <>
               {list.map((task) => (
                 <TaskItem
-                  key={task.id}
+                  key={task.Id}
                   task={task}
-                  checked={field.value.includes(task.id)}
-                  onChange={() => field.onChange(onSelected(task.id))}
+                  checked={field.value.includes(task.Id)}
+                  onChange={() => field.onChange(onSelected(task.Id))}
                 />
               ))}
             </>
@@ -66,8 +79,8 @@ TaskItem.propTypes = {
   checked: PropTypes.bool,
   onChange: PropTypes.func,
   task: PropTypes.shape({
-    id: PropTypes.string,
-    label: PropTypes.string,
+    Id: PropTypes.number,
+    VacationTypeName: PropTypes.string,
   }),
 };
 
@@ -106,13 +119,13 @@ function TaskItem({ task, checked, onChange }) {
     <Stack
       direction="row"
       sx={{
-        px: 3,
-        py: 1,
+        px: 1,
+        py: 0,
         ...(checked && {
           color: 'text.disabled',
           textDecoration: 'line-through',
         }),
-        marginBottom:'1%'
+        marginBottom:'10%',
       }}
     >
       {/* 移除或注釋掉以下的FormControlLabel */}
@@ -121,51 +134,33 @@ function TaskItem({ task, checked, onChange }) {
         label={task.label}
         sx={{ flexGrow: 1, m: 0 }}
       /> */}
-      <div style={{ flexGrow: 1, margin: 10 }}>{task.label}</div>
-
-      {/* <IconButton size="large" color="inherit" sx={{ opacity: 0.48 }} onClick={handleOpenMenu}>
-        <Iconify icon={'eva:more-vertical-fill'} />
-      </IconButton>
-
-      <Popover
-        open={Boolean(open)}
-        anchorEl={open}
-        onClose={handleCloseMenu}
-        anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
-        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-        PaperProps={{
-          sx: {
-            p: 1,
-            '& .MuiMenuItem-root': {
-              px: 1,
-              typography: 'body2',
-              borderRadius: 0.75,
-            },
-          },
-        }}
-      >
-        <MenuItem onClick={handleMarkComplete}>
-          <Iconify icon={'eva:checkmark-circle-2-fill'} sx={{ mr: 2 }} />
-          Mark Complete
-        </MenuItem>
-
-        <MenuItem onClick={handleEdit}>
-          <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
-          Edit
-        </MenuItem>
-
-        <MenuItem onClick={handleShare}>
-          <Iconify icon={'eva:share-fill'} sx={{ mr: 2 }} />
-          Share
-        </MenuItem>
-
-        <Divider sx={{ borderStyle: 'dashed' }} />
-
-        <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
-          <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
-          Delete
-        </MenuItem>
-      </Popover> */}
+      <Box sx={{ flexGrow: 1 }}>
+        <Grid container spacing={0} rowSpacing={0}>
+          <Grid item xs={3} >
+            <Item>
+              <Chip label={task.VacationTypeName} style={{alignItems:"center",justifyContent:"center"}} color="primary" size="small"/>           
+            </Item>
+          </Grid>
+          <Grid item xs={9} />
+          
+          <Grid item xs={9}>
+    <Item>
+      <Box display="flex" alignItems="center" justifyContent="center" style={{ height: "100%", fontSize: "13px"}}>
+        {dayjs(task.ActualStartDate).format("YYYY-MM-DD HH:mm")}~{dayjs(task.ActualEndDate).format("YYYY-MM-DD HH:mm")}
+      </Box>
+    </Item>
+  </Grid>
+  <Grid item xs={3}>
+    <Item>
+      <Box display="flex" alignItems="center" justifyContent="center" style={{ height: "100%" }}>
+        {task.IsPass === 0 && task.AuditDate === null ? <Chip label='審核中' color="warning" size="small" style={{color:'white',paddingBottom:'2px'}}/> : null}
+        {task.IsPass === 0 && task.AuditDate !== null ? <Chip label='未通過' color="error" size="small" style={{color:'white',paddingBottom:'2px'}}/> : null}
+        {task.IsPass === 1 && task.AuditDate !== null ? <Chip label='已通過' color="success" size="small" style={{color:'white',paddingBottom:'2px'}}/> : null}
+      </Box>
+    </Item>
+  </Grid>
+        </Grid>
+      </Box>
     </Stack>
   );
 }

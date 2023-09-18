@@ -4,4 +4,4 @@ const appsetting = {
     token: '6a746132-7823-4842-9d3e-ad90242cb8e6'
   };
 
-  export default appsetting;
+export default appsetting;
