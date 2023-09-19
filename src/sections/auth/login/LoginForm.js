@@ -94,6 +94,7 @@ export default function LoginForm() {
       }
       setOpen(true);
     } catch (error) {
+      setOpen(true);
       console.error("Error logging in:", error);
     }
   };

@@ -201,7 +201,7 @@ export default function DashboardAppPage() {
           </Grid>
 
           <Grid item xs={12} md={6} lg={8}>
-            <AppTasks
+            {/* <AppTasks
               title="Tasks"
               list={[
                 { id: '1', label: 'Create FireStone Logo' },
@@ -210,7 +210,7 @@ export default function DashboardAppPage() {
                 { id: '4', label: 'Scoping & Estimations' },
                 { id: '5', label: 'Sprint Showcase' },
               ]}
-            />
+            /> */}
           </Grid>
         </Grid>
       </Container>

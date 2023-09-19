@@ -14,7 +14,7 @@ import Scrollbar from '../../../components/scrollbar';
 import NavSection from '../../../components/nav-section';
 //
 import navConfig from './config';
-
+import AdminConfig from './AdminConfig';
 // ----------------------------------------------------------------------
 
 const NAV_WIDTH = 280;
@@ -75,7 +75,7 @@ export default function Nav({ openNav, onCloseNav }) {
         </Link>
       </Box>
 
-      <NavSection data={navConfig} />
+      {sessionStorage.getItem('AdminToken') !== null? <NavSection data={AdminConfig} /> :<NavSection data={navConfig} />}
 
       <Box sx={{ flexGrow: 1 }} />
 

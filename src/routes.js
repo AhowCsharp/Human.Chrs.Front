@@ -13,6 +13,7 @@ import DashboardAppPage from './pages/DashboardAppPage';
 import PersonalInfo from './staff/PersonalInfo';
 import PersonalDetail from './staff/PersonalDetail';
 
+import StaffManage from './admin/StaffManage';
 // ----------------------------------------------------------------------
 
 export default function Router() {
@@ -40,15 +41,14 @@ export default function Router() {
     },
     {
       path: '/admin',
-      element: <DashboardLayout isStudent/>,
+      element: <DashboardLayout />,
       children: [
         { element: <Navigate to="/admin/manage" />, index: true },
-        // { path: 'app', element: <StudentDashboardAppPage /> },
-        // { path: 'test', element: <StudentTest /> },
-        // { path: 'log', element: <AnswerLog /> },
-        // { path: 'game', element: <StudentGame /> },
-        // { path: 'profile', element: <StudentProfile /> },
-        // { path: 'choose', element: <ChooseModel /> },
+        { path: 'app', element: <DashboardAppPage /> },
+        { path: 'user', element: <UserPage /> },
+        { path: 'products', element: <ProductsPage /> },
+        { path: 'blog', element: <BlogPage /> },
+        { path: 'manage', element: <StaffManage /> },
       ],
     },
     {
