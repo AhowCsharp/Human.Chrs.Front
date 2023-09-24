@@ -38,16 +38,17 @@ import StaffSearch from './StaffSearch';
 
 const Transition = React.forwardRef((props, ref) => <Slide direction="left" ref={ref} {...props} />);
 
-const config = {
-    headers: {
-      'X-Ap-Token': appsetting.token,
-      'X-Ap-CompanyId': sessionStorage.getItem('CompanyId'),
-      'X-Ap-UserId': sessionStorage.getItem('UserId'),
-      'X-Ap-AdminToken':sessionStorage.getItem('AdminToken')
-    }
-};
+
 
 export default function StaffManage() {
+    const config = {
+        headers: {
+          'X-Ap-Token': appsetting.token,
+          'X-Ap-CompanyId': sessionStorage.getItem('CompanyId'),
+          'X-Ap-UserId': sessionStorage.getItem('UserId'),
+          'X-Ap-AdminToken':sessionStorage.getItem('AdminToken')
+        }
+    };
     const columns = [
      
         {   field: 'id', headerName: 'ID', width: 90 },
@@ -103,6 +104,16 @@ export default function StaffManage() {
             width: 150,
             editable: true,
         },
+        {
+            field: 'details',
+            headerName: '個人詳細資料',
+            width: 200,
+            renderCell: (params) => (
+              <Button onClick={() => handleDetailsClick(params.row.id)}>
+                查看詳細資料
+              </Button>
+            ),
+        } 
     ];
     const [open, setOpen] = useState(false);
     const [isCreate,setIsCreate] = useState(false);
@@ -117,7 +128,8 @@ export default function StaffManage() {
         StaffAccount: '',
         StaffPassWord: '',
         Department: '',
-        EntryDate: getCurrentDate(), 
+        EntryDate: dayjs(getCurrentDate()),
+        ResignationDate: dayjs(getCurrentDate()),
         LevelPosition: '',
         WorkPosition: '',
         Email: '',
@@ -152,6 +164,7 @@ export default function StaffManage() {
         Gender: gender
     });
     
+    
 
     // const navigate = useNavigate();
 
@@ -161,12 +174,58 @@ export default function StaffManage() {
     //         navigate('/login');
     //     }
     // }, [navigate]);
+    function handleDetailsClick(id) {
+        console.log("查看詳細資料的ID:", id);
+        // 根据ID做您想要的操作，例如导航到详细页面、打开模态框等。
+    }
     const handleClickOpen = (status) => {
         setIsCreate(status)
         setOpen(true);
     };
     
       const handleClose = () => {
+        setStaff({
+            id: 0,
+            StaffNo: '',
+            CompanyId: parseInt(sessionStorage.getItem('CompanyId'), 10),
+            StaffAccount: '',
+            StaffPassWord: '',
+            Department: '',
+            EntryDate: dayjs(getCurrentDate()),
+            ResignationDate: dayjs(getCurrentDate()),
+            LevelPosition: '',
+            WorkPosition: '',
+            Email: '',
+            Status: 1,
+            SpecialRestDays: 0,
+            SickDays: 30,
+            ThingDays: 14,
+            ChildbirthDays: 0,
+            DeathDays: 8,
+            MarryDays: 8,
+            SpecialRestHours: 0,
+            SickHours: 0,
+            ThingHours: 0,
+            ChildbirthHours: 0,
+            DeathHours: 0,
+            MarryHours: 0,
+            EmploymentTypeId: 1,
+            StaffPhoneNumber: '',
+            StaffName: '',
+            Auth: 0,
+            DepartmentId: 1,
+            MenstruationDays: 1,
+            MenstruationHours: 0,
+            TocolysisDays: 7,
+            TocolysisHours: 0,
+            TackeCareBabyDays: 730,
+            TackeCareBabyHours: 0,
+            PrenatalCheckUpDays: 7,
+            PrenatalCheckUpHours: 0,
+            OverTimeHours: 0,
+            StayInCompanyDays: 0,
+            Gender: gender
+        })
         setOpen(false);
     };
     const fetchData = async () => {
@@ -255,6 +314,7 @@ export default function StaffManage() {
 
     const handleGetDetail = async (params) => {
         handleClickOpen(false);
+        console.log(dayjs(params.row.ResignationDate))
         setStaff({
           Id: params.row.id, // 如果为 NULL，设置为空字符串
           StaffNo: params.row.StaffNo,
@@ -262,8 +322,8 @@ export default function StaffManage() {
           StaffAccount: params.row.StaffAccount,
           StaffPassWord: params.row.StaffPassWord,
           Department: params.row.Department,
-          EntryDate: params.row.EntryDate,
-          ResignationDate: params.row.ResignationDate,
+          EntryDate: dayjs(params.row.EntryDate),
+          ResignationDate: dayjs(params.row.ResignationDate),
           LevelPosition: params.row.LevelPosition,
           WorkPosition: params.row.WorkPosition,
           Email: params.row.Email,
@@ -279,44 +339,55 @@ export default function StaffManage() {
           StaffName: params.row.StaffName,
           Auth: params.row.Auth,
           DepartmentId: params.row.DepartmentId,
-          WorkHurtDays: params.row.WorkHurtDays,
-          WorkThingsDays: params.row.WorkThingsDays,
           MenstruationDays: params.row.MenstruationDays,
           TocolysisDays: params.row.TocolysisDays,
           TackeCareBabyDays: params.row.TackeCareBabyDays,
           PrenatalCheckUpDays: params.row.PrenatalCheckUpDays,
           StayInCompanyDays: params.row.StayInCompanyDays,
           Gender: params.row.Gender,
+          SpecialRestHours:params.row.SpecialRestHours,
+          SickHours:params.row.SickHours,
+          ThingHours:params.row.ThingHours,
+          ChildbirthHours:params.row.ChildbirthHours,
+          DeathHours:params.row.DeathHours,
+          MarryHours:params.row.MarryHours,
+          MenstruationHours:params.row.MenstruationHours,
+          TocolysisHours:params.row.TocolysisHours,
+          TackeCareBabyHours:params.row.TackeCareBabyHours,
+          PrenatalCheckUpHours:params.row.PrenatalCheckUpHours,
+          OverTimeHours:params.row.OverTimeHours,
         });
+        
     };
-    // const handleInputChange = (event, propertyName) => {
-    //     const value = event.target.value;
+    const handleInputChange = (event, propertyName) => {
+        const value = event.target ? event.target.value : event;
+        console.log(value)
+        setStaff((prevData) => ({
+            ...prevData,
+            [propertyName]: value,
+        }));
+    
+    };
 
-    //     setManufacturer((prevData) => ({
-    //         ...prevData,
-    //         [propertyName]: value,
-    //     }));
-    // };
+    const handleSubmit = async () => {
 
-    // const handleSubmit = async () => {
-    //     // const config = {
-    //     //         headers: {
-    //     //         'X-Ap-Token': appsetting.token,
-    //     //         'X-Ap-CompanyId': sessionStorage.getItem('CompanyId'),
-    //     //         'X-Ap-UserId': sessionStorage.getItem('UserId'),
-    //     //         }
-    //     //     };     
-    //         try {
-    //           const response = await axios.post(`${apiUrl}/Manufacturer/UpdateRow`, manufacturer);
-    //           if (response.status === 200) {
-    //             alert('成功');
-    //             fetchData();
-    //           }
-    //         } catch (error) {
-    //           console.error("Error logging in:", error);
-    //           alert('失敗 欄位有誤');
-    //         }          
-    // }
+        const staffRequest = {
+            ...staff,
+            EntryDate: staff.EntryDate.format('YYYY-MM-DD'),
+            ResignationDate: staff.ResignationDate.format('YYYY-MM-DD')
+        }       
+            try {
+              const response = await axios.post(`${appsetting.apiUrl}/admin/newstaff`, staffRequest,config);
+              if (response.status === 200) {
+                alert('成功');
+                fetchData();
+                handleClose();
+              }
+            } catch (error) {
+              console.error("Error logging in:", error);
+              alert('失敗 欄位有誤');
+            }          
+    }
     // const destorySubmit = async (seq) => {
     //     // const config = {
     //     //         headers: {
@@ -416,7 +487,8 @@ export default function StaffManage() {
                             </InputLabel>       
                             <TextField id="StaffName" 
                                 type="search" size="small"
-                                value={staff.StaffName}/>
+                                value={staff.StaffName}
+                                onChange={(e) => handleInputChange(e, 'StaffName')}/>
                         </Grid>       
                         <Grid item xs={4}>      
                             <InputLabel shrink htmlFor="bootstrap-input">
@@ -424,7 +496,8 @@ export default function StaffManage() {
                             </InputLabel>       
                             <TextField id="StaffNo" 
                                 type="search" size="small"
-                                value={staff.StaffNo}/>
+                                value={staff.StaffNo}
+                                onChange={(e) => handleInputChange(e, 'StaffNo')}/>
                         </Grid>
                         <Grid item xs={6}>
                             <InputLabel shrink htmlFor="bootstrap-input">
@@ -433,7 +506,8 @@ export default function StaffManage() {
                             <TextField id="StaffAccount" 
                                 type="search" size="small"
                                 style={{ width: '100%'}}
-                                value={staff.StaffAccount}/>
+                                value={staff.StaffAccount}
+                                onChange={(e) => handleInputChange(e, 'StaffAccount')}/>
                         </Grid>
                         <Grid item xs={6}>
                             <InputLabel shrink htmlFor="bootstrap-input">
@@ -442,7 +516,8 @@ export default function StaffManage() {
                             <TextField id="StaffPassWord" 
                                 type="search" size="small"
                                 style={{ width: '100%'}}
-                                value={staff.StaffPassWord}/>
+                                value={staff.StaffPassWord}
+                                onChange={(e) => handleInputChange(e, 'StaffPassWord')}/>
                         </Grid>
                         <Grid item xs={6}>
                             <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -451,10 +526,12 @@ export default function StaffManage() {
                                     'DesktopDatePicker',
                                     ]}
                                 >
-                                    <DemoItem label="入職時間">
-                                    <DatePicker defaultValue={dayjs(formatDateToYYYYMMDD(staff.EntryDate))} 
+                                    <DatePicker 
+                                    label="入職時間"
+                                    value={staff.EntryDate}
+                                    onChange={(e) => handleInputChange(e, 'EntryDate')}
+                                    format="YYYY-MM-DD" // 指定日期格式为 YYYY-MM-DD 
                                     style={{ width: '100%'}}/>
-                                    </DemoItem>
                                 </DemoContainer>
                             </LocalizationProvider>
                         </Grid>
@@ -465,10 +542,12 @@ export default function StaffManage() {
                                     'DesktopDatePicker',
                                     ]}
                                 >
-                                    <DemoItem label="註冊時間">
-                                    <DatePicker defaultValue={dayjs(formatDateToYYYYMMDD(staff.EntryDate))} 
+                                    <DatePicker 
+                                    label="註冊時間"
+                                    value={staff.ResignationDate}
+                                    onChange={(e) => handleInputChange(e, 'ResignationDate')}
+                                    format="YYYY-MM-DD" // 指定日期格式为 YYYY-MM-DD
                                     style={{ width: '100%'}}/>
-                                    </DemoItem>
                                 </DemoContainer>
                             </LocalizationProvider>
                         </Grid>
@@ -478,7 +557,8 @@ export default function StaffManage() {
                             </InputLabel>       
                             <TextField id="outlined-search" 
                                 type="search" size="small"
-                                value={staff.LevelPosition}/>
+                                value={staff.LevelPosition}
+                                onChange={(e) => handleInputChange(e, 'LevelPosition')}/>
                         </Grid>                        
                         <Grid item xs={3}>
                             <InputLabel shrink htmlFor="bootstrap-input">
@@ -486,7 +566,8 @@ export default function StaffManage() {
                             </InputLabel>       
                             <TextField id="Status" 
                                 type="search" size="small"
-                                value={staff.Status}/>
+                                value={staff.Status}
+                                onChange={(e) => handleInputChange(e, 'Status')}/>
                         </Grid>
                         <Grid item xs={3}>
                             <InputLabel shrink htmlFor="bootstrap-input">
@@ -499,6 +580,7 @@ export default function StaffManage() {
                             label="typeId"
                             size="small"
                             style={{width:'100%'}}
+                            onChange={(e) => handleInputChange(e, 'EmploymentTypeId')}
                             >
                                 <MenuItem value={1}>全職</MenuItem>
                                 <MenuItem value={2}>部分工時</MenuItem>
@@ -512,10 +594,11 @@ export default function StaffManage() {
                             <Select
                                 labelId="demo-simple-select-required-label"
                                 id="demo-simple-select-required"
-                                value={staff.EmploymentTypeId}
+                                value={staff.DepartmentId}
                                 label="typeId"
                                 size="small"
                                 style={{width:'100%'}}
+                                onChange={(e) => handleInputChange(e, 'DepartmentId')}
                                 >
                                     {departments.map((type) => (
                                         <MenuItem key={type.id} value={type.id}>
@@ -531,7 +614,8 @@ export default function StaffManage() {
                             <TextField id="WorkPosition" 
                                 type="search" size="small"
                                 style={{width:'100%'}}
-                                value={staff.WorkPosition}/>
+                                value={staff.WorkPosition}
+                                onChange={(e) => handleInputChange(e, 'WorkPosition')}/>
                         </Grid>
                         <Grid item xs={6}>
                             <InputLabel shrink htmlFor="bootstrap-input">
@@ -540,88 +624,200 @@ export default function StaffManage() {
                             <TextField id="Email" 
                                 type="search" size="small"
                                 style={{width:'100%'}}
-                                value={staff.Email}/>
+                                value={staff.Email}
+                                onChange={(e) => handleInputChange(e, 'Email')}/>
                         </Grid>                       
                         <Grid item xs={3}>
                             <InputLabel shrink htmlFor="bootstrap-input">
-                                特休餘數
+                                特休餘日
                             </InputLabel>       
                             <TextField id="SpecialRestDays" 
                                 type="search" size="small"
-                                value={staff.SpecialRestDays}/>
+                                value={staff.SpecialRestDays}
+                                onChange={(e) => handleInputChange(e, 'SpecialRestDays')}/>
                         </Grid>
                         <Grid item xs={3}>
                             <InputLabel shrink htmlFor="bootstrap-input">
-                                病假餘數
+                                病假餘日
                             </InputLabel>       
                             <TextField id="SickDays" 
                                 type="search" size="small"
-                                value={staff.SickDays}/>
+                                value={staff.SickDays}
+                                onChange={(e) => handleInputChange(e, 'SickDays')}/>
                         </Grid>
                         <Grid item xs={3}>      
                             <InputLabel shrink htmlFor="bootstrap-input">
-                                事假餘數
+                                事假餘日
                             </InputLabel>       
                             <TextField id="ThingDays" 
                                 type="search" size="small"
-                                value={staff.ThingDays}/>
+                                value={staff.ThingDays}
+                                onChange={(e) => handleInputChange(e, 'ThingDays')}/>
                         </Grid>
                         <Grid item xs={3}>
                             <InputLabel shrink htmlFor="bootstrap-input">
-                                產假餘數
+                                產假餘日
                             </InputLabel>       
                             <TextField id="ChildbirthDays" 
                                 type="search" size="small"
-                                value={staff.ChildbirthDays}/>
+                                value={staff.ChildbirthDays}
+                                onChange={(e) => handleInputChange(e, 'ChildbirthDays')}/>
                         </Grid>
                         <Grid item xs={3}>
                             <InputLabel shrink htmlFor="bootstrap-input">
-                                喪假餘數
+                                喪假餘日
                             </InputLabel>       
                             <TextField id="DeathDays" 
                                 type="search" size="small"
-                                value={staff.DeathDays}/>
+                                value={staff.DeathDays}
+                                onChange={(e) => handleInputChange(e, 'DeathDays')}/>
                         </Grid>
                         <Grid item xs={3}>
                             <InputLabel shrink htmlFor="bootstrap-input">
-                                婚假餘數
+                                婚假餘日
                             </InputLabel>       
                             <TextField id="MarryDays" 
                                 type="search" size="small"
-                                value={staff.MarryDays}/>
+                                value={staff.MarryDays}
+                                onChange={(e) => handleInputChange(e, 'MarryDays')}/>
                         </Grid>
                         <Grid item xs={3}>
                             <InputLabel shrink htmlFor="bootstrap-input">
-                                生理假餘數
+                                生理假餘日
                             </InputLabel>       
                             <TextField id="MenstruationDays" 
                                 type="search" size="small"
-                                value={staff.MenstruationDays}/>
+                                value={staff.MenstruationDays}
+                                onChange={(e) => handleInputChange(e, 'MenstruationDays')}/>
                         </Grid>
                         <Grid item xs={3}>
                             <InputLabel shrink htmlFor="bootstrap-input">
-                                安胎假餘數
+                                安胎假餘日
                             </InputLabel>       
                             <TextField id="TocolysisDays" 
                                 type="search" size="small"
-                                value={staff.TocolysisDays}/>
+                                value={staff.TocolysisDays}
+                                onChange={(e) => handleInputChange(e, 'TocolysisDays')}/>
                         </Grid>
                         <Grid item xs={3}>      
                             <InputLabel shrink htmlFor="bootstrap-input">
-                                育嬰假
+                                育嬰假餘日
                             </InputLabel>       
                             <TextField id="TackeCareBabyDays" 
                                 type="search" size="small"
-                                value={staff.TackeCareBabyDays}/>
+                                value={staff.TackeCareBabyDays}
+                                onChange={(e) => handleInputChange(e, 'TackeCareBabyDays')}/>
                         </Grid>
                         <Grid item xs={3}>
                             <InputLabel shrink htmlFor="bootstrap-input">
-                                產檢假
+                                產檢假餘日
                             </InputLabel>       
                             <TextField id="PrenatalCheckUpDays" 
                                 type="search" size="small"
-                                value={staff.PrenatalCheckUpDays}/>
+                                value={staff.PrenatalCheckUpDays}
+                                onChange={(e) => handleInputChange(e, 'PrenatalCheckUpDays')}/>
                         </Grid>
+
+                        <Grid item xs={3}>
+                            <InputLabel shrink htmlFor="bootstrap-input">
+                                特休餘時
+                            </InputLabel>       
+                            <TextField id="SpecialRestHours" 
+                                type="search" size="small"
+                                value={staff.SpecialRestHours}
+                                onChange={(e) => handleInputChange(e, 'SpecialRestHours')}/>
+                        </Grid>
+                        <Grid item xs={3}>
+                            <InputLabel shrink htmlFor="bootstrap-input">
+                                病假餘時
+                            </InputLabel>       
+                            <TextField id="SickHours" 
+                                type="search" size="small"
+                                value={staff.SickHours}
+                                onChange={(e) => handleInputChange(e, 'SickHours')}/>
+                        </Grid>
+                        <Grid item xs={3}>      
+                            <InputLabel shrink htmlFor="bootstrap-input">
+                                事假餘時
+                            </InputLabel>       
+                            <TextField id="ThingHours" 
+                                type="search" size="small"
+                                value={staff.ThingHours}
+                                onChange={(e) => handleInputChange(e, 'ThingHours')}/>
+                        </Grid>
+                        <Grid item xs={3}>
+                            <InputLabel shrink htmlFor="bootstrap-input">
+                                產假餘時
+                            </InputLabel>       
+                            <TextField id="ChildbirthHours" 
+                                type="search" size="small"
+                                value={staff.ChildbirthHours}
+                                onChange={(e) => handleInputChange(e, 'ChildbirthHours')}/>
+                        </Grid>
+                        <Grid item xs={3}>
+                            <InputLabel shrink htmlFor="bootstrap-input">
+                                喪假餘時
+                            </InputLabel>       
+                            <TextField id="DeathHours" 
+                                type="search" size="small"
+                                value={staff.DeathHours}
+                                onChange={(e) => handleInputChange(e, 'DeathHours')}/>
+                        </Grid>
+                        <Grid item xs={3}>
+                            <InputLabel shrink htmlFor="bootstrap-input">
+                                婚假餘時
+                            </InputLabel>       
+                            <TextField id="MarryHours" 
+                                type="search" size="small"
+                                value={staff.MarryHours}
+                                onChange={(e) => handleInputChange(e, 'MarryHours')}/>
+                        </Grid>
+                        <Grid item xs={3}>
+                            <InputLabel shrink htmlFor="bootstrap-input">
+                                生理假餘時
+                            </InputLabel>       
+                            <TextField id="MenstruationHours" 
+                                type="search" size="small"
+                                value={staff.MenstruationHours}
+                                onChange={(e) => handleInputChange(e, 'MenstruationHours')}/>
+                        </Grid>
+                        <Grid item xs={3}>
+                            <InputLabel shrink htmlFor="bootstrap-input">
+                                安胎假餘時
+                            </InputLabel>       
+                            <TextField id="TocolysisHours" 
+                                type="search" size="small"
+                                value={staff.TocolysisHours}
+                                onChange={(e) => handleInputChange(e, 'TocolysisHours')}/>
+                        </Grid>
+                        <Grid item xs={3}>      
+                            <InputLabel shrink htmlFor="bootstrap-input">
+                                育嬰假餘時
+                            </InputLabel>       
+                            <TextField id="TackeCareBabyHours" 
+                                type="search" size="small"
+                                value={staff.TackeCareBabyHours}
+                                onChange={(e) => handleInputChange(e, 'TackeCareBabyHours')}/>
+                        </Grid>
+                        <Grid item xs={3}>
+                            <InputLabel shrink htmlFor="bootstrap-input">
+                                產檢假餘時
+                            </InputLabel>       
+                            <TextField id="PrenatalCheckUpHours" 
+                                type="search" size="small"
+                                value={staff.PrenatalCheckUpHours}
+                                onChange={(e) => handleInputChange(e, 'PrenatalCheckUpHours')}/>
+                        </Grid>
+                        <Grid item xs={3}>
+                            <InputLabel shrink htmlFor="bootstrap-input">
+                                加班假餘時
+                            </InputLabel>       
+                            <TextField id="OverTimeHours" 
+                                type="search" size="small"
+                                value={staff.OverTimeHours}
+                                onChange={(e) => handleInputChange(e, 'OverTimeHours')}/>
+                        </Grid>
+
                         <Grid item xs={3}>
                             <InputLabel shrink htmlFor="bootstrap-input">
                                 已入職日
@@ -639,14 +835,15 @@ export default function StaffManage() {
                             </InputLabel>       
                             <TextField id="StayInCompanyDays" 
                                 type="search" size="small"
-                                value={staff.Auth}/>
+                                value={staff.Auth}
+                                onChange={(e) => handleInputChange(e, 'StayInCompanyDays')}/>
                         </Grid>
                     </Grid>
                 </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={handleClose}>Subscribe</Button>
+          <Button onClick={handleClose}>取消</Button>
+          <Button onClick={handleSubmit}>{isCreate?'新增':'修改'}</Button>
         </DialogActions>
       </Dialog>
     </>
