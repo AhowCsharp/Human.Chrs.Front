@@ -106,7 +106,7 @@ export default function StaffManage() {
             editable: true,
         },
         {
-            field: 'details',
+            field: 'Details',
             headerName: '個人詳細資料',
             width: 200,
             renderCell: (params) => (
@@ -365,8 +365,7 @@ export default function StaffManage() {
         setStaff((prevData) => ({
             ...prevData,
             [propertyName]: value,
-        }));
-    
+        }));   
     };
 
     const handleSubmit = async () => {
@@ -376,17 +375,17 @@ export default function StaffManage() {
             EntryDate: staff.EntryDate.format('YYYY-MM-DD'),
             ResignationDate: staff.ResignationDate.format('YYYY-MM-DD')
         }       
-            try {
-              const response = await axios.post(`${appsetting.apiUrl}/admin/newstaff`, staffRequest,config);
-              if (response.status === 200) {
-                alert('成功');
-                fetchData();
-                handleClose();
-              }
-            } catch (error) {
-              console.error("Error logging in:", error);
-              alert('失敗 欄位有誤');
-            }          
+        try {
+            const response = await axios.post(`${appsetting.apiUrl}/admin/newstaff`, staffRequest,config);
+            if (response.status === 200) {
+            alert('成功');
+            fetchData();
+            handleClose();
+            }
+        } catch (error) {
+            console.error("Error logging in:", error);
+            alert('失敗 欄位有誤');
+        }          
     }
     // const destorySubmit = async (seq) => {
     //     // const config = {

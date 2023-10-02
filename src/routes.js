@@ -16,6 +16,8 @@ import PersonalDetail from './staff/PersonalDetail';
 import StaffManage from './admin/StaffManage';
 import StaffDetail from './admin/StaffDetail';
 import VacationsManage from './admin/VacationsManage';
+import SalaryManage from './admin/SalaryManage';
+import SalaryCalculate from './admin/SalaryCalculate';
 // ----------------------------------------------------------------------
 
 export default function Router() {
@@ -45,14 +47,16 @@ export default function Router() {
       path: '/admin',
       element: <DashboardLayout />,
       children: [
-        { element: <Navigate to="/admin/manage" />, index: true },
+        { element: <Navigate to="/admin/staffmanage" />, index: true },
         { path: 'app', element: <DashboardAppPage /> },
         { path: 'user', element: <UserPage /> },
         { path: 'products', element: <ProductsPage /> },
         { path: 'blog', element: <BlogPage /> },
         { path: 'staffmanage', element: <StaffManage /> },
+        { path: 'salarymanage', element: <SalaryManage /> },
         { path: 'vacationsmanage', element: <VacationsManage /> },
         { path: 'details/:id', element: <StaffDetail /> },
+        { path: 'calculatesalary/:id', element: <SalaryCalculate /> },
       ],
     },
     {

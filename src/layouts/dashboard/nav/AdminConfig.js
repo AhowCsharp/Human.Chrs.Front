@@ -36,6 +36,11 @@ const AdminConfig = [
     path: '/admin/vacationsmanage',
     icon: icon('ic_disabled'),
   },
+  {
+    title: 'salarySetting',
+    path: '/admin/salarymanage',
+    icon: icon('ic_disabled'),
+  },
 ];
 
 export default AdminConfig;
