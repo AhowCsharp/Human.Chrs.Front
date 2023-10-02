@@ -27,8 +27,13 @@ const AdminConfig = [
     icon: icon('ic_blog'),
   },
   {
-    title: 'manage',
-    path: '/admin/manage',
+    title: 'staffs',
+    path: '/admin/staffmanage',
+    icon: icon('ic_disabled'),
+  },
+  {
+    title: 'vacations',
+    path: '/admin/vacationsmanage',
     icon: icon('ic_disabled'),
   },
 ];
