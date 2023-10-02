@@ -28,6 +28,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import FormLabel from '@mui/material/FormLabel';
 import Stack from '@mui/material/Stack';
 import Snackbar from '@mui/material/Snackbar';
+import Switch from '@mui/material/Switch';
 import dayjs from 'dayjs';
 import { DemoContainer, DemoItem } from '@mui/x-date-pickers/internals/demo';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -56,27 +57,34 @@ export default function SalaryCalculate() {
     const { id } = useParams();
     const [calculateResult,setCalculateResult] = useState(null);
     const [salaryRequest,setSalaryRequest] = useState({
-      BasicSalary:0,
-      FullCheckInMoney:0,
-      OverTimeHours:0,
-      Bonus:0,
-      SickHours:0,
-      ThingHours:0,
-      MenstruationHours:0,
-      ChildbirthHours:0,
-      TackeCareBabyHours:0,
-      IncomeTax:0,
-      HealthInsurance:0,
-      WorkerInsurance:0,
-      EmployeeRetirement:0,
-      SupplementaryPremium:0, //
-      HealthInsuranceFromCompany:0,
-      WorkerInsuranceFromCompany:0,
-      EmployeeRetirementFromCompany:0,
-      AdvanceFundFromCompany:0,
+      BasicSalary:null,
+      FullCheckInMoney:null,
+      OverTimeHours:null,
+      Bonus:null,
+      SickHours:null,
+      ThingHours:null,
+      MenstruationHours:null,
+      ChildbirthHours:null,
+      TakeCareBabyHours:null,
+      IncomeTax:null,
+      HealthInsurance:null,
+      WorkerInsurance:null,
+      EmployeeRetirement:null,
+      SupplementaryPremium:null, //
+      HealthInsuranceFromCompany:null,
+      WorkerInsuranceFromCompany:null,
+      EmployeeRetirementFromCompany:null,
+      AdvanceFundFromCompany:null,
+      EarlyOrLateAmount:null, // C#補這欄位
+      OutLocationAmount:null,
+      OverTimeMoney:null // C#補這欄位
     });
+    const [plusTotal,setPlusTotal]= useState(0);
+    const [minusTotal,setMinusTotal]= useState(0);
+    const [companyCostTotal,setCompanyCostTotal]= useState(0);
     const [paymoeny,setPaymoney] = useState(0);
-    const fetchStaffDetailData = async () => {
+    const [checked, setChecked] = React.useState(true);
+    const fetchStaffSalaryData = async () => {
         try {       
           const response = await axios.get(`${appsetting.apiUrl}/admin/paymoeny?id=${id}`,config);
           // 檢查響應的結果，並設置到 state
@@ -90,35 +98,89 @@ export default function SalaryCalculate() {
         }
     };
     useEffect(() => {
-        fetchStaffDetailData();
+        fetchStaffSalaryData();
     }, []); 
+    // useEffect(() => {
+    //   if(calculateResult !== null) {
+    //     setSalaryRequest((prevSalaryRequest) => ({
+    //       ...prevSalaryRequest, // 保留原有的属性
+    //       BasicSalary: calculateResult.BasicSalary,
+    //       FullCheckInMoney:calculateResult.FullCheckInMoney,
+    //       SickHours:calculateResult.TotalSickHours,
+    //       ThingHours:calculateResult.TotalThingHours,
+    //       MenstruationHours:calculateResult.TotalMenstruationHours,
+    //       ChildbirthHours:calculateResult.TotalChildbirthHours,
+    //       TakeCareBabyHours:calculateResult.TotalTackeCareBabyHours,
+
+    //     }));
+    //   }
+    // }, [calculateResult]); 
     const navigate = useNavigate();
 
     const handleBackClick = () => {
         // 在版本6中使用 navigate 函數進行導航
-        navigate(`/admin/manage`);
+        navigate(`/admin/salarymanage`);
+    };
+    const handleSwitch = (event) => {
+      setChecked(event.target.checked);
+    };
+  
+    const handleInputChange = (event, propertyName) => {
+        const value = event.target ? event.target.value : event;
+            // eslint-disable-next-line no-restricted-globals
+        if(!isNaN(value)) {
+          setSalaryRequest((prevData) => ({
+            ...prevData,
+            [propertyName]: Number(value),
+          })); 
+          
+        }else {
+          alert('請輸入數字')
+        }      
     };
 
-    // const handleInputChange = (event, propertyName) => {
-    //   const value = event.target ? event.target.value : event;
-    //   if(propertyName === 'HasCrimeRecord') {
-    //       // eslint-disable-next-line no-restricted-globals
-    //       if(!isNaN(value)) {
-    //         setStaffInfo((prevData) => ({
-    //           ...prevData,
-    //           [propertyName]: Number(value),
-    //         })); 
-    //       }else {
-    //         alert('請輸入數字')
-    //       }
- 
-    //   }else {
-    //     setStaffInfo((prevData) => ({
-    //       ...prevData,
-    //       [propertyName]: value,
-    //   }));
-    //   }
-    // };
+    const handleFinalResult = () => {
+      if(salaryRequest.BasicSalary !== null && salaryRequest.Bonus !== null && salaryRequest.FullCheckInMoney !== null && !checked) {
+        setPlusTotal(salaryRequest.BasicSalary+salaryRequest.Bonus+salaryRequest.FullCheckInMoney)
+      }
+      if(salaryRequest.BasicSalary !== null && salaryRequest.Bonus !== null && salaryRequest.FullCheckInMoney !== null && checked && salaryRequest.OverTimeHours !== null) {
+        setPlusTotal(salaryRequest.BasicSalary+salaryRequest.Bonus+salaryRequest.FullCheckInMoney+salaryRequest.OverTimeHours)
+      }
+      if(salaryRequest.HealthInsuranceFromCompany !== null && salaryRequest.WorkerInsuranceFromCompany !== null&& salaryRequest.AdvanceFundFromCompany !== null && salaryRequest.EmployeeRetirementFromCompany !== null) {
+        setCompanyCostTotal(salaryRequest.HealthInsuranceFromCompany+salaryRequest.WorkerInsuranceFromCompany+salaryRequest.AdvanceFundFromCompany+salaryRequest.EmployeeRetirementFromCompany)
+      }
+
+      if (
+        salaryRequest.SickHours !== null &&
+        salaryRequest.ThingHours !== null &&
+        salaryRequest.MenstruationHours !== null &&
+        salaryRequest.ChildbirthHours !== null &&
+        salaryRequest.TakeCareBabyHours !== null &&
+        salaryRequest.IncomeTax !== null &&
+        salaryRequest.HealthInsurance !== null &&
+        salaryRequest.WorkerInsurance !== null &&
+        salaryRequest.EmployeeRetirement !== null &&
+        salaryRequest.EarlyOrLateAmount !== null &&
+        salaryRequest.OutLocationAmount !== null &&
+        salaryRequest.SupplementaryPremium !== null
+      ) {
+        // 计算 setMinusTotal 的值
+        setMinusTotal(
+            salaryRequest.SickHours +
+            salaryRequest.OutLocationAmount +
+            salaryRequest.EarlyOrLateAmount +
+            salaryRequest.ThingHours +
+            salaryRequest.MenstruationHours +
+            salaryRequest.ChildbirthHours +
+            salaryRequest.TakeCareBabyHours +
+            salaryRequest.IncomeTax +
+            salaryRequest.HealthInsurance +
+            salaryRequest.WorkerInsurance +
+            salaryRequest.EmployeeRetirement +
+            salaryRequest.SupplementaryPremium
+        );
+      }
+    };
   //   const handleSubmit = async () => {   
   //     console.log(staffInfo)
   //     if (staffInfo.HasCrimeRecord !== 0 && staffInfo.HasCrimeRecord !== 1) {
@@ -147,10 +209,10 @@ export default function SalaryCalculate() {
     <Box
       sx={{
         margin:'auto',
-        width: '95%',
-        height: 1000,
+        width: '100%',
       }}
-    >     {calculateResult !== null ? <Box sx={{ flexGrow: 1 }}>
+    >     {calculateResult !== null ? 
+          <Box sx={{ flexGrow: 1 }}>
             <Grid container spacing={3}>
               <Grid item xs={12} style={{display:'flex',justifyContent:'center',marginBottom:'2%'}}>      
                   <Typography variant="h2" component="h2">
@@ -170,6 +232,7 @@ export default function SalaryCalculate() {
                 <TextField
                   id="outlined-helperText"
                   label="姓名"
+                  variant="standard"
                   InputProps={{
                     readOnly: true,
                   }}
@@ -180,6 +243,7 @@ export default function SalaryCalculate() {
                 <TextField
                   id="outlined-helperText"
                   label="員編"
+                  variant="standard"
                   InputProps={{
                     readOnly: true,
                   }}
@@ -190,6 +254,7 @@ export default function SalaryCalculate() {
                 <TextField
                   id="outlined-helperText"
                   label="基本薪資"
+                  variant="standard"
                   InputProps={{
                     readOnly: true,
                   }}
@@ -200,6 +265,7 @@ export default function SalaryCalculate() {
                 <TextField
                   id="outlined-helperText"
                   label="全勤獎金"
+                  variant="standard"
                   InputProps={{
                     readOnly: true,
                   }}
@@ -210,6 +276,7 @@ export default function SalaryCalculate() {
                 <TextField
                   id="outlined-helperText"
                   label="獎金%數"
+                  variant="standard"
                   InputProps={{
                     readOnly: true,
                   }}
@@ -220,6 +287,7 @@ export default function SalaryCalculate() {
                 <TextField
                   id="outlined-helperText"
                   label="遲到天數"
+                  variant="standard"
                   InputProps={{
                     readOnly: true,
                   }}
@@ -230,6 +298,7 @@ export default function SalaryCalculate() {
                 <TextField
                   id="outlined-helperText"
                   label="遲到總分鐘"
+                  variant="standard"
                   InputProps={{
                     readOnly: true,
                   }}
@@ -240,6 +309,7 @@ export default function SalaryCalculate() {
                 <TextField
                   id="outlined-helperText"
                   label="早退天數"
+                  variant="standard"
                   InputProps={{
                     readOnly: true,
                   }}
@@ -250,6 +320,7 @@ export default function SalaryCalculate() {
                 <TextField
                   id="outlined-helperText"
                   label="早退總分鐘"
+                  variant="standard"
                   InputProps={{
                     readOnly: true,
                   }}
@@ -260,6 +331,7 @@ export default function SalaryCalculate() {
                 <TextField
                   id="outlined-helperText"
                   label="上班定位外天數"
+                  variant="standard"
                   InputProps={{
                     readOnly: true,
                   }}
@@ -270,6 +342,7 @@ export default function SalaryCalculate() {
                 <TextField
                   id="outlined-helperText"
                   label="下班定位外天數"
+                  variant="standard"
                   InputProps={{
                     readOnly: true,
                   }}
@@ -280,6 +353,7 @@ export default function SalaryCalculate() {
                 <TextField
                   id="outlined-helperText"
                   label="特休時數"
+                  variant="standard"
                   InputProps={{
                     readOnly: true,
                   }}
@@ -290,6 +364,7 @@ export default function SalaryCalculate() {
                 <TextField
                   id="outlined-helperText"
                   label="病假時數"
+                  variant="standard"
                   InputProps={{
                     readOnly: true,
                   }}
@@ -300,6 +375,7 @@ export default function SalaryCalculate() {
                 <TextField
                   id="outlined-helperText"
                   label="事假時數"
+                  variant="standard"
                   InputProps={{
                     readOnly: true,
                   }}
@@ -310,6 +386,7 @@ export default function SalaryCalculate() {
                 <TextField
                   id="outlined-helperText"
                   label="產假時數"
+                  variant="standard"
                   InputProps={{
                     readOnly: true,
                   }}
@@ -320,6 +397,7 @@ export default function SalaryCalculate() {
                 <TextField
                   id="outlined-helperText"
                   label="喪假時數"
+                  variant="standard"
                   InputProps={{
                     readOnly: true,
                   }}
@@ -330,6 +408,7 @@ export default function SalaryCalculate() {
                 <TextField
                   id="outlined-helperText"
                   label="公假時數"
+                  variant="standard"
                   InputProps={{
                     readOnly: true,
                   }}
@@ -340,6 +419,7 @@ export default function SalaryCalculate() {
                 <TextField
                   id="outlined-helperText"
                   label="工傷病假時數"
+                  variant="standard"
                   InputProps={{
                     readOnly: true,
                   }}
@@ -350,6 +430,7 @@ export default function SalaryCalculate() {
                 <TextField
                   id="outlined-helperText"
                   label="婚假時數"
+                  variant="standard"
                   InputProps={{
                     readOnly: true,
                   }}
@@ -360,6 +441,7 @@ export default function SalaryCalculate() {
                 <TextField
                   id="outlined-helperText"
                   label="生理假時數"
+                  variant="standard"
                   InputProps={{
                     readOnly: true,
                   }}
@@ -370,6 +452,7 @@ export default function SalaryCalculate() {
                 <TextField
                   id="outlined-helperText"
                   label="安胎假時數"
+                  variant="standard"
                   InputProps={{
                     readOnly: true,
                   }}
@@ -380,6 +463,7 @@ export default function SalaryCalculate() {
                 <TextField
                   id="outlined-helperText"
                   label="育嬰假時數"
+                  variant="standard"
                   InputProps={{
                     readOnly: true,
                   }}
@@ -390,6 +474,7 @@ export default function SalaryCalculate() {
                 <TextField
                   id="outlined-helperText"
                   label="產檢假時數"
+                  variant="standard"
                   InputProps={{
                     readOnly: true,
                   }}
@@ -400,107 +485,311 @@ export default function SalaryCalculate() {
                 <TextField
                   id="outlined-helperText"
                   label="加班時數"
+                  variant="standard"
                   InputProps={{
                     readOnly: true,
                   }}
                   value={calculateResult.OverTimeHours}
                 />
               </Grid>
-
-              <Grid item xs={12} style={{marginTop:'1%'}}>             
-                  <TextField
+              <Grid item xs={12} style={{margin:'1%'}}/>
+              <Grid item xs={2}> 
+                  是否將加班時數轉成加班費     
+                  <Switch
+                    checked={checked}
+                    onChange={handleSwitch}
+                    inputProps={{ 'aria-label': 'controlled' }}
+                  />
+              </Grid>
+              <Grid item xs={10} />
+              <Grid item xs={1}>
+                  薪資加項
+              </Grid>
+              <Grid item xs={2}>
+                <TextField
                   id="outlined-helperText"
-                  style={{width:'100px',marginTop:'1%'}}
+                  style={{marginTop:'3%'}}
                   label="基本薪資"
                   value={salaryRequest.BasicSalary}
+                  onChange={(e) => handleInputChange(e, 'BasicSalary')}
                 />
-                                +
+              </Grid>
+              <Grid item xs={1}>
+                +
+              </Grid>
+              <Grid item xs={2}>
+                <TextField
+                    id="outlined-helperText"
+                    style={{marginTop:'3%'}}
+                    label="全勤獎金"
+                    value={salaryRequest.FullCheckInMoney}
+                    onChange={(e) => handleInputChange(e, 'FullCheckInMoney')}
+                  />
+              </Grid>
+              <Grid item xs={1}>
+                +
+              </Grid>
+              <Grid item xs={2}>
+                <TextField
+                    id="outlined-helperText"
+                    style={{marginTop:'3%'}}
+                    label="業績獎金"
+                    value={salaryRequest.Bonus}
+                    onChange={(e) => handleInputChange(e, 'Bonus')}
+                  />
+              </Grid>
+              {checked?
+                <>
+                  <Grid item xs={1}>
+                    +
+                  </Grid>
+                  <Grid item xs={2}>
+                    <TextField
+                        id="outlined-helperText"
+                        style={{marginTop:'3%'}}
+                        label="加班費"
+                        value={salaryRequest.OverTimeMoney}
+                        onChange={(e) => handleInputChange(e, 'OverTimeMoney')}
+                      />
+                  </Grid>
+                </>:null
+              }
+              <Grid item xs={1}>
+                =
+              </Grid>
+              <Grid item xs={2}>
+                <TextField
+                    id="outlined-helperText"
+                    style={{marginTop:'1%'}}
+                    label="薪資加項總額"
+                    value={plusTotal}
+                  />
+              </Grid>
+              <Grid item xs={12} style={{margin:'1%'}}/>
+
+              <Grid item xs={1}>
+                  薪資減項
+              </Grid>
+              <Grid item xs={2}>
                 <TextField
                   id="outlined-helperText"
-                  style={{width:'100px',marginTop:'1%'}}
-                  label="全勤獎金"
-                  value={salaryRequest.FullCheckInMoney}
-                />
-                                +
-                <TextField
-                  id="outlined-helperText"
-                  style={{width:'100px',marginTop:'1%'}}
-                  label="業績獎金"
-                  value={salaryRequest.Bonus}
-                />
-                                -
-                <TextField
-                  id="outlined-helperText"
-                  style={{width:'100px',marginTop:'1%'}}
+                  style={{marginTop:'3%'}}
                   label="病假扣款"
                   value={salaryRequest.SickHours}
+                  onChange={(e) => handleInputChange(e, 'SickHours')}
                 />
-                                -
+              </Grid>
+              <Grid item xs={1}>
+                +
+              </Grid>
+              <Grid item xs={2}>
                 <TextField
                   id="outlined-helperText"
-                  style={{width:'100px',marginTop:'1%'}}
+                  style={{marginTop:'3%'}}
                   label="事假扣款"
                   value={salaryRequest.ThingHours}
+                  onChange={(e) => handleInputChange(e, 'ThingHours')}
                 />
-                                -
+              </Grid>
+              <Grid item xs={1}>
+                +
+              </Grid>
+              <Grid item xs={2}>
                 <TextField
                   id="outlined-helperText"
-                  style={{width:'100px',marginTop:'1%'}}
+                  style={{marginTop:'3%'}}
                   label="生理假扣款"
                   value={salaryRequest.MenstruationHours}
+                  onChange={(e) => handleInputChange(e, 'MenstruationHours')}
                 />
-                                -
+              </Grid>
+              <Grid item xs={1}>
+                +
+              </Grid>
+              <Grid item xs={2}>
                 <TextField
                   id="outlined-helperText"
-                  style={{width:'100px',marginTop:'1%'}}
+                  style={{marginTop:'3%'}}
                   label="產假扣款"
                   value={salaryRequest.ChildbirthHours}
+                  onChange={(e) => handleInputChange(e, 'ChildbirthHours')}
                 /> 
-                                -
+              </Grid>
+              <Grid item xs={1}>
+                +
+              </Grid>
+              <Grid item xs={2}>
                 <TextField
                   id="outlined-helperText"
-                  style={{width:'100px',marginTop:'1%'}}
+                  style={{marginTop:'3%'}}
                   label="育嬰假扣款"
-                  value={salaryRequest.TackeCareBabyHours}
+                  value={salaryRequest.TakeCareBabyHours}
+                  onChange={(e) => handleInputChange(e, 'TakeCareBabyHours')}
                 />
-                                -
+              </Grid>
+              <Grid item xs={1}>
+                +
+              </Grid>
+              <Grid item xs={2}>
                 <TextField
                   id="outlined-helperText"
-                  style={{width:'100px',marginTop:'1%'}}
-                  label="薪資所得稅代扣"
+                  style={{marginTop:'3%'}}
+                  label="遲到早退扣款"
+                  value={salaryRequest.EarlyOrLateAmount}
+                  onChange={(e) => handleInputChange(e, 'EarlyOrLateAmount')}
+                />
+              </Grid>
+              <Grid item xs={1}>
+                +
+              </Grid>
+              <Grid item xs={2}>
+                <TextField
+                  id="outlined-helperText"
+                  style={{marginTop:'3%'}}
+                  label="打卡超出範圍扣款"
+                  value={salaryRequest.OutLocationAmount}
+                  onChange={(e) => handleInputChange(e, 'OutLocationAmount')}
+                />
+              </Grid>
+              <Grid item xs={1}>
+                +
+              </Grid>
+              <Grid item xs={2}>
+                <TextField
+                  id="outlined-helperText"
+                  style={{marginTop:'3%'}}
+                  label="所得稅代扣"
                   value={salaryRequest.IncomeTax}
-                />   
-                                -
+                  onChange={(e) => handleInputChange(e, 'IncomeTax')}
+                />
+              </Grid>
+              <Grid item xs={1}>
+                +
+              </Grid>
+              <Grid item xs={2}>
                 <TextField
                   id="outlined-helperText"
-                  style={{width:'100px',marginTop:'1%'}}
+                  style={{marginTop:'3%'}}
                   label="健保費"
                   value={salaryRequest.HealthInsurance}
+                  onChange={(e) => handleInputChange(e, 'HealthInsurance')}
                 />
-                                -
+              </Grid>
+              <Grid item xs={1}>
+                +
+              </Grid>
+              <Grid item xs={2}>
                 <TextField
                   id="outlined-helperText"
-                  style={{width:'100px',marginTop:'1%'}}
+                  style={{marginTop:'3%'}}
                   label="勞保費"
                   value={salaryRequest.WorkerInsurance}
-                />   
-                                -
+                  onChange={(e) => handleInputChange(e, 'WorkerInsurance')}
+                />
+              </Grid>
+              <Grid item xs={1}>
+                +
+              </Grid>
+              <Grid item xs={2}>
                 <TextField
                   id="outlined-helperText"
-                  style={{width:'100px',marginTop:'1%'}}
+                  style={{marginTop:'3%'}}
                   label="員工勞退"
                   value={salaryRequest.EmployeeRetirement}
-                />   
-                                -
+                  onChange={(e) => handleInputChange(e, 'EmployeeRetirement')}
+                />
+              </Grid>              
+              <Grid item xs={1}>
+                +
+              </Grid>
+              <Grid item xs={2}>
                 <TextField
                   id="outlined-helperText"
-                  style={{width:'100px',marginTop:'1%'}}
+                  style={{marginTop:'3%'}}
                   label="補充保費"
                   value={salaryRequest.SupplementaryPremium}
-                />         
+                  onChange={(e) => handleInputChange(e, 'SupplementaryPremium')}
+                />
               </Grid>
-
-
+              <Grid item xs={1}>
+                =
+              </Grid>
+              <Grid item xs={3}>
+                <TextField
+                  id="outlined-helperText"
+                  style={{marginTop:'3%'}}
+                  label="薪資扣項總和"
+                  value={minusTotal}
+                />
+              </Grid>
+              <Grid item xs={12} style={{margin:'1%'}}/>
+              <Grid item xs={1}>
+                  雇主負擔
+              </Grid>
+              <Grid item xs={1}>
+                <TextField
+                  id="outlined-helperText"
+                  style={{width:'100px',marginTop:'3%'}}
+                  label="健保費"
+                  value={salaryRequest.HealthInsuranceFromCompany}
+                  onChange={(e) => handleInputChange(e, 'HealthInsuranceFromCompany')}
+                />
+              </Grid>
+              <Grid item xs={1}>
+                +
+              </Grid>
+              <Grid item xs={1}>
+                <TextField
+                  id="outlined-helperText"
+                  style={{marginTop:'3%'}}
+                  label="勞保費"
+                  value={salaryRequest.WorkerInsuranceFromCompany}
+                  onChange={(e) => handleInputChange(e, 'WorkerInsuranceFromCompany')}
+                />
+              </Grid>
+              <Grid item xs={1}>
+                +
+              </Grid>
+              <Grid item xs={1}>
+                <TextField
+                  id="outlined-helperText"
+                  style={{width:'100px',marginTop:'3%'}}
+                  label="勞退提繳"
+                  value={salaryRequest.EmployeeRetirementFromCompany}
+                  onChange={(e) => handleInputChange(e, 'EmployeeRetirementFromCompany')}
+                />
+              </Grid>
+              <Grid item xs={1}>
+                +
+              </Grid>
+              <Grid item xs={1}>
+                <TextField
+                  id="outlined-helperText"
+                  style={{marginTop:'3%'}}
+                  label="墊償基金"
+                  value={salaryRequest.AdvanceFundFromCompany}
+                  onChange={(e) => handleInputChange(e, 'AdvanceFundFromCompany')}
+                /> 
+              </Grid>
+              <Grid item xs={1}>
+                =
+              </Grid>
+              <Grid item xs={2}>
+                <TextField
+                  id="outlined-helperText"
+                  style={{marginTop:'3%'}}
+                  label="企業負擔總額"
+                  value={companyCostTotal}
+                /> 
+              </Grid>
+              <Grid item xs={12} style={{display:'flex',justifyContent:'center',marginBottom:'2%'}}>     
+                <Button variant="contained" startIcon={<ReplyIcon />} onClick={handleBackClick} style={{ marginRight: '10px' }}>
+                  返回
+                </Button> 
+                <Button variant="contained" startIcon={<SendIcon />} onClick={handleFinalResult}>
+                  計算總額
+                </Button>
+              </Grid>
 
               <Grid item xs={12} style={{fontSize:'14px'}}>
                   薪資加項 = 基本薪資 {calculateResult.SalarySetting.BasicSalary}+全勤獎金 {calculateResult.SalarySetting.FullCheckInMoney}
@@ -521,8 +810,23 @@ export default function SalaryCalculate() {
                   3. 妊娠2個月以上，未滿3個月流產 = 產假總時數 {calculateResult.TotalChildbirthHours} * 每小時時薪<br/>
                   4. 妊娠未滿2個月流產 = 產假總時數 {calculateResult.TotalChildbirthHours} * 每小時時薪<br/>               
               </Grid>
-
-
+              <Grid item xs={12} style={{fontSize:'14px'}}>
+                  健保費負擔比例：<br/>
+                  一般公司行號受僱員工為健保第一類身分，健保費用雇主：勞工：政府分擔比例＝6：3：1，因此雇主應負擔60%、勞工應負擔30%、政府應負擔10%保險費。
+              </Grid>
+              <Grid item xs={12} style={{fontSize:'14px'}}>
+                  健保費負擔金額計算: <br/>
+                  如果員工有眷屬依附在其名下保健保，還要再加上眷屬人數來計算健保費用，若超過3位眷屬則最多計算3人，因此最多只會計算4人的健保費。<br/> 
+                  員工自行負擔健保費用計算公式為「投保薪資×健保費率（5.17%）×負擔比例（積數先四捨五入）X（本人+眷屬人數）。（以元為單位，角以下四捨五入）」。
+              </Grid>
+              <Grid item xs={12} style={{fontSize:'14px'}}>
+                  勞就保費負擔比例<br/>
+                  勞保局已公告明年（2023年）勞保普通事故費率將調升0.5%，從現行的11.5%調升為12%，因此明年的勞就保費率為12%（含勞保普通事故保險費率11%、就業保險費率1%），而一般公司行號勞保費用雇主：勞工：政府分擔比例=7：2：1，因此雇主應負擔70%、勞工應負擔20%、政府應負擔10%保險費。
+              </Grid>
+              <Grid item xs={12} style={{fontSize:'14px'}}>
+                  勞就保費負擔金額計算: <br/>
+                  勞保負擔費用計算公式為「月投保薪資×勞工保險費率（11%）×負擔比例。（以元為單位，角以下四捨五入）」、就保負擔費用計算公式為「月投保薪資×就業保險費率（1%）×負擔比例。（以元為單位，角以下四捨五入）」。
+              </Grid>
               {/* <Grid item xs={12} style={{display:'flex',justifyContent:'center',marginBottom:'2%'}}>     
                 <Button variant="contained" startIcon={<ReplyIcon />} onClick={handleBackClick} style={{ marginRight: '10px' }}>
                   返回

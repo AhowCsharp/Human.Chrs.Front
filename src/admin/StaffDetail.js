@@ -95,7 +95,7 @@ export default function StaffDetail() {
 
     const handleBackClick = () => {
         // 在版本6中使用 navigate 函數進行導航
-        navigate(`/admin/manage`);
+        navigate(`/admin/staffmanage`);
     };
 
     const handleInputChange = (event, propertyName) => {
