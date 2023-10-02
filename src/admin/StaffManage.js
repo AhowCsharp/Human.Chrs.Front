@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate  } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
@@ -9,6 +9,7 @@ import TextField from '@mui/material/TextField';
 import { alpha, styled } from '@mui/material/styles';
 import InputBase from '@mui/material/InputBase';
 import InputLabel from '@mui/material/InputLabel';
+import Typography from '@mui/material/Typography';
 import FormControl from '@mui/material/FormControl';
 import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
@@ -163,9 +164,12 @@ export default function StaffManage() {
         StayInCompanyDays: 0,
         Gender: gender
     });
-    
-    
+    const navigate = useNavigate();
 
+    const handleDetailsClick = (id) => {
+        // 在版本6中使用 navigate 函數進行導航
+        navigate(`/admin/details/${id}`);
+    };
     // const navigate = useNavigate();
 
     // useEffect(() => {
@@ -174,10 +178,6 @@ export default function StaffManage() {
     //         navigate('/login');
     //     }
     // }, [navigate]);
-    function handleDetailsClick(id) {
-        console.log("查看詳細資料的ID:", id);
-        // 根据ID做您想要的操作，例如导航到详细页面、打开模态框等。
-    }
     const handleClickOpen = (status) => {
         setIsCreate(status)
         setOpen(true);
@@ -417,7 +417,13 @@ export default function StaffManage() {
         height: 700,
       }}
     >
-        <Grid container spacing={3} style={{marginBottom:'1%'}}>
+
+        <Grid container spacing={0} style={{marginBottom:'1%'}}>
+            <Grid item xs={12} style={{display:'flex',justifyContent:'center'}}>      
+                <Typography variant="h2" component="h2">
+                    員工列表
+                </Typography>
+            </Grid>
             <Grid item xs={6}>      
                 <StaffSearch rows={rows} setFilterRows={setFilterRows}/>
             </Grid>
@@ -576,7 +582,7 @@ export default function StaffManage() {
                             <Select
                             labelId="demo-simple-select-required-label"
                             id="demo-simple-select-required"
-                            value={staff.EmploymentTypeId}
+                            value={staff.EmploymentTypeId || 1}
                             label="typeId"
                             size="small"
                             style={{width:'100%'}}
@@ -594,7 +600,7 @@ export default function StaffManage() {
                             <Select
                                 labelId="demo-simple-select-required-label"
                                 id="demo-simple-select-required"
-                                value={staff.DepartmentId}
+                                value={staff.DepartmentId || 1}
                                 label="typeId"
                                 size="small"
                                 style={{width:'100%'}}

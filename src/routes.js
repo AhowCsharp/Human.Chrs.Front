@@ -14,6 +14,7 @@ import PersonalInfo from './staff/PersonalInfo';
 import PersonalDetail from './staff/PersonalDetail';
 
 import StaffManage from './admin/StaffManage';
+import StaffDetail from './admin/StaffDetail';
 // ----------------------------------------------------------------------
 
 export default function Router() {
@@ -49,6 +50,7 @@ export default function Router() {
         { path: 'products', element: <ProductsPage /> },
         { path: 'blog', element: <BlogPage /> },
         { path: 'manage', element: <StaffManage /> },
+        { path: 'details/:id', element: <StaffDetail /> },
       ],
     },
     {
