@@ -42,6 +42,7 @@ import Slide from '@mui/material/Slide';
 import { DataGrid } from '@mui/x-data-grid';
 import appsetting from '../Appsetting';
 import StaffSearch from './StaffSearch';
+import SalaryDetailList from './SalaryDetailList';
 
 
 
@@ -83,7 +84,16 @@ export default function SalaryCalculate() {
     const [minusTotal,setMinusTotal]= useState(0);
     const [companyCostTotal,setCompanyCostTotal]= useState(0);
     const [paymoeny,setPaymoney] = useState(0);
+    const [finalTotal,setFinalResult] = useState(0);
     const [checked, setChecked] = React.useState(true);
+    const [open, setOpen] = React.useState(false);
+
+    const handleClickOpen = () => {
+      setOpen(true);
+    };
+    const handleClose = () => {
+      setOpen(false);
+    };
     const fetchStaffSalaryData = async () => {
         try {       
           const response = await axios.get(`${appsetting.apiUrl}/admin/paymoeny?id=${id}`,config);
@@ -181,6 +191,13 @@ export default function SalaryCalculate() {
         );
       }
     };
+
+    const handlePostResult = () => {
+      if(plusTotal !== 0 && minusTotal !== 0 && companyCostTotal !== 0) {
+        setFinalResult(plusTotal+minusTotal);
+      }
+      
+    };
   //   const handleSubmit = async () => {   
   //     console.log(staffInfo)
   //     if (staffInfo.HasCrimeRecord !== 0 && staffInfo.HasCrimeRecord !== 1) {
@@ -224,9 +241,30 @@ export default function SalaryCalculate() {
                   id="outlined-helperText"
                   label="總薪資"
                   value={paymoeny}
-                  helperText="請業主根據下方資訊自行計算薪資"
+                  helperText="請業主將下方資料填妥後再計算總額"
                   onChange={(e) => setPaymoney(e.target.value)}
                 />
+              </Grid>
+              <Grid item xs={12} style={{display:'flex',justifyContent:'center',marginBottom:'2%'}}>     
+                <Button variant="contained" startIcon={<ReplyIcon />} onClick={handleClickOpen} style={{ marginRight: '10px' }}>
+                  送出該薪資單
+                </Button> 
+                <Button variant="contained" startIcon={<SendIcon />} onClick={handlePostResult}>
+                  計算最終總額
+                </Button>
+                <Dialog open={open} onClose={handleClose}>
+                  <DialogTitle>確定送出該薪資單嗎?</DialogTitle>
+                  <DialogContent>
+                    <DialogContentText>
+                      請詳細確認各種細項，金額是否正確，請勿違反勞基法
+                    </DialogContentText>
+                    <SalaryDetailList/>
+                  </DialogContent>
+                  <DialogActions>
+                    <Button onClick={handleClose}>Cancel</Button>
+                    <Button onClick={handleClose}>Subscribe</Button>
+                  </DialogActions>
+                </Dialog>
               </Grid>
               <Grid item xs={2}>
                 <TextField

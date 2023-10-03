@@ -16,6 +16,7 @@ import PersonalDetail from './staff/PersonalDetail';
 import StaffManage from './admin/StaffManage';
 import StaffDetail from './admin/StaffDetail';
 import VacationsManage from './admin/VacationsManage';
+import OvertTimeManage from './admin/OvertTimeManage';
 import SalaryManage from './admin/SalaryManage';
 import SalaryCalculate from './admin/SalaryCalculate';
 // ----------------------------------------------------------------------
@@ -55,6 +56,7 @@ export default function Router() {
         { path: 'staffmanage', element: <StaffManage /> },
         { path: 'salarymanage', element: <SalaryManage /> },
         { path: 'vacationsmanage', element: <VacationsManage /> },
+        { path: 'overtimesmanage', element: <OvertTimeManage /> },
         { path: 'details/:id', element: <StaffDetail /> },
         { path: 'calculatesalary/:id', element: <SalaryCalculate /> },
       ],

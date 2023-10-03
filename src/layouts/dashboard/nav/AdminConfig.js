@@ -37,6 +37,11 @@ const AdminConfig = [
     icon: icon('ic_disabled'),
   },
   {
+    title: 'overtimes',
+    path: '/admin/overtimesmanage',
+    icon: icon('ic_disabled'),
+  },
+  {
     title: 'salarySetting',
     path: '/admin/salarymanage',
     icon: icon('ic_disabled'),
