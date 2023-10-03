@@ -37,6 +37,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { MobileDatePicker } from '@mui/x-date-pickers/MobileDatePicker';
 import { DesktopDatePicker } from '@mui/x-date-pickers/DesktopDatePicker';
 import { StaticDatePicker } from '@mui/x-date-pickers/StaticDatePicker';
+import CalculateIcon from '@mui/icons-material/Calculate';
 import Select from '@mui/material/Select';
 import Slide from '@mui/material/Slide';
 import { DataGrid } from '@mui/x-data-grid';
@@ -44,7 +45,9 @@ import appsetting from '../Appsetting';
 import StaffSearch from './StaffSearch';
 import SalaryDetailList from './SalaryDetailList';
 
-
+const currentDate = new Date();      // 获取当前日期
+currentDate.setMonth(currentDate.getMonth() - 1);   // 将日期设置为上个月
+const lastMonth = currentDate.getMonth() + 1;       // JavaScript中的月份是从0开始的，所以我们需要+1来获取实际的月份
 
 export default function SalaryCalculate() {
     const config = {
@@ -58,27 +61,28 @@ export default function SalaryCalculate() {
     const { id } = useParams();
     const [calculateResult,setCalculateResult] = useState(null);
     const [salaryRequest,setSalaryRequest] = useState({
-      BasicSalary:null,
-      FullCheckInMoney:null,
-      OverTimeHours:null,
-      Bonus:null,
-      SickHours:null,
-      ThingHours:null,
-      MenstruationHours:null,
-      ChildbirthHours:null,
-      TakeCareBabyHours:null,
-      IncomeTax:null,
-      HealthInsurance:null,
-      WorkerInsurance:null,
-      EmployeeRetirement:null,
-      SupplementaryPremium:null, //
-      HealthInsuranceFromCompany:null,
-      WorkerInsuranceFromCompany:null,
-      EmployeeRetirementFromCompany:null,
-      AdvanceFundFromCompany:null,
-      EarlyOrLateAmount:null, // C#補這欄位
-      OutLocationAmount:null,
-      OverTimeMoney:null // C#補這欄位
+      StaffId:parseInt(id, 10),
+      BasicSalary:0,
+      FullCheckInMoney:0,
+      OverTimeHours:0,
+      Bonus:0,
+      SickHours:0,
+      ThingHours:0,
+      MenstruationHours:0,
+      ChildbirthHours:0,
+      TakeCareBabyHours:0,
+      IncomeTax:0,
+      HealthInsurance:0,
+      WorkerInsurance:0,
+      EmployeeRetirement:0,
+      SupplementaryPremium:0, //
+      HealthInsuranceFromCompany:0,
+      WorkerInsuranceFromCompany:0,
+      EmployeeRetirementFromCompany:0,
+      AdvanceFundFromCompany:0,
+      EarlyOrLateAmount:0, // C#補這欄位
+      OutLocationAmount:0,
+      OverTimeMoney:0 // C#補這欄位
     });
     const [plusTotal,setPlusTotal]= useState(0);
     const [minusTotal,setMinusTotal]= useState(0);
@@ -100,7 +104,12 @@ export default function SalaryCalculate() {
           // 檢查響應的結果，並設置到 state
           if (response.status === 200) {
             setCalculateResult(response.data.Data);
-            console.log(response.data)
+            console.log(response.data.Data)
+            setSalaryRequest((prevSalaryRequest) => ({
+              ...prevSalaryRequest, // 保留原有的属性
+              BasicSalary: response.data.Data.SalarySetting.BasicSalary,
+              FullCheckInMoney:response.data.Data.SalarySetting.FullCheckInMoney,
+            }));
           }
 
         } catch (error) {
@@ -110,44 +119,31 @@ export default function SalaryCalculate() {
     useEffect(() => {
         fetchStaffSalaryData();
     }, []); 
-    // useEffect(() => {
-    //   if(calculateResult !== null) {
-    //     setSalaryRequest((prevSalaryRequest) => ({
-    //       ...prevSalaryRequest, // 保留原有的属性
-    //       BasicSalary: calculateResult.BasicSalary,
-    //       FullCheckInMoney:calculateResult.FullCheckInMoney,
-    //       SickHours:calculateResult.TotalSickHours,
-    //       ThingHours:calculateResult.TotalThingHours,
-    //       MenstruationHours:calculateResult.TotalMenstruationHours,
-    //       ChildbirthHours:calculateResult.TotalChildbirthHours,
-    //       TakeCareBabyHours:calculateResult.TotalTackeCareBabyHours,
 
-    //     }));
-    //   }
-    // }, [calculateResult]); 
     const navigate = useNavigate();
 
     const handleBackClick = () => {
         // 在版本6中使用 navigate 函數進行導航
         navigate(`/admin/salarymanage`);
     };
-    const handleSwitch = (event) => {
-      setChecked(event.target.checked);
+    const handleSwitch = () => {
+      setChecked(!checked);
     };
   
     const handleInputChange = (event, propertyName) => {
-        const value = event.target ? event.target.value : event;
-            // eslint-disable-next-line no-restricted-globals
-        if(!isNaN(value)) {
+      const value = event.target.value;
+  
+      // 使用 Number.isNaN 代替全局的 isNaN
+      if (!Number.isNaN(Number(value)) || value === '') {
           setSalaryRequest((prevData) => ({
-            ...prevData,
-            [propertyName]: Number(value),
-          })); 
-          
-        }else {
-          alert('請輸入數字')
-        }      
-    };
+              ...prevData,
+              [propertyName]: value === '' ? '' : Number(value),
+          }));
+      } else {
+          alert('請輸入數字');
+      }
+  };
+
 
     const handleFinalResult = () => {
       if(salaryRequest.BasicSalary !== null && salaryRequest.Bonus !== null && salaryRequest.FullCheckInMoney !== null && !checked) {
@@ -194,31 +190,50 @@ export default function SalaryCalculate() {
 
     const handlePostResult = () => {
       if(plusTotal !== 0 && minusTotal !== 0 && companyCostTotal !== 0) {
-        setFinalResult(plusTotal+minusTotal);
-      }
-      
+        setFinalResult(plusTotal-minusTotal);
+      }else {
+        alert('請將下方所有欄位填妥再計算');
+      }  
     };
-  //   const handleSubmit = async () => {   
-  //     console.log(staffInfo)
-  //     if (staffInfo.HasCrimeRecord !== 0 && staffInfo.HasCrimeRecord !== 1) {
-  //       alert("無效的值！只允許0或1。");
-  //       return ;
-  //     }
-       
-  //     try {
-  //       const response = await axios.post(`${appsetting.apiUrl}/admin/details`, staffInfo ,config);
-  //       if (response.status === 200) {
-  //       alert('成功');
-  //       fetchStaffDetailData();
-  //       }
-  //   } catch (error) {
-  //       console.error("Error logging in:", error);
-  //       alert('失敗 欄位有誤');
-  //   } 
-  // }
-  const currentDate = new Date();      // 获取当前日期
-  currentDate.setMonth(currentDate.getMonth() - 1);   // 将日期设置为上个月
-  const lastMonth = currentDate.getMonth() + 1;       // JavaScript中的月份是从0开始的，所以我们需要+1来获取实际的月份
+
+    const handleSalarySubmit = async () => {   
+      if(plusTotal === 0 || minusTotal === 0 || companyCostTotal === 0) {
+        alert('請將下方所有欄位填妥再送出');
+        return;
+      }   
+      if(salaryRequest.WorkerInsuranceFromCompany === 0 || salaryRequest.HealthInsuranceFromCompany === 0 || salaryRequest.EmployeeRetirementFromCompany === 0) {
+        alert('請確認雇主負擔部分是否正確  不要觸犯勞基法');
+        return;
+      }   
+      const newSalaryRequest = { ...salaryRequest };
+      newSalaryRequest.SalaryOfMonth = lastMonth;
+      newSalaryRequest.StaffIncomeAmount = plusTotal;
+      newSalaryRequest.StaffActualIncomeAmount = (plusTotal-minusTotal);
+      newSalaryRequest.StaffDeductionAmount= minusTotal;
+      newSalaryRequest.CompanyCostAmount = companyCostTotal;
+      if (checked) {
+          newSalaryRequest.OverTimeHours = calculateResult.OverTimeHours;
+          newSalaryRequest.ChangeOverTimeToMoney = checked;       
+      } else {
+          newSalaryRequest.OverTimeHours = 0;
+          newSalaryRequest.ChangeOverTimeToMoney = checked;
+          newSalaryRequest.OverTimeMoney = 0;
+      }
+  
+  
+      try {
+          const response = await axios.post(`${appsetting.apiUrl}/admin/paymoney`, newSalaryRequest, config);
+          if (response.status === 200) {
+              alert('成功');
+              handleClose();
+          }
+      } catch (error) {
+          console.error("Error logging in:", error);
+          alert('失敗 已重複發放該月薪資');
+      }
+  }
+  
+
 
 
   return (
@@ -240,16 +255,19 @@ export default function SalaryCalculate() {
                 <TextField
                   id="outlined-helperText"
                   label="總薪資"
-                  value={paymoeny}
-                  helperText="請業主將下方資料填妥後再計算總額"
-                  onChange={(e) => setPaymoney(e.target.value)}
+                  value={finalTotal}
+                  style={{width:'200px'}}
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                  helperText="公式為 => 薪資加項 - 薪資減項"
                 />
               </Grid>
               <Grid item xs={12} style={{display:'flex',justifyContent:'center',marginBottom:'2%'}}>     
-                <Button variant="contained" startIcon={<ReplyIcon />} onClick={handleClickOpen} style={{ marginRight: '10px' }}>
+                <Button variant="contained" endIcon={<SendIcon />} onClick={handleClickOpen} style={{ marginRight: '10px' }}>
                   送出該薪資單
                 </Button> 
-                <Button variant="contained" startIcon={<SendIcon />} onClick={handlePostResult}>
+                <Button variant="contained" endIcon={<CalculateIcon />} onClick={handlePostResult}>
                   計算最終總額
                 </Button>
                 <Dialog open={open} onClose={handleClose}>
@@ -258,11 +276,13 @@ export default function SalaryCalculate() {
                     <DialogContentText>
                       請詳細確認各種細項，金額是否正確，請勿違反勞基法
                     </DialogContentText>
-                    <SalaryDetailList/>
+
+                    <SalaryDetailList detail={salaryRequest} plusTotal={plusTotal} minusTotal={minusTotal} companyCostTotal={companyCostTotal}/>
+
                   </DialogContent>
                   <DialogActions>
-                    <Button onClick={handleClose}>Cancel</Button>
-                    <Button onClick={handleClose}>Subscribe</Button>
+                    <Button onClick={handleClose}>取消</Button>
+                    <Button onClick={handleSalarySubmit}>送出</Button>
                   </DialogActions>
                 </Dialog>
               </Grid>
@@ -548,6 +568,10 @@ export default function SalaryCalculate() {
                   id="outlined-helperText"
                   style={{marginTop:'3%'}}
                   label="基本薪資"
+                  type="number"
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
                   value={salaryRequest.BasicSalary}
                   onChange={(e) => handleInputChange(e, 'BasicSalary')}
                 />
@@ -560,6 +584,7 @@ export default function SalaryCalculate() {
                     id="outlined-helperText"
                     style={{marginTop:'3%'}}
                     label="全勤獎金"
+                    type="number" 
                     value={salaryRequest.FullCheckInMoney}
                     onChange={(e) => handleInputChange(e, 'FullCheckInMoney')}
                   />
