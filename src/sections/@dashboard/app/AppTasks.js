@@ -59,10 +59,10 @@ export default function AppTasks({ title, subheader, list, ...other }) {
             <>
               {list.map((task) => (
                 <TaskItem
-                  key={task.Id}
+                  key={task.id}
                   task={task}
-                  checked={field.value.includes(task.Id)}
-                  onChange={() => field.onChange(onSelected(task.Id))}
+                  checked={field.value.includes(task.id)}
+                  onChange={() => field.onChange(onSelected(task.id))}
                 />
               ))}
             </>
@@ -154,7 +154,7 @@ function TaskItem({ task, checked, onChange }) {
     <Item>
       <Box display="flex" alignItems="center" justifyContent="center" style={{ height: "100%" }}>
         {task.IsPass === 0 && task.AuditDate === null ? <Chip label='審核中' color="warning" size="small" style={{color:'white',paddingBottom:'2px'}}/> : null}
-        {task.IsPass === 0 && task.AuditDate !== null ? <Chip label='未通過' color="error" size="small" style={{color:'white',paddingBottom:'2px'}}/> : null}
+        {task.IsPass === -1 && task.AuditDate !== null ? <Chip label='未通過' color="error" size="small" style={{color:'white',paddingBottom:'2px'}}/> : null}
         {task.IsPass === 1 && task.AuditDate !== null ? <Chip label='已通過' color="success" size="small" style={{color:'white',paddingBottom:'2px'}}/> : null}
       </Box>
     </Item>

@@ -44,6 +44,8 @@ import { DataGrid } from '@mui/x-data-grid';
 import appsetting from '../Appsetting';
 import StaffSearch from './StaffSearch';
 import SalaryDetailList from './SalaryDetailList';
+import CheckInOutDetailList from './CheckInOutDetailList';
+import OverTimeDetailList from './OverTimeDetailList';
 
 const currentDate = new Date();      // 获取当前日期
 currentDate.setMonth(currentDate.getMonth() - 1);   // 将日期设置为上个月
@@ -87,11 +89,25 @@ export default function SalaryCalculate() {
     const [plusTotal,setPlusTotal]= useState(0);
     const [minusTotal,setMinusTotal]= useState(0);
     const [companyCostTotal,setCompanyCostTotal]= useState(0);
-    const [paymoeny,setPaymoney] = useState(0);
     const [finalTotal,setFinalResult] = useState(0);
     const [checked, setChecked] = React.useState(true);
     const [open, setOpen] = React.useState(false);
+    const [checkInOutopen, setCheckInOutopen] = React.useState(false);
+    const [overTimeopen, setOverTimeopen] = React.useState(false);
 
+    const handleoverTimeClickOpen = () => {
+      setOverTimeopen(true);
+    };
+    const handleoverTimeClose = () => {
+      setOverTimeopen(false);
+    };
+
+    const handlecheckInOutClickOpen = () => {
+      setCheckInOutopen(true);
+    };
+    const handlecheckInOutClose = () => {
+      setCheckInOutopen(false);
+    };
     const handleClickOpen = () => {
       setOpen(true);
     };
@@ -559,7 +575,38 @@ export default function SalaryCalculate() {
                     inputProps={{ 'aria-label': 'controlled' }}
                   />
               </Grid>
-              <Grid item xs={10} />
+              <Grid item xs={2}>                      
+                  <Button size="small" onClick={handlecheckInOutClickOpen}>查看該月出勤打卡</Button>
+
+                  <Dialog open={checkInOutopen} onClose={handlecheckInOutClose}>
+                  <DialogTitle>{lastMonth}月出勤狀況</DialogTitle>
+                  <DialogContent>
+
+                    <CheckInOutDetailList staffId={parseInt(id, 10)}/>
+
+                  </DialogContent>
+                  <DialogActions>
+                    <Button onClick={handlecheckInOutClose}>退出</Button>
+                  </DialogActions>
+                </Dialog>
+
+              </Grid>
+              <Grid item xs={2}>                      
+                  <Button size="small" onClick={handleoverTimeClickOpen}>查看該月加班</Button>
+
+                  <Dialog open={overTimeopen} onClose={handleoverTimeClose}>
+                  <DialogTitle>{lastMonth}月加班狀況</DialogTitle>
+                  <DialogContent>
+
+                    <OverTimeDetailList staffId={parseInt(id, 10)}/>
+
+                  </DialogContent>
+                  <DialogActions>
+                    <Button onClick={handleoverTimeClose}>退出</Button>
+                  </DialogActions>
+                </Dialog>
+              </Grid>
+              <Grid item xs={6} />
               <Grid item xs={1}>
                   薪資加項
               </Grid>

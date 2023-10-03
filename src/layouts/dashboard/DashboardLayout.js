@@ -44,9 +44,7 @@ export default function DashboardLayout() {
   return (
     <StyledRoot>
       <Header onOpenNav={() => setOpen(true)} />
-
-      <Nav openNav={open} onCloseNav={() => setOpen(false)} />
-
+      {sessionStorage.getItem('AdminToken') ? <Nav openNav={open} onCloseNav={() => setOpen(false)} /> : null}
       <Main>
         <Outlet />
       </Main>

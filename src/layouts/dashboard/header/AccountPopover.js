@@ -41,10 +41,10 @@ export default function AccountPopover() {
   const handleNav = (option) => {
     if (option === 'Home') {
       setOpen(null);
-      navigate('/dashboard/info');
+      navigate('/staff/info');
   } else if (option === "Profile") {
     setOpen(null);
-    navigate('/dashboard/detail');
+    navigate('/staff/detail');
   } else {
     setOpen(null);
   }
@@ -93,10 +93,10 @@ export default function AccountPopover() {
       >
         <Box sx={{ my: 1.5, px: 2.5 }}>
           <Typography variant="subtitle2" noWrap>
-            {account.displayName}
+            {sessionStorage.getItem('StaffName')}
           </Typography>
           <Typography variant="body2" sx={{ color: 'text.secondary' }} noWrap>
-            {account.email}
+            員編:{sessionStorage.getItem('StaffNo')}
           </Typography>
         </Box>
 
