@@ -4,7 +4,7 @@ import DashboardLayout from './layouts/dashboard';
 import SimpleLayout from './layouts/simple';
 //
 import BlogPage from './pages/BlogPage';
-import UserPage from './pages/UserPage';
+import AdminPage from './pages/AdminPage';
 import LoginPage from './pages/LoginPage';
 import Page404 from './pages/Page404';
 import ProductsPage from './pages/ProductsPage';
@@ -19,6 +19,8 @@ import VacationsManage from './admin/VacationsManage';
 import OvertTimeManage from './admin/OvertTimeManage';
 import SalaryManage from './admin/SalaryManage';
 import SalaryCalculate from './admin/SalaryCalculate';
+import AdminDetail from './admin/AdminDetail';
+import CompanyRuleManage from './admin/CompanyRuleManage';
 // ----------------------------------------------------------------------
 
 export default function Router() {
@@ -50,13 +52,15 @@ export default function Router() {
       children: [
         { element: <Navigate to="/admin/staffmanage" />, index: true },
         { path: 'app', element: <DashboardAppPage /> },
-        { path: 'user', element: <UserPage /> },
+        { path: 'adminlist', element: <AdminPage /> },
         { path: 'products', element: <ProductsPage /> },
         { path: 'blog', element: <BlogPage /> },
         { path: 'staffmanage', element: <StaffManage /> },
         { path: 'salarymanage', element: <SalaryManage /> },
         { path: 'vacationsmanage', element: <VacationsManage /> },
         { path: 'overtimesmanage', element: <OvertTimeManage /> },
+        { path: 'companyrulemanage', element: <CompanyRuleManage /> },
+        { path: 'detail', element: <AdminDetail /> },
         { path: 'details/:id', element: <StaffDetail /> },
         { path: 'calculatesalary/:id', element: <SalaryCalculate /> },
       ],

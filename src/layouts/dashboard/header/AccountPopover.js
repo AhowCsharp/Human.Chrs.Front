@@ -61,7 +61,7 @@ export default function AccountPopover({isAdmin}) {
       if (option === 'Home') {
         navigate('/admin/staffmanage');
       } else if (option === "Profile") {
-        navigate('/admin/staffmanage');
+        navigate('/admin/detail');
       }
     } 
 

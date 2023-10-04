@@ -100,7 +100,7 @@ export default function StaffManage() {
             },
         },
         {
-            field: 'WorkPosition',
+            field: 'WorkLocation',
             headerName: '工作地點',
             width: 150,
             editable: true,
@@ -132,7 +132,7 @@ export default function StaffManage() {
         EntryDate: dayjs(getCurrentDate()),
         ResignationDate: dayjs(getCurrentDate()),
         LevelPosition: '',
-        WorkPosition: '',
+        WorkLocation: '',
         Email: '',
         Status: 1,
         SpecialRestDays: 0,
@@ -194,7 +194,7 @@ export default function StaffManage() {
             EntryDate: dayjs(getCurrentDate()),
             ResignationDate: dayjs(getCurrentDate()),
             LevelPosition: '',
-            WorkPosition: '',
+            WorkLocation: '',
             Email: '',
             Status: 1,
             SpecialRestDays: 0,
@@ -277,7 +277,7 @@ export default function StaffManage() {
                 Department: '',
                 EntryDate: getCurrentDate(), 
                 LevelPosition: '',
-                WorkPosition: '',
+                WorkLocation: '',
                 Email: '',
                 Status: 1,
                 SpecialRestDays: 0,
@@ -325,7 +325,7 @@ export default function StaffManage() {
           EntryDate: dayjs(params.row.EntryDate),
           ResignationDate: dayjs(params.row.ResignationDate),
           LevelPosition: params.row.LevelPosition,
-          WorkPosition: params.row.WorkPosition,
+          WorkLocation: params.row.WorkLocation,
           Email: params.row.Email,
           Status: params.row.Status,
           SpecialRestDays: params.row.SpecialRestDays,
@@ -616,11 +616,11 @@ export default function StaffManage() {
                             <InputLabel shrink htmlFor="bootstrap-input">
                                 工作地點
                             </InputLabel>       
-                            <TextField id="WorkPosition" 
+                            <TextField id="WorkLocation" 
                                 type="search" size="small"
                                 style={{width:'100%'}}
-                                value={staff.WorkPosition}
-                                onChange={(e) => handleInputChange(e, 'WorkPosition')}/>
+                                value={staff.WorkLocation}
+                                onChange={(e) => handleInputChange(e, 'WorkLocation')}/>
                         </Grid>
                         <Grid item xs={6}>
                             <InputLabel shrink htmlFor="bootstrap-input">

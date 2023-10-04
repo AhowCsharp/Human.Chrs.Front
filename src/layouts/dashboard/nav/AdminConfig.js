@@ -12,8 +12,8 @@ const AdminConfig = [
     icon: icon('ic_analytics'),
   },
   {
-    title: 'user',
-    path: '/admin/user',
+    title: 'adminList',
+    path: '/admin/adminlist',
     icon: icon('ic_user'),
   },
   {
@@ -44,6 +44,11 @@ const AdminConfig = [
   {
     title: 'salarySetting',
     path: '/admin/salarymanage',
+    icon: icon('ic_disabled'),
+  },
+  {
+    title: 'companyRule',
+    path: '/admin/companyrulemanage',
     icon: icon('ic_disabled'),
   },
 ];

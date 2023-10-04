@@ -33,11 +33,11 @@ const VisuallyHiddenInput = styled('input')({
     position: 'absolute',
     bottom: 0,
     left: 0,
-    whiteSpace: 'nowrap',
+    blackSpace: 'nowrap',
     width: 1,
 });
 
-export default function PersonalDetail() {
+export default function AdminDetail() {
     const [windowDimensions, setWindowDimensions] = useState({
         width: typeof window !== 'undefined' ? window.innerWidth : 0,
         height: typeof window !== 'undefined' ? window.innerHeight : 0,
@@ -48,11 +48,12 @@ export default function PersonalDetail() {
           'X-Ap-Token': appsetting.token,
           'X-Ap-CompanyId': sessionStorage.getItem('CompanyId'),
           'X-Ap-UserId': sessionStorage.getItem('UserId'),
+          'X-Ap-AdminToken':sessionStorage.getItem('AdminToken')
         }
     };
     const [file, setFile] = useState(null);
     const fileInputRef = useRef(null);
-    const [staffDetail,setStaffDetail] = useState(null);
+    const [adminDetail,setAdminDetail] = useState(null);
     const [isLoading, setIsLoading] = useState(true); 
     const [avatarUrl, setAvatarUrl] = useState(sessionStorage.getItem('AvatarUrl'));
 
@@ -83,13 +84,12 @@ export default function PersonalDetail() {
     
 
 
-    const fetchStaffDetailData = async () => {
+    const fetchAdminDetailData = async () => {
         setIsLoading(true);  // 開始加載
         try {       
-            const response = await axios.get(`${appsetting.apiUrl}/staff/detail`,config);
+            const response = await axios.get(`${appsetting.apiUrl}/admin/admindetail`,config);
             if (response.status === 200) {
-                setStaffDetail(response.data);
-
+                setAdminDetail(response.data.Data);
             }
         } catch (error) {
             console.error('Error fetching data:', error);
@@ -98,7 +98,7 @@ export default function PersonalDetail() {
         }
     };
     useEffect(() => {
-            fetchStaffDetailData();
+            fetchAdminDetailData();
     }, []); 
 
     const onFileChange = async (e) => {
@@ -120,7 +120,7 @@ export default function PersonalDetail() {
         formData.append('avatar', file);
     
         try {
-            const response = await axios.post(`${appsetting.apiUrl}/staff/avatar`, formData, config);
+            const response = await axios.post(`${appsetting.apiUrl}/admin/avatar`, formData, config);
             if(response.status === 200) {
                 const newAvatarUrl = `${appsetting.apiUrl}${response.data}`;
                 sessionStorage.setItem('AvatarUrl', newAvatarUrl);
@@ -141,7 +141,7 @@ export default function PersonalDetail() {
                     alignItems: 'center', 
                     justifyContent: 'center', 
                     height: '85vh', 
-                    backgroundColor: 'black' 
+                    backgroundColor: 'transparent' 
                 }}>
                 <CircularProgress color="success" />
             </Box>
@@ -151,50 +151,47 @@ export default function PersonalDetail() {
 
     return (
         <>
-            {isMobile && staffDetail && (
+            {adminDetail && (
             <Box sx={{ display: 'flex', flexDirection: 'row', width: '100%',position: 'relative' }}>
-                <Box sx={{width: '100%', height:`${windowDimensions.height}px`,backgroundColor:'black',padding:'5%'}}>
+                <Box sx={{width: '100%', height:`${windowDimensions.height}px`,backgroundColor:'transparent',padding:'5%'}}>
                     <Box sx={{ flexGrow: 1 }}>
                         <Grid container spacing={2}>
                             <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold'}}>    
                                 <Avatar
                                     alt={sessionStorage.getItem('StaffName')}
                                     src={avatarUrl}
-                                    sx={{ width: 48, height: 48 }}
-                                    onClick={()=>alert(6)}
+                                    sx={{ width: 72, height: 72 }}
+                                    onClick={()=>alert('建議尺寸 72*72')}
                                 /> 
-                                <Typography variant="h3" gutterBottom style={{color:'white',marginLeft:'5%'}}>
-                                    {staffDetail.Name}的個人資料
+                                <Typography variant="h2" gutterBottom style={{color:'black',marginLeft:'5%'}}>
+                                    {adminDetail.UserName}的個人資料
                                 </Typography>
                             </Grid>
                             <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold'}}>    
-                                <Button component="label" variant="outlined" startIcon={<CloudUploadIcon />} style={{color:'white'}}>
+                                <Button component="label" variant="outlined" startIcon={<CloudUploadIcon />} style={{color:'black'}}>
                                     更換大頭貼
                                     <VisuallyHiddenInput type="file" onChange={onFileChange} ref={fileInputRef}/>
                                 </Button>
                             </Grid>
-                            <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold'}}>     
-                                <Typography variant="h6" gutterBottom style={{color:'white'}}>
-                                    {staffDetail.EnglishName} 您好
-                                </Typography>
-                            </Grid>
-
-                            <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold',marginTop:'10%' }}>     
+                            <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold',marginTop:'1%' }}>     
                                 <TextField
                                 disabled
                                 id="outlined-required"
-                                label="部門"
-                                value={staffDetail.Department}
-                                variant="standard"
+                                label="職位"
+                                value={adminDetail.WorkPosition}
+                                variant="standard"                            
                                 color="warning"
+                                style={{ width: '30%'}} 
                                 InputProps={{
                                     style: {
-                                        color: 'white', // 文字變白色
+                                        color: 'black', 
+                                        fontSize: '1.2rem', // 文字大小
                                     },
                                 }}
                                 InputLabelProps={{
                                     style: {
-                                        color: 'white', // 標籤變白色
+                                        color: 'black', // 標籤變白色
+                                        fontSize: '1.2rem', // 標籤大小
                                     },
                                 }}
                                 />
@@ -203,18 +200,21 @@ export default function PersonalDetail() {
                                 <TextField
                                 disabled
                                 id="outlined-required"
-                                label="電話號碼"
-                                value={staffDetail.PhoneNumber}
+                                label="帳號"
+                                value={adminDetail.Account}
                                 variant="standard"
                                 color="warning"
+                                style={{ width: '30%'}} 
                                 InputProps={{
                                     style: {
-                                        color: 'white', // 文字變白色
+                                        color: 'black', 
+                                        fontSize: '1.2rem', // 文字大小
                                     },
                                 }}
                                 InputLabelProps={{
                                     style: {
-                                        color: 'white', // 標籤變白色
+                                        color: 'black', // 標籤變白色
+                                        fontSize: '1.2rem', // 標籤大小
                                     },
                                 }}
                                 />
@@ -223,18 +223,21 @@ export default function PersonalDetail() {
                                 <TextField
                                 disabled
                                 id="outlined-required"
-                                label="信箱"
-                                value={staffDetail.Email}
+                                label="權限"
+                                value={adminDetail.Auth}
                                 variant="standard"
                                 color="warning"
+                                style={{ width: '30%'}} 
                                 InputProps={{
                                     style: {
-                                        color: 'white', // 文字變白色
+                                        color: 'black', 
+                                        fontSize: '1.2rem', // 文字大小
                                     },
                                 }}
                                 InputLabelProps={{
                                     style: {
-                                        color: 'white', // 標籤變白色
+                                        color: 'black', // 標籤變白色
+                                        fontSize: '1.2rem', // 標籤大小
                                     },
                                 }}
                                 />
@@ -243,38 +246,21 @@ export default function PersonalDetail() {
                                 <TextField
                                 disabled
                                 id="outlined-required"
-                                label="職稱"
-                                value={staffDetail.LevelPosition}
+                                label="員編"
+                                value={adminDetail.StaffNo}
                                 variant="standard"
                                 color="warning"
+                                style={{ width: '30%'}} 
                                 InputProps={{
                                     style: {
-                                        color: 'white', // 文字變白色
+                                        color: 'black', 
+                                        fontSize: '1.2rem', // 文字大小
                                     },
                                 }}
                                 InputLabelProps={{
                                     style: {
-                                        color: 'white', // 標籤變白色
-                                    },
-                                }}
-                                />
-                            </Grid>
-                            <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>     
-                                <TextField
-                                disabled
-                                id="outlined-required"
-                                label="工作地點"
-                                value={staffDetail.WorkLocation}
-                                variant="standard"
-                                color="warning"
-                                InputProps={{
-                                    style: {
-                                        color: 'white', // 文字變白色
-                                    },
-                                }}
-                                InputLabelProps={{
-                                    style: {
-                                        color: 'white', // 標籤變白色
+                                        color: 'black', // 標籤變白色
+                                        fontSize: '1.2rem', // 標籤大小
                                     },
                                 }}
                                 />
@@ -284,37 +270,20 @@ export default function PersonalDetail() {
                                 disabled
                                 id="outlined-required"
                                 label="任職公司"
-                                value={staffDetail.CompanyName}
+                                value={adminDetail.CompanyName}
+                                style={{ width: '30%'}} // 设置宽度和字体大小
                                 variant="standard"
                                 color="warning"
                                 InputProps={{
                                     style: {
-                                        color: 'white', // 文字變白色
+                                        color: 'black', 
+                                        fontSize: '1.2rem', // 文字大小
                                     },
                                 }}
                                 InputLabelProps={{
                                     style: {
-                                        color: 'white', // 標籤變白色
-                                    },
-                                }}
-                                />
-                            </Grid>
-                            <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>     
-                                <TextField
-                                disabled
-                                id="outlined-required"
-                                label="到職日"
-                                value={staffDetail.EntryDate.split('T')[0]}
-                                variant="standard"
-                                color="warning"
-                                InputProps={{
-                                    style: {
-                                        color: 'white', // 文字變白色
-                                    },
-                                }}
-                                InputLabelProps={{
-                                    style: {
-                                        color: 'white', // 標籤變白色
+                                        color: 'black', // 標籤變白色
+                                        fontSize: '1.2rem', // 標籤大小
                                     },
                                 }}
                                 />
