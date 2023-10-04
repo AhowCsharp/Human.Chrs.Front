@@ -78,6 +78,7 @@ export default function LoginForm() {
             sessionStorage.setItem('DepartmentId',response.data.DepartmentId.toString());
             sessionStorage.setItem('StaffName',response.data.StaffName);
             sessionStorage.setItem('StaffNo',response.data.StaffNo);
+            sessionStorage.setItem('AvatarUrl',`${appsetting.apiUrl}${response.data.AvatarUrl}`);
             sessionStorage.setItem('Auth',response.data.Auth.toString());
             setIsStaff(true);
           }

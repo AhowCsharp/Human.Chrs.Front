@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState,useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 // @mui
 import { alpha } from '@mui/material/styles';
@@ -23,6 +23,14 @@ const MENU_OPTIONS = [
 
 export default function AccountPopover() {
   const [open, setOpen] = useState(null);
+  const [avatarUrl, setAvatarUrl] = useState(sessionStorage.getItem('AvatarUrl'));
+
+  useEffect(() => {
+      // 監聽 sessionStorage 中 AvatarUrl 的變化
+      setAvatarUrl(sessionStorage.getItem('AvatarUrl'));
+  }, [sessionStorage.getItem('AvatarUrl')]);
+
+
   const navigate = useNavigate();
 
   const handleOpen = (event) => {
@@ -69,7 +77,7 @@ export default function AccountPopover() {
           }),
         }}
       >
-        <Avatar src={account.photoURL} alt="photoURL" />
+        <Avatar src={avatarUrl} alt={sessionStorage.getItem('StaffName')} />
       </IconButton>
 
       <Popover

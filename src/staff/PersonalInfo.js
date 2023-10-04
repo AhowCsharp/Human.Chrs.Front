@@ -86,13 +86,7 @@ const gradientTextStyle = {
     justifyContent: 'center',
 };
 
-const config = {
-    headers: {
-      'X-Ap-Token': appsetting.token,
-      'X-Ap-CompanyId': sessionStorage.getItem('CompanyId'),
-      'X-Ap-UserId': sessionStorage.getItem('UserId'),
-    }
-};
+
 const staffName = sessionStorage.getItem('StaffName');
 let Name = ``;
 if(staffName !== null) {
@@ -111,6 +105,13 @@ export default function PersonalInfo() {
     const [thingAddOpen,setThingAddOpen] = useState(false)
     const [currentView, setCurrentView] = useState('month'); 
     const [event,setEvents] = useState([]);
+    const config = {
+        headers: {
+          'X-Ap-Token': appsetting.token,
+          'X-Ap-CompanyId': sessionStorage.getItem('CompanyId'),
+          'X-Ap-UserId': sessionStorage.getItem('UserId'),
+        }
+    };
     const [viewInfo, setViewInfo] = useState({
         IsOverLocation:true,
         IsCheckIn:false,

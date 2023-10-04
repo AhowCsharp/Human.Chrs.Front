@@ -2,7 +2,7 @@ import { isMobile, isTablet, isBrowser } from 'react-device-detect';
 import { useLocation,useNavigate } from 'react-router-dom';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,useRef } from 'react';
 import axios from 'axios';
 import { styled } from '@mui/material/styles';
 import Box from '@mui/material/Box';
@@ -12,7 +12,9 @@ import Button from '@mui/material/Button';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import PermContactCalendarIcon from '@mui/icons-material/PermContactCalendar';
 import FactCheckIcon from '@mui/icons-material/FactCheck';
+import Avatar from '@mui/material/Avatar';
 import CircularProgress from '@mui/material/CircularProgress';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import appsetting from '../Appsetting';
 
 const Item = styled(Paper)(({ theme }) => ({
@@ -22,6 +24,18 @@ const Item = styled(Paper)(({ theme }) => ({
   textAlign: 'center',
   color: theme.palette.text.secondary,
 }));
+
+const VisuallyHiddenInput = styled('input')({
+    clip: 'rect(0 0 0 0)',
+    clipPath: 'inset(50%)',
+    height: 1,
+    overflow: 'hidden',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    whiteSpace: 'nowrap',
+    width: 1,
+});
 
 export default function PersonalDetail() {
     const [windowDimensions, setWindowDimensions] = useState({
@@ -36,16 +50,46 @@ export default function PersonalDetail() {
           'X-Ap-UserId': sessionStorage.getItem('UserId'),
         }
     };
-
+    const [file, setFile] = useState(null);
+    const fileInputRef = useRef(null);
     const [staffDetail,setStaffDetail] = useState(null);
     const [isLoading, setIsLoading] = useState(true); 
+    const [avatarUrl, setAvatarUrl] = useState(sessionStorage.getItem('AvatarUrl'));
+
+    useEffect(() => {
+        // 監聽 sessionStorage 中 AvatarUrl 的變化
+        setAvatarUrl(sessionStorage.getItem('AvatarUrl'));
+    }, [sessionStorage.getItem('AvatarUrl')]);
+
+    useEffect(() => {
+        if (!fileInputRef.current) {
+            return undefined;  // 明確的返回 undefined
+        }
+        
+        const handleFileChange = (e) => {
+            if (e.target.files.length === 0) { // If no files are selected
+                setFile(null);
+            }
+        };
+        
+        // Attach the event listener
+        fileInputRef.current.addEventListener('change', handleFileChange);
+        
+        // Cleanup the event listener on component unmount
+        return () => {
+            fileInputRef.current.removeEventListener('change', handleFileChange);
+        };
+    }, []);
+    
+
+
     const fetchStaffDetailData = async () => {
         setIsLoading(true);  // 開始加載
         try {       
             const response = await axios.get(`${appsetting.apiUrl}/staff/detail`,config);
             if (response.status === 200) {
                 setStaffDetail(response.data);
-                console.log(response.data);
+
             }
         } catch (error) {
             console.error('Error fetching data:', error);
@@ -56,6 +100,38 @@ export default function PersonalDetail() {
     useEffect(() => {
             fetchStaffDetailData();
     }, []); 
+
+    const onFileChange = async (e) => {
+        setFile(e.target.files[0]);
+    
+        // 調整此處，確保已選擇檔案後再上傳
+        if (e.target.files[0]) {
+            await uploadAvatar();
+        }
+    };
+
+    const uploadAvatar = async () => {
+        if (!file) {
+            console.error('No file selected!');
+            return;
+        }
+    
+        const formData = new FormData();
+        formData.append('avatar', file);
+    
+        try {
+            const response = await axios.post(`${appsetting.apiUrl}/staff/avatar`, formData, config);
+            if(response.status === 200) {
+                const newAvatarUrl = `${appsetting.apiUrl}${response.data}`;
+                sessionStorage.setItem('AvatarUrl', newAvatarUrl);
+                setAvatarUrl(newAvatarUrl); // 這行會觸發組件重新渲染
+            }
+        } catch (error) {
+            console.error('Error uploading avatar:', error);
+        }
+    };
+    
+
 
     if (isLoading) {
         return (
@@ -80,16 +156,29 @@ export default function PersonalDetail() {
                 <Box sx={{width: '100%', height:`${windowDimensions.height}px`,backgroundColor:'black',padding:'5%'}}>
                     <Box sx={{ flexGrow: 1 }}>
                         <Grid container spacing={2}>
-                            <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold'}}>     
-                                <Typography variant="h3" gutterBottom style={{color:'white'}}>
+                            <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold'}}>    
+                                <Avatar
+                                    alt={sessionStorage.getItem('StaffName')}
+                                    src={avatarUrl}
+                                    sx={{ width: 48, height: 48 }}
+                                    onClick={()=>alert(6)}
+                                /> 
+                                <Typography variant="h3" gutterBottom style={{color:'white',marginLeft:'5%'}}>
                                     {staffDetail.Name}的個人資料
                                 </Typography>
+                            </Grid>
+                            <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold'}}>    
+                                <Button component="label" variant="outlined" startIcon={<CloudUploadIcon />} style={{color:'white'}}>
+                                    更換大頭貼
+                                    <VisuallyHiddenInput type="file" onChange={onFileChange} ref={fileInputRef}/>
+                                </Button>
                             </Grid>
                             <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold'}}>     
                                 <Typography variant="h6" gutterBottom style={{color:'white'}}>
                                     {staffDetail.EnglishName} 您好
                                 </Typography>
                             </Grid>
+
                             <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold',marginTop:'10%' }}>     
                                 <TextField
                                 disabled
