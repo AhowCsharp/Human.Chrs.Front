@@ -21,7 +21,7 @@ const MENU_OPTIONS = [
 
 // ----------------------------------------------------------------------
 
-export default function AccountPopover() {
+export default function AccountPopover({isAdmin}) {
   const [open, setOpen] = useState(null);
   const [avatarUrl, setAvatarUrl] = useState(sessionStorage.getItem('AvatarUrl'));
 
@@ -47,16 +47,27 @@ export default function AccountPopover() {
   };
 
   const handleNav = (option) => {
-    if (option === 'Home') {
-      setOpen(null);
-      navigate('/staff/info');
-  } else if (option === "Profile") {
     setOpen(null);
-    navigate('/staff/detail');
-  } else {
-    setOpen(null);
-  }
+  
+    if (!isAdmin) {
+      if (option === 'Home') {
+        navigate('/staff/info');
+      } else if (option === "Profile") {
+        navigate('/staff/detail');
+      }
+    } 
+    
+    if (isAdmin) {
+      if (option === 'Home') {
+        navigate('/admin/staffmanage');
+      } else if (option === "Profile") {
+        navigate('/admin/staffmanage');
+      }
+    } 
+
+      // 在管理员和非管理员之间共享的部分，您可以在这里添加代码       
   };
+  
 
   return (
     <>

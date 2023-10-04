@@ -90,6 +90,7 @@ export default function LoginForm() {
             sessionStorage.setItem('StaffNo',response.data.StaffNo);
             sessionStorage.setItem('Auth',response.data.Auth.toString());
             sessionStorage.setItem('AdminToken',response.data.AdminToken);
+            sessionStorage.setItem('AvatarUrl',`${appsetting.apiUrl}${response.data.AvatarUrl}`);
             setIsStaff(false);
           }
       }

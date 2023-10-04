@@ -43,6 +43,7 @@ Header.propTypes = {
 };
 
 export default function Header({ onOpenNav }) {
+  const isAdmin = sessionStorage.getItem('AdminToken') !== null;
   return (
     <StyledRoot>
       <StyledToolbar>
@@ -70,7 +71,7 @@ export default function Header({ onOpenNav }) {
         >
           <LanguagePopover />
           <NotificationsPopover />
-          <AccountPopover />
+          <AccountPopover isAdmin={isAdmin}/>
         </Stack>
       </StyledToolbar>
     </StyledRoot>
