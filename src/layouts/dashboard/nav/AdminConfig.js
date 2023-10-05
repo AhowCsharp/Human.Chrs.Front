@@ -47,6 +47,11 @@ const AdminConfig = [
     icon: icon('ic_disabled'),
   },
   {
+    title: 'departments',
+    path: '/admin/departmentmanage',
+    icon: icon('ic_disabled'),
+  },
+  {
     title: 'companyRule',
     path: '/admin/companyrulemanage',
     icon: icon('ic_disabled'),

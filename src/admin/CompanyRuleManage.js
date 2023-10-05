@@ -40,6 +40,9 @@ import { DateField } from '@mui/x-date-pickers/DateField';
 import { TimeField } from '@mui/x-date-pickers/TimeField';
 import { DateTimeField } from '@mui/x-date-pickers/DateTimeField';
 import { StaticDatePicker } from '@mui/x-date-pickers/StaticDatePicker';
+import { TimePicker } from '@mui/x-date-pickers/TimePicker';
+import ClearIcon from '@mui/icons-material/Clear';
+import SaveIcon from '@mui/icons-material/Save';
 import Select from '@mui/material/Select';
 import Slide from '@mui/material/Slide';
 import { DataGrid } from '@mui/x-data-grid';
@@ -59,11 +62,6 @@ export default function CompanyRuleManage() {
         }
     };
 
-    const afternoonOptions = [
-      { label: 'Option 1', value: 'option1' },
-      { label: 'Option 2', value: 'option2' },
-      // ...其他選項
-    ];
     const columns = [
      
         {   field: 'id', headerName: 'ID', width: 90 },
@@ -76,82 +74,211 @@ export default function CompanyRuleManage() {
         {
             field: 'DepartmentName',
             headerName: '部門名稱',
-            width: 100,
-            editable: true,
+            width: 150,
+            editable: true,        
+            renderCell: (params) => (
+              <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
+                  <Select 
+                    value={params.formattedValue}
+                    onChange={(e) => {
+                      const newValue = e.target.value;               
+                      const updatedRows = filterRows.map((row) => {
+                        if (row.id === params.id) {
+                          const newRow = {...row, DepartmentName: newValue}   
+                          processRowUpdate(newRow)                      
+                          return { ...row, DepartmentName: newValue };                       
+                        }
+                        return row;
+                      });                    
+                      setFilterRows(updatedRows);
+                    }}
+                  >
+                    {departments.map((option) => (
+                      <MenuItem  key={option.id} value={option.DepartmentName}>
+                        {option.DepartmentName}
+                      </MenuItem >
+                    ))}
+                  </Select >
+              </FormControl>
+            ),
         },
         {
             field: 'NeedWorkMinute',
             headerName: '工作需滿分鐘',
-            width: 100,
-            editable: false,
+            width: 152,
+            editable: false,    
+            renderCell: (params) => {
+              const hours = Math.floor(params.value / 60);
+              const minutes = params.value % 60;
+        
+              if (minutes === 0) {
+                return `${hours} 小時`;
+              }
+              return `${hours} 小時 ${minutes} 分鐘`;
+            }
         },
         {
-            field: 'CheckInStartTime',
-            headerName: '上班打卡時段',
-            width: 120,
-            editable: true,
+          field: 'CheckInStartTime',
+          headerName: '上班打卡時段',
+          width: 120,
+          editable: true,
+          renderCell: (params) => (
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <TimeField
+                style={{ width: '120px' }}
+                label=""
+                value={dayjs().hour(params.value.split(':')[0]).minute(params.value.split(':')[1])}
+              />
+            </LocalizationProvider>
+          ),
+        },       
+        {   
+          field: 'action1', 
+          headerName: '', 
+          width: 10 ,
+          sortable:false,
+          renderCell: () => {
+            return `~`;
+          },
         },
         {
             field: 'CheckInEndTime',
             headerName: '上班打卡時段',
             width: 120,
             editable: true,
+            renderCell: (params) => (
+              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <TimeField
+                  style={{ width: '120px' }}
+                  label=""
+                  value={dayjs().hour(params.value.split(':')[0]).minute(params.value.split(':')[1])}
+                />
+              </LocalizationProvider>
+            ),
         },
         {
           field: 'CheckOutStartTime',
           headerName: '下班打卡時段',
           width: 120,
           editable: true,
+          renderCell: (params) => (
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <TimeField
+                style={{ width: '120px' }}
+                label=""
+                value={dayjs().hour(params.value.split(':')[0]).minute(params.value.split(':')[1])}
+              />
+            </LocalizationProvider>
+          ),
+      },
+      {   
+        field: 'action2', 
+        headerName: '', 
+        width: 10 ,
+        sortable: false,
+        renderCell: () => {
+          return `~`;
+        },
       },
       {
           field: 'CheckOutEndTime',
           headerName: '下班打卡時段',
           width: 120,
           editable: true,
+          renderCell: (params) => (
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <TimeField
+                style={{ width: '120px'}}
+                label=""
+                value={dayjs().hour(params.value.split(':')[0]).minute(params.value.split(':')[1])}
+              />
+            </LocalizationProvider>
+          ),
+          renderEditCell: (params) => (
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <TimeField
+                style={{ width: '120px' }}
+                label=""
+                value={dayjs().hour(params.value.split(':')[0]).minute(params.value.split(':')[1])}
+                onChange={(newValue) => {
+                  const formattedValue = dayjs(newValue).format('HH:mm:00');
+                  console.log(formattedValue);
+                }}
+              />
+            </LocalizationProvider>
+          ),
       },
       {
         field: 'AfternoonTime',
         headerName: '午休時段',
-        width: 120,
+        width: 150,
         editable: true,
-        renderEditCell: (params) => (
-            <select
-              defaultValue={params.value}
-              onChange={(e) => {
-                params.api.setEditCellValue(params, e.target.value);
-                params.api.commitCellChange(params.field);
-                params.api.setCellMode(params.id, params.field, 'view');
-              }}
-            >
-              {afternoonOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          ),
       },
     ];
     const [rows,setRows] = useState([]);
     const [filterRows,setFilterRows] = useState([]);
+    const [editedRows, setEditedRows] = React.useState([]);
     const [selectedStaff,setSelectedStaff] = useState(null);
-
-    const navigate = useNavigate();
-
-    const handleCalculateClick = (id) => {
-        // 在版本6中使用 navigate 函數進行導航
-        navigate(`/admin/calculatesalary/${id}`);
-    };
+    const [departments,setDepartments] = useState([]);
     const [open, setOpen] = useState(false);
+    const isDisabled = editedRows.length === 0;
 
+    const handleRuleUpdateSave = async () => {
+      const modifiedRows = editedRows.map(item => ({
+        ...item,
+      }));
+      console.log(modifiedRows)
+        // try {
+        //   const response = await axios.patch(`${apiUrl}/member/updateinfo`, modifiedRows, {
+        //     headers: {
+        //         'X-Ap-Token':`${token}`,  // 
+        //         'Content-Type': 'application/json'
+        //     }
+        // });
+        //   if(response.status === 200) {     
+        //     const newData = await axios.get(`${apiUrl}/member/student`, {
+        //       headers: {
+        //         'X-Ap-Token':`${token}`
+        //       }
+        //     });
+        //     alert('修改成功');
+        //     setRows(newData.data.List);
+        //     setFilterRows(newData.data.List);
+        //     setEditedRows([]);
+        //   }else {
+        //     alert('修改失敗');
+        //   }
+    
+        // } catch (error) {
+        //   console.error('Failed to fetch user data:', error);
+        //   alert('修改失敗');
+        // }
+    };
+
+    const processRowUpdate = (newRow, oldRow) => {
+      // 透過 newRow 的 id 找到 editedRows 陣列中的索引
+      const index = editedRows.findIndex(row => row.id === newRow.id);
+    
+      // 若找到相同的 id，則先刪除
+      if (index > -1) {
+        editedRows.splice(index, 1);
+      }
+    
+      // 將 newRow 加入 editedRows 陣列
+      setEditedRows([...editedRows, newRow]);
+      return newRow;
+    };
+    const handleCancelUpdate = () => {
+      setEditedRows([]);
+      setFilterRows(rows);
+    };
     const handleClickOpen = (params) => {
-      setSelectedStaff(params.row);
-      console.log(params.row);
+
       setOpen(true);
     };
   
     const handleClose = () => {
-      setSelectedStaff(null);
+
       setOpen(false);
     };
 
@@ -168,8 +295,21 @@ export default function CompanyRuleManage() {
       }
   };
 
+  const fetchDepartmentData = async () => {
+    try {       
+      const response = await axios.get(`${appsetting.apiUrl}/admin/departments`,config);
+      // 檢查響應的結果，並設置到 state
+      if (response.status === 200) {
+        setDepartments(response.data);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+};
+
     useEffect(() => {
       fetchData();
+      fetchDepartmentData();
     }, []); 
     const handleVerify = async (isPass) => {     
         const request = {
@@ -189,32 +329,6 @@ export default function CompanyRuleManage() {
           alert('該員工之請假額度已到，故系統審核未通過2');
         }          
     }
-    // useEffect(() => {
-    //     fetchStaffDetailData();
-    // }, []); 
-    // const navigate = useNavigate();
-
-
-    // const handleInputChange = (event, propertyName) => {
-    //   const value = event.target ? event.target.value : event;
-    //   if(propertyName === 'HasCrimeRecord') {
-    //       // eslint-disable-next-line no-restricted-globals
-    //       if(!isNaN(value)) {
-    //         setStaffInfo((prevData) => ({
-    //           ...prevData,
-    //           [propertyName]: Number(value),
-    //         })); 
-    //       }else {
-    //         alert('請輸入數字')
-    //       }
- 
-    //   }else {
-    //     setStaffInfo((prevData) => ({
-    //       ...prevData,
-    //       [propertyName]: value,
-    //   }));
-    //   }
-    // };
   
 
   return (
@@ -237,9 +351,19 @@ export default function CompanyRuleManage() {
             </Grid> */}
 
 
-            {/* <Grid item xs={2}>      
+            <Grid item xs={1}>      
                 <Button variant="outlined" endIcon={<PersonAddIcon/>} onClick={()=>handleClickOpen(true)}>新增員工</Button>
-            </Grid>      */}
+            </Grid>  
+            <Grid item xs={1}>  
+                <Button variant="outlined" disabled={isDisabled} onClick={handleRuleUpdateSave}  endIcon={<SaveIcon />}> 
+                儲存修改
+                </Button>
+            </Grid>
+            <Grid item xs={1}>  
+                <Button variant="outlined" disabled={isDisabled} onClick={handleCancelUpdate}  endIcon={<ClearIcon />}> 
+                  取消修改
+                </Button>
+            </Grid>   
         </Grid>
         <DataGrid
             rows={filterRows}
@@ -252,8 +376,14 @@ export default function CompanyRuleManage() {
                 },
             },
             }}
+            disableColumnMenu
             pageSizeOptions={[30,20,10]}
             disableRowSelectionOnClick
+            processRowUpdate={processRowUpdate}
+            onProcessRowUpdateError={error=>alert(error)}
+            onRowEditCommit={(rowId, e) => {
+              handleRuleUpdateSave(rowId,e);
+            }}
         />
       </Box>
     </>

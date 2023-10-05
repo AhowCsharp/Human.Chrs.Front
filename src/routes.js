@@ -21,6 +21,7 @@ import SalaryManage from './admin/SalaryManage';
 import SalaryCalculate from './admin/SalaryCalculate';
 import AdminDetail from './admin/AdminDetail';
 import CompanyRuleManage from './admin/CompanyRuleManage';
+import DepartmentManage from './admin/DepartmentManage';
 // ----------------------------------------------------------------------
 
 export default function Router() {
@@ -59,6 +60,7 @@ export default function Router() {
         { path: 'salarymanage', element: <SalaryManage /> },
         { path: 'vacationsmanage', element: <VacationsManage /> },
         { path: 'overtimesmanage', element: <OvertTimeManage /> },
+        { path: 'departmentmanage', element: <DepartmentManage /> },
         { path: 'companyrulemanage', element: <CompanyRuleManage /> },
         { path: 'detail', element: <AdminDetail /> },
         { path: 'details/:id', element: <StaffDetail /> },
