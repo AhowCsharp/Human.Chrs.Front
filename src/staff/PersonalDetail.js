@@ -15,6 +15,7 @@ import FactCheckIcon from '@mui/icons-material/FactCheck';
 import Avatar from '@mui/material/Avatar';
 import CircularProgress from '@mui/material/CircularProgress';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import PageDeviceError from '../pages/PageDeviceError';
 import appsetting from '../Appsetting';
 
 const Item = styled(Paper)(({ theme }) => ({
@@ -130,7 +131,13 @@ export default function PersonalDetail() {
             console.error('Error uploading avatar:', error);
         }
     };
-    
+    if(!isMobile) {
+        return(
+            <>
+                <PageDeviceError/>
+            </>
+        )
+    }
 
 
     if (isLoading) {

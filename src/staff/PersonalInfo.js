@@ -40,6 +40,7 @@ import Typography from '@mui/material/Typography';
 import CloseIcon from '@mui/icons-material/Close';
 import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
+import DeleteIcon from '@mui/icons-material/Delete';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import PermContactCalendarIcon from '@mui/icons-material/PermContactCalendar';
 import FactCheckIcon from '@mui/icons-material/FactCheck';
@@ -52,6 +53,7 @@ import Slide from '@mui/material/Slide';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import {AppTasks} from '../sections/@dashboard/app';
 import Map from '../googleMap/Map'
+import PageDeviceError from '../pages/PageDeviceError';
 import appsetting from '../Appsetting';
 
 const eventStyles = {
@@ -140,6 +142,23 @@ export default function PersonalInfo() {
     const [memo, setMemo] = useState('');
     const [center, setCenter] = useState({lat: 41.3851, lng: 2.1734 });
     const [hourModel,setHourModel] = useState(true);
+    
+    const navigate = useNavigate();
+
+    const handleSalaryListClick = () => {
+        // 在版本6中使用 navigate 函數進行導航
+        navigate(`/staff/salarylist`);
+    };
+
+    const handleOverTimeListClick = () => {
+        // 在版本6中使用 navigate 函數進行導航
+        navigate(`/staff/overtimelist`);
+    };
+
+    const handleCheckListClick = () => {
+        // 在版本6中使用 navigate 函數進行導航
+        navigate(`/staff/checklist`);
+    };
 
     const [windowDimensions, setWindowDimensions] = useState({
         width: typeof window !== 'undefined' ? window.innerWidth : 0,
@@ -232,6 +251,7 @@ export default function PersonalInfo() {
             const response = await axios.get(`${appsetting.apiUrl}/staff/eventdetails`, config);
             if(response.status === 200) {
                 const transformedEvents = response.data.map(apiEvent => ({
+                    id:apiEvent.id,
                     title: apiEvent.Title,
                     start: moment(apiEvent.Start).toDate(),
                     end: moment(apiEvent.End).toDate(),
@@ -614,6 +634,27 @@ export default function PersonalInfo() {
             }               
         };
 
+        const handleDeleteEvent = async (id) => {      
+            try {
+                const response = await axios.delete(`${appsetting.apiUrl}/staff/event?id=${id}`,config);
+                if (response.status === 200) {
+                    const transformedEvents = response.data.map(apiEvent => ({
+                        title: apiEvent.Title,
+                        start: moment(apiEvent.Start).toDate(),
+                        end: moment(apiEvent.End).toDate(),
+                        allDay: apiEvent.AllDay,
+                        detail:apiEvent.Detail,
+                        level:apiEvent.LevelStatus
+                    }));
+                    setEvents(transformedEvents);
+                    alert('成功');
+                }
+            } catch (error) {
+                console.error("Error logging in:", error);
+                alert('失敗');
+            }          
+        }
+
         const CustomToolbar = (toolbarProps) => {          
             const currentMonth = toolbarProps.date.getMonth()+1;
             const currentYear = toolbarProps.date.getFullYear(); // 获取年份
@@ -662,13 +703,21 @@ export default function PersonalInfo() {
             </Grid>
             );
         };
+    if(!isMobile) {
+        return(
+            <>
+                <PageDeviceError/>
+            </>
+        )
+    }
+    
     
     return (
         <>
             {isMobile && (
             <>
             <Box sx={{ display: 'flex', flexDirection: 'row', width: '100%',position: 'relative' }}>
-                <Box sx={{width: '100%', height:`${windowDimensions.height*1.6}px`,backgroundColor:'black'}}>
+                <Box sx={{width: '100%', height:`${windowDimensions.height*1.5}px`,backgroundColor:'black'}}>
 
                     <Box sx={{ width: '85%', height: `${windowDimensions.height/1.3}px`,backgroundColor:'white'
                     ,margin:'auto',borderRadius: '10px',padding:'25px',marginTop:'5%'}}>
@@ -700,11 +749,16 @@ export default function PersonalInfo() {
                                 <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold',marginTop:'10%' }}>     
                                     <Map center={center}/>
                                 </Grid>                               
-                                <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold',marginTop:'10%' }}>     
+                                <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold',marginTop:'1%' }}>     
                                     <Button variant="contained" endIcon={<FactCheckIcon />} size="large" style={{background:'black'}} onClick={()=>handleClickOpen('check')}>
-                                        打卡
+                                        申報打卡
                                     </Button>
-                                </Grid>      
+                                </Grid>
+                                <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold',marginTop:'1%' }}>     
+                                    <Button variant="contained" endIcon={<FactCheckIcon />} size="large" style={{background:'black',marginLeft:'1%'}} onClick={()=>handleClickOpen('overTime')}>
+                                        申報加班
+                                    </Button>  
+                                </Grid>   
                                 <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', fontWeight: 'bold' }}>     
                                     工作時間
                                 </Grid>
@@ -722,7 +776,7 @@ export default function PersonalInfo() {
                         <Box sx={{ flexGrow: 1,margin:'5%' }}>
                             <Grid container spacing={1}>
                                 <Grid item xs={4} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center'}}>     
-                                    <Button variant="contained" endIcon={<CalendarMonthIcon />} size="large" style={{background:'orange',whiteSpace: 'nowrap'}} onClick={()=>setCalendarOpen('calendar')}>
+                                    <Button variant="contained" endIcon={<CalendarMonthIcon />} size="large" style={{background:'orange',whiteSpace: 'nowrap'}} onClick={()=>handleClickOpen('calendar')}>
                                         行事
                                     </Button>
                                 </Grid>
@@ -737,24 +791,24 @@ export default function PersonalInfo() {
                                     </Button>
                                 </Grid>
                                 <Grid item xs={4} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>     
-                                    <Button variant="contained" endIcon={<FactCheckIcon />} size="large" style={{background:'orange',whiteSpace: 'nowrap'}}>
+                                    <Button variant="contained" endIcon={<FactCheckIcon />} size="large" style={{background:'orange',whiteSpace: 'nowrap'}} onClick={handleCheckListClick}>
                                         出勤
                                     </Button>
                                 </Grid>
                                 <Grid item xs={4} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>     
-                                    <Button variant="contained" endIcon={<FactCheckIcon />} size="large" style={{background:'orange',whiteSpace: 'nowrap'}}>
+                                    <Button variant="contained" endIcon={<FactCheckIcon />} size="large" style={{background:'orange',whiteSpace: 'nowrap'}} onClick={handleSalaryListClick}>
                                         薪資
                                     </Button>
                                 </Grid>
                                 <Grid item xs={4} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>     
-                                    <Button variant="contained" endIcon={<FactCheckIcon />} size="large" style={{background:'orange',whiteSpace: 'nowrap'}} onClick={()=>handleClickOpen('overTime')}>
+                                    <Button variant="contained" endIcon={<FactCheckIcon />} size="large" style={{background:'orange',whiteSpace: 'nowrap'}} onClick={handleOverTimeListClick}>
                                         加班
                                     </Button>
                                 </Grid>
                             </Grid>
                         </Box>
                     </Box>
-                    <Box sx={{width: '100%', height:`${windowDimensions.height/2}px`,marginTop:'5%'}}>
+                    <Box sx={{width: '100%', height:`${windowDimensions.height/2}px`}}>
                         <Box sx={{ flexGrow: 1,margin:'1%' }}>
                             <Grid container spacing={1}>
                                 <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center'}}>     
@@ -989,6 +1043,7 @@ export default function PersonalInfo() {
                     {selectedEvent !== null?
                         <ListItem>
                             <ListItemText primary={selectedEvent.title} secondary={`内容: ${selectedEvent.detail}`}/>
+                            <Button variant="text" startIcon={<DeleteIcon />} style={{color:'red'}} onClick={()=>handleDeleteEvent(selectedEvent.id)}/>
                         </ListItem>
                         :
                         null

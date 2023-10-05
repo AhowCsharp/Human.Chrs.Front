@@ -12,6 +12,10 @@ import DashboardAppPage from './pages/DashboardAppPage';
 
 import PersonalInfo from './staff/PersonalInfo';
 import PersonalDetail from './staff/PersonalDetail';
+import PersonalSalaryList from './staff/PersonalSalaryList';
+import PersonalSalaryDetail from './staff/PersonalSalaryDetail';
+import PersonalCheckList from './staff/PersonalCheckList';
+import PersonalOverTimeList from './staff/PersonalOverTimeList';
 
 import StaffManage from './admin/StaffManage';
 import StaffDetail from './admin/StaffDetail';
@@ -45,6 +49,10 @@ export default function Router() {
         // { path: 'blog', element: <BlogPage /> },
         { path: 'info', element: <PersonalInfo /> },
         { path: 'detail', element: <PersonalDetail /> },
+        { path: 'overtimelist', element: <PersonalOverTimeList /> },
+        { path: 'salarylist', element: <PersonalSalaryList /> },
+        { path: 'checklist', element: <PersonalCheckList /> },
+        { path: 'salarydetail/:id', element: <PersonalSalaryDetail /> },
       ],
     },
     {

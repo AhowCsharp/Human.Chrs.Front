@@ -66,41 +66,35 @@ export default function CompanyRuleManage() {
      
         {   field: 'id', headerName: 'ID', width: 90 },
         {
-            field: 'DepartmentId',
-            headerName: '部門編號',
-            width: 100,
-            editable: true,
-        },
-        {
             field: 'DepartmentName',
             headerName: '部門名稱',
             width: 150,
-            editable: true,        
-            renderCell: (params) => (
-              <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
-                  <Select 
-                    value={params.formattedValue}
-                    onChange={(e) => {
-                      const newValue = e.target.value;               
-                      const updatedRows = filterRows.map((row) => {
-                        if (row.id === params.id) {
-                          const newRow = {...row, DepartmentName: newValue}   
-                          processRowUpdate(newRow)                      
-                          return { ...row, DepartmentName: newValue };                       
-                        }
-                        return row;
-                      });                    
-                      setFilterRows(updatedRows);
-                    }}
-                  >
-                    {departments.map((option) => (
-                      <MenuItem  key={option.id} value={option.DepartmentName}>
-                        {option.DepartmentName}
-                      </MenuItem >
-                    ))}
-                  </Select >
-              </FormControl>
-            ),
+            editable: false,        
+            // renderCell: (params) => (
+            //   <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
+            //       <Select 
+            //         value={params.formattedValue}
+            //         onChange={(e) => {
+            //           const newValue = e.target.value;               
+            //           const updatedRows = filterRows.map((row) => {
+            //             if (row.id === params.id) {
+            //               const newRow = {...row, DepartmentId: newValue}   
+            //               processRowUpdate(newRow)                      
+            //               return { ...row, DepartmentId: newValue };                       
+            //             }
+            //             return row;
+            //           });                    
+            //           setFilterRows(updatedRows);
+            //         }}
+            //       >
+            //         {departments.map((option) => (
+            //           <MenuItem  key={option.id} value={option.id}>
+            //             {option.DepartmentName}
+            //           </MenuItem >
+            //         ))}
+            //       </Select >
+            //   </FormControl>
+            // ),
         },
         {
             field: 'NeedWorkMinute',
@@ -119,95 +113,42 @@ export default function CompanyRuleManage() {
         },
         {
           field: 'CheckInStartTime',
-          headerName: '上班打卡時段',
+          headerName: '上班時段',
           width: 120,
           editable: true,
-          renderCell: (params) => (
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <TimeField
-                style={{ width: '120px' }}
-                label=""
-                value={dayjs().hour(params.value.split(':')[0]).minute(params.value.split(':')[1])}
-              />
-            </LocalizationProvider>
-          ),
         },       
         {   
           field: 'action1', 
           headerName: '', 
           width: 10 ,
           sortable:false,
-          renderCell: () => {
-            return `~`;
-          },
+          renderCell: () => `~`,
         },
         {
             field: 'CheckInEndTime',
-            headerName: '上班打卡時段',
+            headerName: '上班時段',
             width: 120,
             editable: true,
-            renderCell: (params) => (
-              <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <TimeField
-                  style={{ width: '120px' }}
-                  label=""
-                  value={dayjs().hour(params.value.split(':')[0]).minute(params.value.split(':')[1])}
-                />
-              </LocalizationProvider>
-            ),
         },
         {
           field: 'CheckOutStartTime',
-          headerName: '下班打卡時段',
+          headerName: '下班時段',
           width: 120,
           editable: true,
-          renderCell: (params) => (
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <TimeField
-                style={{ width: '120px' }}
-                label=""
-                value={dayjs().hour(params.value.split(':')[0]).minute(params.value.split(':')[1])}
-              />
-            </LocalizationProvider>
-          ),
       },
       {   
         field: 'action2', 
         headerName: '', 
         width: 10 ,
         sortable: false,
-        renderCell: () => {
-          return `~`;
-        },
+        renderCell: () => `~`,
       },
       {
-          field: 'CheckOutEndTime',
-          headerName: '下班打卡時段',
-          width: 120,
-          editable: true,
-          renderCell: (params) => (
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <TimeField
-                style={{ width: '120px'}}
-                label=""
-                value={dayjs().hour(params.value.split(':')[0]).minute(params.value.split(':')[1])}
-              />
-            </LocalizationProvider>
-          ),
-          renderEditCell: (params) => (
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <TimeField
-                style={{ width: '120px' }}
-                label=""
-                value={dayjs().hour(params.value.split(':')[0]).minute(params.value.split(':')[1])}
-                onChange={(newValue) => {
-                  const formattedValue = dayjs(newValue).format('HH:mm:00');
-                  console.log(formattedValue);
-                }}
-              />
-            </LocalizationProvider>
-          ),
-      },
+        field: 'CheckOutEndTime',
+        headerName: '下班時段',
+        width: 120,
+        editable: true,
+      },     
       {
         field: 'AfternoonTime',
         headerName: '午休時段',
@@ -218,7 +159,18 @@ export default function CompanyRuleManage() {
     const [rows,setRows] = useState([]);
     const [filterRows,setFilterRows] = useState([]);
     const [editedRows, setEditedRows] = React.useState([]);
-    const [selectedStaff,setSelectedStaff] = useState(null);
+    const [ruleRequest,setRuleRequest] = useState({
+      id:0,
+      NeedWorkMinute:0,
+      DepartmentName:'',
+      DepartmentId:1,
+      CompanyId:parseInt(sessionStorage.getItem('CompanyId'), 10),
+      CheckInStartTime:'09:00:00',
+      CheckInEndTime:'09:00:00',
+      CheckOutStartTime:'18:00:00',
+      CheckOutEndTime:'18:00:00',
+      AfternoonTime:''
+    });
     const [departments,setDepartments] = useState([]);
     const [open, setOpen] = useState(false);
     const isDisabled = editedRows.length === 0;
@@ -228,31 +180,20 @@ export default function CompanyRuleManage() {
         ...item,
       }));
       console.log(modifiedRows)
-        // try {
-        //   const response = await axios.patch(`${apiUrl}/member/updateinfo`, modifiedRows, {
-        //     headers: {
-        //         'X-Ap-Token':`${token}`,  // 
-        //         'Content-Type': 'application/json'
-        //     }
-        // });
-        //   if(response.status === 200) {     
-        //     const newData = await axios.get(`${apiUrl}/member/student`, {
-        //       headers: {
-        //         'X-Ap-Token':`${token}`
-        //       }
-        //     });
-        //     alert('修改成功');
-        //     setRows(newData.data.List);
-        //     setFilterRows(newData.data.List);
-        //     setEditedRows([]);
-        //   }else {
-        //     alert('修改失敗');
-        //   }
+        try {
+          const response = await axios.post(`${appsetting.apiUrl}/admin/modifyrule`, modifiedRows,config);
+          if(response.status === 200) {     
+            alert('修改成功');
+            fetchData();
+            setEditedRows([]);
+          }else {
+            alert('修改失敗');
+          }
     
-        // } catch (error) {
-        //   console.error('Failed to fetch user data:', error);
-        //   alert('修改失敗');
-        // }
+        } catch (error) {
+          console.error('Failed to fetch user data:', error);
+          alert('修改失敗');
+        }
     };
 
     const processRowUpdate = (newRow, oldRow) => {
@@ -270,9 +211,9 @@ export default function CompanyRuleManage() {
     };
     const handleCancelUpdate = () => {
       setEditedRows([]);
-      setFilterRows(rows);
+      fetchData();
     };
-    const handleClickOpen = (params) => {
+    const handleClickOpen = () => {
 
       setOpen(true);
     };
@@ -295,6 +236,7 @@ export default function CompanyRuleManage() {
       }
   };
 
+
   const fetchDepartmentData = async () => {
     try {       
       const response = await axios.get(`${appsetting.apiUrl}/admin/departments`,config);
@@ -311,25 +253,27 @@ export default function CompanyRuleManage() {
       fetchData();
       fetchDepartmentData();
     }, []); 
-    const handleVerify = async (isPass) => {     
-        const request = {
-          VacationId : selectedStaff.id,
-          IsPass:isPass
-        }
+    const handleInsert = async () => {     
         try {
-          const response = await axios.patch(`${appsetting.apiUrl}/admin/rules`,config);
+          const response = await axios.patch(`${appsetting.apiUrl}/admin/newrule`,ruleRequest,config);
           if (response.status === 200) {
+            alert('新增成功');
             fetchData();
             handleClose();
           }
         } catch (error) {
           console.error("Error logging in:", error);
-          fetchData();
-          handleClose();
-          alert('該員工之請假額度已到，故系統審核未通過2');
+          alert('該部門已有相關規定 請勿重複新增');
         }          
     }
-  
+    const handleInputChange = (event, propertyName) => {
+      const value = event.target ? event.target.value : event;
+      console.log(value)
+      setRuleRequest((prevData) => ({
+          ...prevData,
+          [propertyName]: value,
+      }));   
+  };
 
   return (
     <>
@@ -352,7 +296,110 @@ export default function CompanyRuleManage() {
 
 
             <Grid item xs={1}>      
-                <Button variant="outlined" endIcon={<PersonAddIcon/>} onClick={()=>handleClickOpen(true)}>新增員工</Button>
+                <Button variant="outlined" endIcon={<PersonAddIcon/>} onClick={handleClickOpen}>新增規定</Button>
+
+                <Dialog open={open} onClose={handleClose}>
+                  <DialogTitle>新增規定</DialogTitle>
+                  <DialogContent>
+                    <DialogContentText>
+                      請注意  一個部門只能有設置單一規定 請勿重複設置
+                    </DialogContentText>
+                    <Grid container spacing={2} style={{marginBottom:'1%'}}>
+                        <Grid item xs={3}> 
+                            <TextField
+                              autoFocus
+                              margin="dense"
+                              id="name"
+                              label="工作時數"
+                              type="number"
+                              variant="standard"
+                              value={ruleRequest.NeedWorkMinute}
+                              onChange={(e) => handleInputChange(e, 'NeedWorkMinute')}
+                            />
+                        </Grid>
+                        <Grid item xs={3}> 
+                          <FormControl variant="standard" sx={{ m: 1, minWidth: 120 }}>
+                            <InputLabel id="demo-simple-select-standard-label">部門</InputLabel>
+                            <Select
+                              labelId="demo-simple-select-standard-label"
+                              id="demo-simple-select-standard"
+                              value={ruleRequest.DepartmentId}
+                              label="Age"
+                              onChange={(e) => handleInputChange(e, 'DepartmentId')}
+                            >
+                              {departments.map((option) => (
+                                <MenuItem  key={option.id} value={option.id}>
+                                  {option.DepartmentName}
+                                </MenuItem >
+                              ))}
+                            </Select>
+                          </FormControl>
+                        </Grid>
+                        <Grid item xs={3}> 
+                            <TextField
+                              autoFocus
+                              margin="dense"
+                              id="name"
+                              label="上班時段起"
+                              variant="standard"
+                              value={ruleRequest.CheckInStartTime}
+                              onChange={(e) => handleInputChange(e, 'CheckInStartTime')}
+                            />
+                        </Grid>
+                        <Grid item xs={3}> 
+                            <TextField
+                              autoFocus
+                              margin="dense"
+                              id="name"
+                              label="上班時段止"
+                              variant="standard"
+                              value={ruleRequest.CheckInEndTime}
+                              onChange={(e) => handleInputChange(e, 'CheckInEndTime')}
+                            />
+                        </Grid>
+                        <Grid item xs={3}> 
+                            <TextField
+                              autoFocus
+                              margin="dense"
+                              id="name"
+                              label="下班時段起"
+                              variant="standard"
+                              value={ruleRequest.CheckOutStartTime}
+                              onChange={(e) => handleInputChange(e, 'CheckOutStartTime')}
+                            />
+                        </Grid>
+                        <Grid item xs={3}> 
+                            <TextField
+                              autoFocus
+                              margin="dense"
+                              id="name"
+                              label="下班時段止"
+                              variant="standard"
+                              value={ruleRequest.CheckOutEndTime}
+                              onChange={(e) => handleInputChange(e, 'CheckOutEndTime')}
+                            />
+                        </Grid>
+                        <Grid item xs={3}> 
+                            <TextField
+                              autoFocus
+                              margin="dense"
+                              id="name"
+                              label="午休時段"
+                              variant="standard"
+                              placeholder='自由設定'
+                              value={ruleRequest.AfternoonTime}
+                              onChange={(e) => handleInputChange(e, 'AfternoonTime')}
+                            />
+                        </Grid>
+                    </Grid>
+
+                  </DialogContent>
+                  <DialogActions>
+                    <Button onClick={handleClose}>取消</Button>
+                    <Button onClick={handleInsert}>新增</Button>
+                  </DialogActions>
+                </Dialog>
+
             </Grid>  
             <Grid item xs={1}>  
                 <Button variant="outlined" disabled={isDisabled} onClick={handleRuleUpdateSave}  endIcon={<SaveIcon />}> 
@@ -376,6 +423,7 @@ export default function CompanyRuleManage() {
                 },
             },
             }}
+            rowHeight={80}
             disableColumnMenu
             pageSizeOptions={[30,20,10]}
             disableRowSelectionOnClick

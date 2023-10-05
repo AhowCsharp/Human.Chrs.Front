@@ -25,6 +25,16 @@ import {
   TableContainer,
   TablePagination,
 } from '@mui/material';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import TextField from '@mui/material/TextField';
+import Select from '@mui/material/Select';
+import Grid from '@mui/material/Grid';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
 // components
 import Label from '../components/label';
 import Iconify from '../components/iconify';
@@ -82,6 +92,8 @@ function applySortFilter(array, comparator, query) {
 export default function AdminPage() {
   const [open, setOpen] = useState(null);
 
+  const [formOpen, setFormOpen] = React.useState(false);
+
   const [isLoading, setIsLoading] = useState(true); 
 
   const [page, setPage] = useState(0);
@@ -98,6 +110,20 @@ export default function AdminPage() {
 
   const [admins,setAdmins] = useState([]);
 
+  const [departments,setDepartments] = useState([]);
+
+  const [adminRequest,setAdminRequest] = useState({
+    id:0,
+    CompanyId:parseInt(sessionStorage.getItem('CompanyId'), 10),
+    UserName:'',
+    Account:'',
+    Password:'',
+    Auth:0,
+    WorkPosition:'',
+    StaffNo:'',
+    DepartmentId:parseInt(sessionStorage.getItem('DepartmentId'), 10),
+    Status:true
+  });
 
   const config = {
     headers: {
@@ -107,7 +133,13 @@ export default function AdminPage() {
       'X-Ap-AdminToken':sessionStorage.getItem('AdminToken')
     }
 };
+  const handleClickOpen = () => {
+    setFormOpen(true);
+  };
 
+  const handleClose = () => {
+    setFormOpen(false);
+  };
   const fetchAdminsData = async () => {
     setIsLoading(true);  // 開始加載
     try {       
@@ -134,6 +166,33 @@ export default function AdminPage() {
   const handleCloseMenu = () => {
     setOpen(null);
   };
+  const fetchDepartmentData = async () => {
+    try {       
+      const response = await axios.get(`${appsetting.apiUrl}/admin/departments`,config);
+      // 檢查響應的結果，並設置到 state
+      if (response.status === 200) {
+        setDepartments(response.data);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+};
+
+const submitNewAdmin = async () => {
+  try {       
+    const response = await axios.post(`${appsetting.apiUrl}/admin/manager`,adminRequest,config);
+    // 檢查響應的結果，並設置到 state
+    if (response.status === 200) {
+      fetchAdminsData();
+      handleClose();
+    }
+  } catch (error) {
+    console.error('Error fetching data:', error);
+  }
+};
+    useEffect(() => {
+      fetchDepartmentData();
+    }, []); 
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === 'asc';
@@ -179,6 +238,15 @@ export default function AdminPage() {
     setFilterName(event.target.value);
   };
 
+  const handleInputChange = (event, propertyName) => {
+    const value = event.target ? event.target.value : event;
+    console.log(value)
+    setAdminRequest((prevData) => ({
+        ...prevData,
+        [propertyName]: value,
+    }));   
+};
+
   const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - admins.length) : 0;
 
   const filteredUsers = applySortFilter(admins, getComparator(order, orderBy), filterName);
@@ -193,7 +261,7 @@ export default function AdminPage() {
                 alignItems: 'center', 
                 justifyContent: 'center', 
                 height: '85vh', 
-                backgroundColor: 'black' 
+                backgroundColor: 'white' 
             }}>
             <CircularProgress color="success" />
         </Box>
@@ -212,9 +280,110 @@ export default function AdminPage() {
           <Typography variant="h4" gutterBottom>
             管理者列表
           </Typography>
-          <Button variant="outlined" startIcon={<Iconify icon="eva:plus-fill" />}>
+          <Button variant="outlined" startIcon={<Iconify icon="eva:plus-fill" />} onClick={handleClickOpen}>
             新增管理者
           </Button>
+
+          <Dialog open={formOpen} onClose={handleClose}>
+            <DialogTitle>新增管理者</DialogTitle>
+            <DialogContent>
+              <DialogContentText  style={{marginBottom:'5%'}}>
+                  請確認自身權限是否足夠  權限10為上限 為最高管理者
+              </DialogContentText>
+              <Grid container spacing={2} style={{marginBottom:'1%'}}>
+                        <Grid item xs={3}> 
+                            <TextField
+                              autoFocus
+                              margin="dense"
+                              id="name"
+                              label="管理者名稱"
+                              variant="standard"
+                              value={adminRequest.UserName}
+                              onChange={(e) => handleInputChange(e, 'UserName')}
+                            />
+                        </Grid>
+                        <Grid item xs={3}> 
+                          <FormControl variant="standard" sx={{ m: 1, minWidth: 120 }}>
+                            <InputLabel id="demo-simple-select-standard-label">部門</InputLabel>
+                            <Select
+                              labelId="demo-simple-select-standard-label"
+                              id="demo-simple-select-standard"
+                              value={adminRequest.DepartmentId}
+                              label="Age"
+                              onChange={(e) => handleInputChange(e, 'DepartmentId')}
+                            >
+                              {departments.map((option) => (
+                                <MenuItem  key={option.id} value={option.id}>
+                                  {option.DepartmentName}
+                                </MenuItem >
+                              ))}
+                            </Select>
+                          </FormControl>
+                        </Grid>
+                        <Grid item xs={3}> 
+                            <TextField
+                              autoFocus
+                              margin="dense"
+                              id="name"
+                              label="帳號"
+                              variant="standard"
+                              value={adminRequest.Account}
+                              onChange={(e) => handleInputChange(e, 'Account')}
+                            />
+                        </Grid>
+                        <Grid item xs={3}> 
+                            <TextField
+                              autoFocus
+                              margin="dense"
+                              id="name"
+                              label="密碼"
+                              variant="standard"
+                              value={adminRequest.Password}
+                              onChange={(e) => handleInputChange(e, 'Password')}
+                            />
+                        </Grid>
+                        <Grid item xs={3}> 
+                            <TextField
+                              autoFocus
+                              margin="dense"
+                              id="name"
+                              label="權限"
+                              type='number'
+                              variant="standard"
+                              value={adminRequest.Auth}
+                              onChange={(e) => handleInputChange(e, 'Auth')}
+                            />
+                        </Grid>
+                        <Grid item xs={3}> 
+                            <TextField
+                              autoFocus
+                              margin="dense"
+                              id="name"
+                              label="職位"
+                              variant="standard"
+                              value={adminRequest.WorkPosition}
+                              onChange={(e) => handleInputChange(e, 'WorkPosition')}
+                            />
+                        </Grid>
+                        <Grid item xs={3}> 
+                            <TextField
+                              autoFocus
+                              margin="dense"
+                              id="name"
+                              label="員編"
+                              variant="standard"
+                              placeholder='自由設定'
+                              value={adminRequest.StaffNo}
+                              onChange={(e) => handleInputChange(e, 'StaffNo')}
+                            />
+                        </Grid>
+                    </Grid>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleClose}>取消</Button>
+              <Button onClick={submitNewAdmin}>新增</Button>
+            </DialogActions>
+          </Dialog>
         </Stack>
 
         <Card  sx={{width:'100%' }}>
