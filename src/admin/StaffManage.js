@@ -100,10 +100,11 @@ export default function StaffManage() {
             },
         },
         {
-            field: 'WorkLocation',
-            headerName: '工作地點',
-            width: 150,
+            field: 'Status',
+            headerName: '是否在職',
+            width: 100,
             editable: true,
+            valueGetter: (params) => params.row.Status === 1 ? '仍在職' : '已離職'
         },
         {
             field: 'Details',
@@ -151,7 +152,7 @@ export default function StaffManage() {
         StaffPhoneNumber: '',
         StaffName: '',
         Auth: 0,
-        DepartmentId: 1,
+        DepartmentId: null,
         MenstruationDays: 1,
         MenstruationHours: 0,
         TocolysisDays: 7,
@@ -296,7 +297,7 @@ export default function StaffManage() {
                 StaffPhoneNumber: '',
                 StaffName: '',
                 Auth: 0,
-                DepartmentId: 1,
+                DepartmentId: null,
                 MenstruationDays: 1,
                 MenstruationHours: 0,
                 TocolysisDays: 7,
@@ -368,12 +369,22 @@ export default function StaffManage() {
     };
 
     const handleSubmit = async () => {
+        if(staff.DepartmentId === 0) {
+            alert('部門尚未選擇');
+            return
+        }
+
+        if(staff.StaffAccount.length <= 5 || staff.StaffPassWord.length <= 5) {
+            alert('帳號及密碼長度需大於5');
+            return
+        }
 
         const staffRequest = {
             ...staff,
-            EntryDate: staff.EntryDate.format('YYYY-MM-DD'),
-            ResignationDate: staff.ResignationDate.format('YYYY-MM-DD')
-        }       
+            EntryDate: dayjs.isDayjs(staff.EntryDate) ? staff.EntryDate.format('YYYY-MM-DD') : staff.EntryDate,
+            ResignationDate: dayjs.isDayjs(staff.ResignationDate) ? staff.ResignationDate.format('YYYY-MM-DD') : staff.ResignationDate
+        }
+        
         try {
             const response = await axios.post(`${appsetting.apiUrl}/admin/newstaff`, staffRequest,config);
             if (response.status === 200) {
@@ -383,7 +394,7 @@ export default function StaffManage() {
             }
         } catch (error) {
             console.error("Error logging in:", error);
-            alert('失敗 欄位有誤');
+            alert('失敗 資料型態有誤/該帳號已有人註冊');
         }          
     }
     // const destorySubmit = async (seq) => {
@@ -597,14 +608,17 @@ export default function StaffManage() {
                             <Select
                                 labelId="demo-simple-select-required-label"
                                 id="demo-simple-select-required"
-                                value={staff.DepartmentId || 1}
+                                value={staff.DepartmentId || 0}
                                 label="typeId"
                                 size="small"
                                 style={{width:'100%'}}
                                 onChange={(e) => handleInputChange(e, 'DepartmentId')}
                                 >
+                                    <MenuItem value={0}>
+                                        <em>None</em>
+                                    </MenuItem>
                                     {departments.map((type) => (
-                                        <MenuItem key={type.id} value={type.id}>
+                                        <MenuItem key={type.id} value={type.id} name={type.DepartmentName}>
                                             {type.DepartmentName}
                                         </MenuItem>
                                     ))}
@@ -617,6 +631,8 @@ export default function StaffManage() {
                             <TextField id="WorkLocation" 
                                 type="search" size="small"
                                 style={{width:'100%'}}
+                                inputProps={{ readOnly: true }}
+                                placeholder='選擇部門後會自動填寫'
                                 value={staff.WorkLocation}
                                 onChange={(e) => handleInputChange(e, 'WorkLocation')}/>
                         </Grid>
