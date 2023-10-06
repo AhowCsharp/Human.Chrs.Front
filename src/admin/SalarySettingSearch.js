@@ -53,7 +53,7 @@ export default function SalarySettingSearch({ rows, setFilterRows }) {
       <StyledSearch
         value={filterValue}
         onChange={handleFilter}
-        placeholder="Search Vacation..."
+        placeholder="Search Setting..."
         startAdornment={
           <InputAdornment position="start">
             <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled', width: 20, height: 20 }} />

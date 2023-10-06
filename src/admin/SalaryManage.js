@@ -42,6 +42,9 @@ import { DateTimeField } from '@mui/x-date-pickers/DateTimeField';
 import { StaticDatePicker } from '@mui/x-date-pickers/StaticDatePicker';
 import Select from '@mui/material/Select';
 import Slide from '@mui/material/Slide';
+import IconButton from '@mui/material/IconButton';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { DataGrid } from '@mui/x-data-grid';
 import appsetting from '../Appsetting';
 import SalarySettingSearch from './SalarySettingSearch';
@@ -65,13 +68,13 @@ export default function SalaryManage() {
           field: 'StaffName',
           headerName: '姓名',
           width: 100,
-          editable: true,
+          editable: false,
       },
       {
           field: 'StaffNo',
           headerName: '員編',
           width: 100,
-          editable: true,
+          editable: false,
       },
       {
           field: 'BasicSalary',
@@ -83,28 +86,56 @@ export default function SalaryManage() {
           field: 'FullCheckInMoney',
           headerName: '全勤獎金',
           width: 120,
-          editable: true,
+          editable: false,
       },
       {
           field: 'OtherPercent',
           headerName: '分紅%數',
           width: 120,
           editable: true,
+          valueFormatter: (params) => 
+          `${params.value}%`
       },
       {
         field: 'Calculate',
         headerName: '發放薪資',
-        width: 200,
+        width: 150,
         renderCell: (params) => (
           <Button onClick={() => handleCalculateClick(params.row.StaffId)}>
             計算當月薪資
           </Button>
         ),
-    } 
+      } 
+      ,
+      {
+        field: 'Actions',
+        headerName: '',
+        width: 200,
+        renderCell: (params) => (
+          <>
+            <IconButton aria-label="delete" onClick={() => handleEditClickOpen(params.row,false)}>
+              <EditIcon />
+            </IconButton>
+            <IconButton aria-label="delete" onClick={() => handleDeleteSubmit(params.row.id)}>
+              <DeleteIcon />
+            </IconButton>
+          </>
+
+        ),
+      } 
     ];
     const [rows,setRows] = useState([]);
     const [filterRows,setFilterRows] = useState([]);
-    const [selectedStaff,setSelectedStaff] = useState(null);
+    const [staffs,setStaffs] = useState([]);
+    const [isCreate,setIsCreate] = useState(false);
+    const [request,setRequest] = useState({
+      id:0,
+      StaffId:1,
+      CompanyId:parseInt(sessionStorage.getItem('CompanyId'), 10),
+      BasicSalary:0,
+      FullCheckInMoney:0,
+      OtherPercent:0
+    })
 
     const navigate = useNavigate();
 
@@ -114,14 +145,29 @@ export default function SalaryManage() {
     };
     const [open, setOpen] = useState(false);
 
-    const handleClickOpen = (params) => {
-      setSelectedStaff(params.row);
-      console.log(params.row);
+    const handleClickOpen = (status) => {
+      setRequest({
+        id:0,
+        StaffId:1,
+        CompanyId:parseInt(sessionStorage.getItem('CompanyId'), 10),
+        BasicSalary:0,
+        FullCheckInMoney:0,
+        OtherPercent:0
+      })
+      setIsCreate(status)
+      setOpen(true);
+    };
+
+    const handleEditClickOpen = (row,status) => {
+      setRequest({
+        ...request,
+        ...row
+      })
+      setIsCreate(status)
       setOpen(true);
     };
   
     const handleClose = () => {
-      setSelectedStaff(null);
       setOpen(false);
     };
 
@@ -138,53 +184,64 @@ export default function SalaryManage() {
       }
   };
 
+  const fetchStaffsData = async () => {
+    try {       
+      const response = await axios.get(`${appsetting.apiUrl}/admin/staffs`,config);
+      // 檢查響應的結果，並設置到 state
+      if (response.status === 200) {
+        setStaffs(response.data)
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+};
+
     useEffect(() => {
+      fetchStaffsData();
       fetchData();
     }, []); 
-    const handleVerify = async (isPass) => {     
-        const request = {
-          VacationId : selectedStaff.id,
-          IsPass:isPass
-        }
-        try {
-          const response = await axios.patch(`${appsetting.apiUrl}/admin/vacation`, request ,config);
-          if (response.status === 200) {
-            fetchData();
-            handleClose();
-          }
-        } catch (error) {
-          console.error("Error logging in:", error);
-          fetchData();
-          handleClose();
-          alert('該員工之請假額度已到，故系統審核未通過2');
-        }          
-    }
+
     // useEffect(() => {
     //     fetchStaffDetailData();
     // }, []); 
     // const navigate = useNavigate();
 
+    const handleInputChange = (event, propertyName) => {
+      const value = event.target ? event.target.value : event;
+      console.log(value)
+      setRequest((prevData) => ({
+          ...prevData,
+          [propertyName]: value,
+      }));   
+  };
+  const handleSubmit = async () => {
+    
+    try {
+        const response = await axios.post(`${appsetting.apiUrl}/admin/salarysetting`, request ,config);
+        if (response.status === 200) {
+        alert('成功');
+        fetchData();
+        handleClose();
+        }
+    } catch (error) {
+        console.error("Error logging in:", error);
+        alert('失敗 該員工已有薪資設定/該員工雇用類別不為全職');
+    }          
+}
 
-    // const handleInputChange = (event, propertyName) => {
-    //   const value = event.target ? event.target.value : event;
-    //   if(propertyName === 'HasCrimeRecord') {
-    //       // eslint-disable-next-line no-restricted-globals
-    //       if(!isNaN(value)) {
-    //         setStaffInfo((prevData) => ({
-    //           ...prevData,
-    //           [propertyName]: Number(value),
-    //         })); 
-    //       }else {
-    //         alert('請輸入數字')
-    //       }
- 
-    //   }else {
-    //     setStaffInfo((prevData) => ({
-    //       ...prevData,
-    //       [propertyName]: value,
-    //   }));
-    //   }
-    // };
+const handleDeleteSubmit = async (id) => {
+    
+  try {
+      const response = await axios.post(`${appsetting.apiUrl}/admin/salarysetting?id=${id}`, request ,config);
+      if (response.status === 200) {
+        alert('成功');
+        fetchData();
+      }
+  } catch (error) {
+      console.error("Error logging in:", error);
+      alert('請先更改該員工就職狀態');
+  }          
+}
   
 
   return (
@@ -207,9 +264,85 @@ export default function SalaryManage() {
             </Grid>
 
 
-            {/* <Grid item xs={2}>      
-                <Button variant="outlined" endIcon={<PersonAddIcon/>} onClick={()=>handleClickOpen(true)}>新增員工</Button>
-            </Grid>      */}
+            <Grid item xs={2}>      
+                <Button variant="outlined" endIcon={<PersonAddIcon/>} onClick={()=>handleClickOpen(true)}>新增設定</Button>
+
+                <Dialog open={open} 
+                  onClose={handleClose}
+                  TransitionComponent={Transition}
+                  keepMounted>
+                  <DialogTitle>{isCreate?'新增薪資設定':'修改薪資設定'}</DialogTitle>
+                  <DialogContent>
+                      <Box
+                          sx={{
+                              margin:'auto',
+                              width: '100%',
+                              height: 'auto',                    
+                          }}
+                          >
+                              <Grid container spacing={2} >                          
+                                  <Grid item xs={3}>
+                                      <InputLabel shrink htmlFor="bootstrap-input">
+                                          員工姓名
+                                      </InputLabel>  
+                                      <Select
+                                      labelId="demo-simple-select-required-label"
+                                      id="demo-simple-select-required"
+                                      value={request.StaffId }
+                                      inputProps={{ readOnly: !isCreate }}
+                                      label=""
+                                      size="small"
+                                      style={{width:'100%'}}
+                                      onChange={(e) => handleInputChange(e, 'StaffId')}
+                                      >
+                                        {
+                                          staffs.map((staff) => (
+                                            <MenuItem key={staff.id} value={staff.id}>
+                                              {staff.StaffName}
+                                            </MenuItem>
+                                          ))
+                                        }
+                                      </Select>
+                                  </Grid>
+                                  <Grid item xs={4}>      
+                                      <InputLabel shrink htmlFor="bootstrap-input">
+                                          基本薪水
+                                      </InputLabel>       
+                                      <TextField id="StaffNo" 
+                                          type="number" size="small"
+                                          value={request.BasicSalary}
+                                          onChange={(e) => handleInputChange(e, 'BasicSalary')}/>
+                                  </Grid>
+
+                                  <Grid item xs={4}>      
+                                      <InputLabel shrink htmlFor="bootstrap-input">
+                                          全勤獎金
+                                      </InputLabel>       
+                                      <TextField id="StaffNo" 
+                                          type="number" size="small"
+                                          value={request.FullCheckInMoney}
+                                          onChange={(e) => handleInputChange(e, 'FullCheckInMoney')}/>
+                                  </Grid>
+
+                                  <Grid item xs={4}>      
+                                      <InputLabel shrink htmlFor="bootstrap-input">
+                                          獎金分紅%數設定
+                                      </InputLabel>       
+                                      <TextField id="StaffNo" 
+                                          type="number" size="small"
+                                          value={`${request.OtherPercent}`}
+                                          onChange={(e) => handleInputChange(e, 'OtherPercent')}/>
+                                  </Grid>      
+                              </Grid>
+                          </Box>
+                  </DialogContent>
+                  <DialogActions>
+                    <Button onClick={handleClose}>取消</Button>
+                    <Button onClick={handleSubmit}>{isCreate?'新增':'修改'}</Button>
+                  </DialogActions>
+                </Dialog>
+  
+            </Grid>     
         </Grid>
         <DataGrid
             rows={filterRows}

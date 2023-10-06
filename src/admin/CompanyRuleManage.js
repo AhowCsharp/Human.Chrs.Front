@@ -155,6 +155,12 @@ export default function CompanyRuleManage() {
         width: 150,
         editable: true,
       },
+      {
+        field: 'WorkAddress',
+        headerName: '工作定位',
+        width: 250,
+        editable: true,
+      },
     ];
     const [rows,setRows] = useState([]);
     const [filterRows,setFilterRows] = useState([]);
@@ -169,7 +175,8 @@ export default function CompanyRuleManage() {
       CheckInEndTime:'09:00:00',
       CheckOutStartTime:'18:00:00',
       CheckOutEndTime:'18:00:00',
-      AfternoonTime:''
+      AfternoonTime:'',
+      WorkAddress:''
     });
     const [departments,setDepartments] = useState([]);
     const [open, setOpen] = useState(false);
@@ -186,13 +193,11 @@ export default function CompanyRuleManage() {
             alert('修改成功');
             fetchData();
             setEditedRows([]);
-          }else {
-            alert('修改失敗');
           }
-    
+   
         } catch (error) {
           console.error('Failed to fetch user data:', error);
-          alert('修改失敗');
+          alert('修改失敗 請確認地址及其他欄位是否正確');
         }
     };
 
@@ -263,7 +268,7 @@ export default function CompanyRuleManage() {
           }
         } catch (error) {
           console.error("Error logging in:", error);
-          alert('該部門已有相關規定 請勿重複新增');
+          alert('請確認該部門是否已有規定/或是地址部分輸入是否正確');
         }          
     }
     const handleInputChange = (event, propertyName) => {
@@ -280,7 +285,7 @@ export default function CompanyRuleManage() {
       <Box
         sx={{
           margin:'auto',
-          width: '90%',
+          width: '100%',
           height: 700,
         }}
       >
@@ -389,6 +394,18 @@ export default function CompanyRuleManage() {
                               placeholder='自由設定'
                               value={ruleRequest.AfternoonTime}
                               onChange={(e) => handleInputChange(e, 'AfternoonTime')}
+                            />
+                        </Grid>
+                        <Grid item xs={3}> 
+                            <TextField
+                              autoFocus
+                              margin="dense"
+                              id="name"
+                              label="工作定位地址"
+                              variant="standard"
+                              placeholder='請輸入正確的地址'
+                              value={ruleRequest.WorkAddress}
+                              onChange={(e) => handleInputChange(e, 'WorkAddress')}
                             />
                         </Grid>
                     </Grid>

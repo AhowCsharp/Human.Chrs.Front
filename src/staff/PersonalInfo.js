@@ -49,6 +49,7 @@ import { MobileDatePicker } from '@mui/x-date-pickers/MobileDatePicker';
 import { DemoContainer, DemoItem } from '@mui/x-date-pickers/internals/demo';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { MobileDateTimePicker } from '@mui/x-date-pickers/MobileDateTimePicker';
+import { MobileTimePicker } from '@mui/x-date-pickers/MobileTimePicker';
 import Slide from '@mui/material/Slide';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import {AppTasks} from '../sections/@dashboard/app';
@@ -138,6 +139,7 @@ export default function PersonalInfo() {
     const [checkOpen, setCheckOpen] = useState(false);
     const [overTimeOpen, setOverTimeOpen] = useState(false);
     const [vacationOpen, setVacationOpen] = useState(false);
+    const [amendCheckOpen, setAmendCheckOpen] = useState(false);
     const [calendarOpen, setCalendarOpen] = useState(false);
     const [memo, setMemo] = useState('');
     const [center, setCenter] = useState({lat: 41.3851, lng: 2.1734 });
@@ -176,6 +178,14 @@ export default function PersonalInfo() {
         Type:0,
         Reason:''
     })
+
+    const [amendCheckRequest, setAmendCheckRequest] = useState({
+        CheckDate:dayjs().millisecond(0),
+        CheckTime:dayjs().millisecond(0),
+        CheckType:0,
+        Reason:''
+    })
+
     const [eventRequest, setEventRequest] = useState({
         Title:'',
         LevelStatus:0,
@@ -392,6 +402,9 @@ export default function PersonalInfo() {
             case 'calendar':
                 setCalendarOpen(true);
                     break;
+            case 'amendCheck':
+                setAmendCheckOpen(true);
+                    break;
           default:
         }
       };
@@ -422,6 +435,9 @@ export default function PersonalInfo() {
             case 'calendar':
                 setCalendarOpen(false);
                 break;
+            case 'amendCheck':
+                setAmendCheckOpen(false);
+                    break;
             default:
           }
     };
@@ -529,6 +545,35 @@ export default function PersonalInfo() {
             }                    
         }
 
+        const handleAmendCheckSubmit = async () => {
+
+            const request = {
+                CheckDate:amendCheckRequest.CheckDate.format(`YYYY-MM-DDTHH:mm:00`),
+                CheckTime:amendCheckRequest.CheckTime.format(`YYYY-MM-DDTHH:mm:00`) ,
+                CheckType:amendCheckRequest.CheckType,
+                Reason:amendCheckRequest.Reason
+            }
+            const config = {
+                headers: {
+                'X-Ap-Token': appsetting.token,
+                'X-Ap-CompanyId': sessionStorage.getItem('CompanyId'),
+                'X-Ap-UserId': sessionStorage.getItem('UserId'),
+                }
+            };     
+
+            try {
+                const response = await axios.post(`${appsetting.apiUrl}/staff/amendcheck`, request, config);
+                if (response.status === 200) {
+                alert('申請成功');
+                fetchData();
+                }
+                handleClose('amendCheck')
+            } catch (error) {
+                console.error("Error logging in:", error);
+                alert('申請失敗 欄位有問題');
+            }                    
+        }
+
         const handleEventSubmit = async () => {
             const request = {
                 Title:eventRequest.Title,
@@ -597,6 +642,25 @@ export default function PersonalInfo() {
                   }));
             }else {
                 setVacationRequest((prevRequest) => ({
+                    ...prevRequest,
+                    [fieldName]: value.target ? value.target.value : value, 
+                }));  
+            }               
+        };
+
+        const handleAmendCheckInputChange = (value, fieldName) => {   
+            if (fieldName === 'CheckDate') {
+                setAmendCheckRequest((prevRequest) => ({
+                  ...prevRequest,
+                  CheckDate: value // directly use the value if it's a dayjs object
+                }));
+            }else if(fieldName === 'CheckTime') {
+                setAmendCheckRequest((prevRequest) => ({
+                    ...prevRequest,
+                    CheckTime: value // directly use the value if it's a dayjs object
+                  }));
+            }else {
+                setAmendCheckRequest((prevRequest) => ({
                     ...prevRequest,
                     [fieldName]: value.target ? value.target.value : value, 
                 }));  
@@ -786,9 +850,68 @@ export default function PersonalInfo() {
                                     </Button>
                                 </Grid>
                                 <Grid item xs={4} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>     
-                                    <Button variant="contained" endIcon={<FactCheckIcon />} size="large" style={{background:'orange',whiteSpace: 'nowrap'}}>
-                                        請款
+                                    <Button variant="contained" endIcon={<FactCheckIcon />} size="large" style={{background:'orange',whiteSpace: 'nowrap'}} onClick={()=>handleClickOpen('amendCheck')}>
+                                        補卡
                                     </Button>
+
+                                    <Dialog open={amendCheckOpen} onClose={()=>handleClose('overTime')}>
+                                        <DialogTitle>休假申請</DialogTitle>
+                                        <DialogContent>
+                                            <FormControl>
+                                            <FormLabel id="demo-row-radio-buttons-group-label">補卡類別</FormLabel>
+                                                <RadioGroup
+                                                    row
+                                                    aria-labelledby="demo-row-radio-buttons-group-label"
+                                                    name="row-radio-buttons-group"
+                                                    value={amendCheckRequest.CheckType}
+                                                    onChange={(e) => handleAmendCheckInputChange(e.target.value, 'CheckType')}
+                                                >
+                                                    <FormControlLabel value={0} control={<Radio />} label="上班" />
+                                                    <FormControlLabel value={1} control={<Radio />} label="下班" />
+                                                </RadioGroup>
+                                            </FormControl>
+                                            <LocalizationProvider dateAdapter={AdapterDayjs}>
+                      
+                                                <DemoContainer components={['MobileDatePicker','MobileTimePicker',]}>
+                                                    <MobileDatePicker 
+                                                        label="選擇補卡日期"
+                                                        value={amendCheckRequest.CheckDate}
+                                                        onChange={(e) => {
+                                                            const formattedDate = e.clone().millisecond(0).second(0); // 將毫秒和秒設為 0
+                                                            handleAmendCheckInputChange(formattedDate, 'CheckDate');
+                                                        }}
+                                                        format="YYYY-MM-DD" // 指定日期格式为 YYYY-MM-DD
+                                                    />
+                                                    <MobileTimePicker  
+                                                        label="打卡時間"
+                                                        value={amendCheckRequest.CheckTime}
+                                                        onChange={(e) => {
+                                                            const formattedDate = e.clone().millisecond(0).second(0); // 將毫秒和秒設為 0
+                                                            handleAmendCheckInputChange(formattedDate, 'CheckTime');
+                                                        }}
+                                                        format="HH:mm:00" // 指定日期格式为 YYYY-MM-DD
+                                                    />
+                                                </DemoContainer>
+                                            
+                                            
+                                            </LocalizationProvider>
+                                            <TextField
+                                                id="outlined-multiline-static"
+                                                label="補卡緣由"
+                                                multiline
+                                                rows={2}
+                                                style={{marginTop:'5%',width:'100%'}}
+                                                value={amendCheckRequest.Reason}
+                                                onChange={(e) => handleAmendCheckInputChange(e.target.value, 'Reason')}
+                                                />
+                                        </DialogContent>
+                                        <DialogActions>
+                                        <Button onClick={()=>handleClose('amendCheck')}>取消</Button>
+                                        <Button onClick={handleAmendCheckSubmit}>申請</Button>
+                                        </DialogActions>
+                                    </Dialog>
+
+
                                 </Grid>
                                 <Grid item xs={4} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>     
                                     <Button variant="contained" endIcon={<FactCheckIcon />} size="large" style={{background:'orange',whiteSpace: 'nowrap'}} onClick={handleCheckListClick}>
@@ -802,7 +925,7 @@ export default function PersonalInfo() {
                                 </Grid>
                                 <Grid item xs={4} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>     
                                     <Button variant="contained" endIcon={<FactCheckIcon />} size="large" style={{background:'orange',whiteSpace: 'nowrap'}} onClick={handleOverTimeListClick}>
-                                        加班
+                                        紀錄
                                     </Button>
                                 </Grid>
                             </Grid>

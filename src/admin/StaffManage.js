@@ -356,8 +356,7 @@ export default function StaffManage() {
           TackeCareBabyHours:params.row.TackeCareBabyHours,
           PrenatalCheckUpHours:params.row.PrenatalCheckUpHours,
           OverTimeHours:params.row.OverTimeHours,
-        });
-        
+        });       
     };
     const handleInputChange = (event, propertyName) => {
         const value = event.target ? event.target.value : event;
@@ -589,7 +588,6 @@ export default function StaffManage() {
                             >
                                 <MenuItem value={1}>全職</MenuItem>
                                 <MenuItem value={2}>部分工時</MenuItem>
-                                <MenuItem value={3}>外包</MenuItem>
                             </Select>
                         </Grid>
                         <Grid item xs={3}>
