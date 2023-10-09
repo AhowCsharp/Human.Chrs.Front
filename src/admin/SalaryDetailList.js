@@ -21,6 +21,7 @@ export default function SalaryDetailList({detail,plusTotal,minusTotal,companyCos
       <Typography variant="subtitle2" gutterBottom>
           薪資加項
       </Typography>
+      {detail.BasicSalary !== 0?
       <ListItem>
         <ListItemAvatar>
           <Avatar>
@@ -28,7 +29,8 @@ export default function SalaryDetailList({detail,plusTotal,minusTotal,companyCos
           </Avatar>
         </ListItemAvatar>
         <ListItemText primary="本薪" secondary={detail.BasicSalary} />
-      </ListItem>
+      </ListItem>:null
+      }
       {detail.FullCheckInMoney !== 0?
       <ListItem>
         <ListItemAvatar>
@@ -49,7 +51,7 @@ export default function SalaryDetailList({detail,plusTotal,minusTotal,companyCos
         <ListItemText primary="績效獎金" secondary={detail.Bonus} />
       </ListItem>:null
       }
-      {detail.OverTimeMoney !== 0 && detail.OverTimeMoney !== null?
+      {detail.OverTimeMoney !== 0?
       <ListItem>
         <ListItemAvatar>
           <Avatar>
@@ -224,7 +226,7 @@ export default function SalaryDetailList({detail,plusTotal,minusTotal,companyCos
             <BeachAccessIcon />
           </Avatar>
         </ListItemAvatar>
-        <ListItemText primary="勞退提繳-雇主" secondary={detail.EmployeeRetirementFromCompany}  />
+        <ListItemText primary="勞退提繳-雇主負擔" secondary={detail.EmployeeRetirementFromCompany}  />
       </ListItem>
       <ListItem>
         <ListItemAvatar>

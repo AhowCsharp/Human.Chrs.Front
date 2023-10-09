@@ -26,6 +26,9 @@ import SalaryCalculate from './admin/SalaryCalculate';
 import AdminDetail from './admin/AdminDetail';
 import CompanyRuleManage from './admin/CompanyRuleManage';
 import DepartmentManage from './admin/DepartmentManage';
+import ParttimeManage from './admin/ParttimeManage';
+import AmendRecordsManage from './admin/AmendRecordsManage';
+import ParttimeWorkManage from './admin/ParttimeWorkManage';
 // ----------------------------------------------------------------------
 
 export default function Router() {
@@ -70,6 +73,9 @@ export default function Router() {
         { path: 'overtimesmanage', element: <OvertTimeManage /> },
         { path: 'departmentmanage', element: <DepartmentManage /> },
         { path: 'companyrulemanage', element: <CompanyRuleManage /> },
+        { path: 'parttimemanage', element: <ParttimeManage /> },
+        { path: 'parttimeworkmanage', element: <ParttimeWorkManage /> },
+        { path: 'amendrecordmanage', element: <AmendRecordsManage /> },
         { path: 'detail', element: <AdminDetail /> },
         { path: 'details/:id', element: <StaffDetail /> },
         { path: 'calculatesalary/:id', element: <SalaryCalculate /> },

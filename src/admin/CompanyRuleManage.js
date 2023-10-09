@@ -258,7 +258,10 @@ export default function CompanyRuleManage() {
       fetchData();
       fetchDepartmentData();
     }, []); 
-    const handleInsert = async () => {     
+    const handleInsert = async () => {  
+        if(ruleRequest.WorkAddress.length < 5) {
+          alert('請確認地址部分輸入是否正確');
+        }   
         try {
           const response = await axios.patch(`${appsetting.apiUrl}/admin/newrule`,ruleRequest,config);
           if (response.status === 200) {

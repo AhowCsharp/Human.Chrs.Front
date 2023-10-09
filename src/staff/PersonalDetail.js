@@ -331,6 +331,8 @@ export default function PersonalDetail() {
                 </Box>
             </Box>
             )}
+
+            
         </>
     );
 }

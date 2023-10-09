@@ -42,8 +42,23 @@ const AdminConfig = [
     icon: icon('ic_disabled'),
   },
   {
+    title: 'amendrecord',
+    path: '/admin/amendrecordmanage',
+    icon: icon('ic_disabled'),
+  },
+  {
     title: 'salarySetting',
     path: '/admin/salarymanage',
+    icon: icon('ic_disabled'),
+  },
+  {
+    title: 'parttime',
+    path: '/admin/parttimemanage',
+    icon: icon('ic_disabled'),
+  },
+  {
+    title: 'parttimework',
+    path: '/admin/parttimeworkmanage',
     icon: icon('ic_disabled'),
   },
   {

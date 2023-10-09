@@ -46,6 +46,7 @@ import StaffSearch from './StaffSearch';
 import SalaryDetailList from './SalaryDetailList';
 import CheckInOutDetailList from './CheckInOutDetailList';
 import OverTimeDetailList from './OverTimeDetailList';
+import InsuranceClass from '../Insurance/Insurance';
 
 const currentDate = new Date();      // 获取当前日期
 currentDate.setMonth(currentDate.getMonth() - 1);   // 将日期设置为上个月
@@ -61,6 +62,15 @@ export default function SalaryCalculate() {
         }
     };
     const { id } = useParams();
+    const [plusTotal,setPlusTotal]= useState(0);
+    const [insuranceLevel,setInsuranceLevel]= useState(22);
+    const [minusTotal,setMinusTotal]= useState(0);
+    const [companyCostTotal,setCompanyCostTotal]= useState(0);
+    const [finalTotal,setFinalResult] = useState(0);
+    const [checked, setChecked] = React.useState(true);
+    const [open, setOpen] = React.useState(false);
+    const [checkInOutopen, setCheckInOutopen] = React.useState(false);
+    const [overTimeopen, setOverTimeopen] = React.useState(false);  
     const [calculateResult,setCalculateResult] = useState(null);
     const [salaryRequest,setSalaryRequest] = useState({
       StaffId:parseInt(id, 10),
@@ -71,6 +81,7 @@ export default function SalaryCalculate() {
       SickHours:0,
       ThingHours:0,
       MenstruationHours:0,
+      TocolysisHours:0,
       ChildbirthHours:0,
       TakeCareBabyHours:0,
       IncomeTax:0,
@@ -84,16 +95,9 @@ export default function SalaryCalculate() {
       AdvanceFundFromCompany:0,
       EarlyOrLateAmount:0, // C#補這欄位
       OutLocationAmount:0,
-      OverTimeMoney:0 // C#補這欄位
+      OverTimeMoney:checked? calculateResult? calculateResult.OverTimeMoney:0 :0, // C#補這欄位
+      
     });
-    const [plusTotal,setPlusTotal]= useState(0);
-    const [minusTotal,setMinusTotal]= useState(0);
-    const [companyCostTotal,setCompanyCostTotal]= useState(0);
-    const [finalTotal,setFinalResult] = useState(0);
-    const [checked, setChecked] = React.useState(true);
-    const [open, setOpen] = React.useState(false);
-    const [checkInOutopen, setCheckInOutopen] = React.useState(false);
-    const [overTimeopen, setOverTimeopen] = React.useState(false);
 
     const handleoverTimeClickOpen = () => {
       setOverTimeopen(true);
@@ -120,13 +124,19 @@ export default function SalaryCalculate() {
           // 檢查響應的結果，並設置到 state
           if (response.status === 200) {
             setCalculateResult(response.data.Data);
-            console.log(response.data.Data)
             setSalaryRequest((prevSalaryRequest) => ({
               ...prevSalaryRequest, // 保留原有的属性
               BasicSalary: response.data.Data.SalarySetting.BasicSalary,
               FullCheckInMoney:response.data.Data.SalarySetting.FullCheckInMoney,
+              SickHours:(response.data.Data.TotalSickHours * response.data.Data.PerHourSalary/2),
+              OverTimeHours:checked? response.data.Data.OverTimeHours:0 ,
+              OverTimeMoney:checked? response.data.Data.OverTimeMoney:0,
+              ThingHours:(response.data.Data.TotalThingHours * response.data.Data.PerHourSalary),
+              MenstruationHours:(response.data.Data.TotalMenstruationHours * response.data.Data.PerHourSalary/2),
+              TocolysisHours:(response.data.Data.TotalTocolysisHours * response.data.Data.PerHourSalary/2),
+              TakeCareBabyHours:(response.data.Data.TotalTackeCareBabyHours * response.data.Data.PerHourSalary),
             }));
-          }
+            }
 
         } catch (error) {
           console.error('Error fetching data:', error);
@@ -135,6 +145,35 @@ export default function SalaryCalculate() {
     useEffect(() => {
         fetchStaffSalaryData();
     }, []); 
+
+    useEffect(() => {
+      const matchedItem = InsuranceClass.find(item => item.id === insuranceLevel);
+      
+      if (matchedItem) {
+        setSalaryRequest((prevSalaryRequest) => ({
+          ...prevSalaryRequest, // 保留原有的属性
+          HealthInsuranceFromCompany:matchedItem.HealthInsuranceCompany,
+          WorkerInsuranceFromCompany:matchedItem.WorkInsuranceCompany,
+          EmployeeRetirementFromCompany:matchedItem.Retirement,
+          HealthInsurance:matchedItem.HealthInsurance,
+          WorkerInsurance:matchedItem.WorkInsurance
+        }))
+      }
+    }, [insuranceLevel]);
+    
+    useEffect(() => {
+      const basicSalary = Number(salaryRequest.BasicSalary);
+      const bonus = Number(salaryRequest.Bonus);
+      const overTimeMoney = Number(salaryRequest.OverTimeMoney);
+      const fullCheckInMoney = Number(salaryRequest.FullCheckInMoney);
+  
+      if(!checked) {
+          setPlusTotal(basicSalary + bonus + fullCheckInMoney);
+      } else {
+          setPlusTotal(basicSalary + bonus + fullCheckInMoney + overTimeMoney);
+      }
+  }, [checked, salaryRequest]);
+  
 
     const navigate = useNavigate();
 
@@ -159,18 +198,56 @@ export default function SalaryCalculate() {
           alert('請輸入數字');
       }
   };
+    const returnToZero = () => {
+      setPlusTotal(0);
+      setMinusTotal(0);
+      setCompanyCostTotal(0);
+    }
 
-
-    const handleFinalResult = () => {
-      if(salaryRequest.BasicSalary !== null && salaryRequest.Bonus !== null && salaryRequest.FullCheckInMoney !== null && !checked) {
-        setPlusTotal(salaryRequest.BasicSalary+salaryRequest.Bonus+salaryRequest.FullCheckInMoney)
+    const handleTotalResult = () => {
+      returnToZero()
+      if(
+        salaryRequest.BasicSalary !== null && 
+        salaryRequest.Bonus !== null && 
+        salaryRequest.FullCheckInMoney !== null && 
+        !checked
+      ) {
+          const basicSalary = Number(salaryRequest.BasicSalary);
+          const bonus = Number(salaryRequest.Bonus);
+          const fullCheckInMoney = Number(salaryRequest.FullCheckInMoney);
+          
+          setPlusTotal(basicSalary + bonus + fullCheckInMoney);
       }
-      if(salaryRequest.BasicSalary !== null && salaryRequest.Bonus !== null && salaryRequest.FullCheckInMoney !== null && checked && salaryRequest.OverTimeHours !== null) {
-        setPlusTotal(salaryRequest.BasicSalary+salaryRequest.Bonus+salaryRequest.FullCheckInMoney+salaryRequest.OverTimeHours)
+      
+      if(
+          salaryRequest.BasicSalary !== null && 
+          salaryRequest.Bonus !== null && 
+          salaryRequest.FullCheckInMoney !== null && 
+          checked && 
+          salaryRequest.OverTimeHours !== null
+      ) {
+          const basicSalary = Number(salaryRequest.BasicSalary);
+          const bonus = Number(salaryRequest.Bonus);
+          const fullCheckInMoney = Number(salaryRequest.FullCheckInMoney);
+          const overTimeMoney = Number(salaryRequest.OverTimeMoney);
+      
+          setPlusTotal(basicSalary + bonus + fullCheckInMoney + overTimeMoney);
       }
-      if(salaryRequest.HealthInsuranceFromCompany !== null && salaryRequest.WorkerInsuranceFromCompany !== null&& salaryRequest.AdvanceFundFromCompany !== null && salaryRequest.EmployeeRetirementFromCompany !== null) {
-        setCompanyCostTotal(salaryRequest.HealthInsuranceFromCompany+salaryRequest.WorkerInsuranceFromCompany+salaryRequest.AdvanceFundFromCompany+salaryRequest.EmployeeRetirementFromCompany)
+      
+      if(
+          salaryRequest.HealthInsuranceFromCompany !== null && 
+          salaryRequest.WorkerInsuranceFromCompany !== null && 
+          salaryRequest.AdvanceFundFromCompany !== null && 
+          salaryRequest.EmployeeRetirementFromCompany !== null
+      ) {
+          const healthInsurance = Number(salaryRequest.HealthInsuranceFromCompany);
+          const workerInsurance = Number(salaryRequest.WorkerInsuranceFromCompany);
+          const advanceFund = Number(salaryRequest.AdvanceFundFromCompany);
+          const retirement = Number(salaryRequest.EmployeeRetirementFromCompany);
+      
+          setCompanyCostTotal(healthInsurance + workerInsurance + advanceFund + retirement);
       }
+    
 
       if (
         salaryRequest.SickHours !== null &&
@@ -186,22 +263,23 @@ export default function SalaryCalculate() {
         salaryRequest.OutLocationAmount !== null &&
         salaryRequest.SupplementaryPremium !== null
       ) {
-        // 计算 setMinusTotal 的值
-        setMinusTotal(
-            salaryRequest.SickHours +
-            salaryRequest.OutLocationAmount +
-            salaryRequest.EarlyOrLateAmount +
-            salaryRequest.ThingHours +
-            salaryRequest.MenstruationHours +
-            salaryRequest.ChildbirthHours +
-            salaryRequest.TakeCareBabyHours +
-            salaryRequest.IncomeTax +
-            salaryRequest.HealthInsurance +
-            salaryRequest.WorkerInsurance +
-            salaryRequest.EmployeeRetirement +
-            salaryRequest.SupplementaryPremium
-        );
+          // 计算 setMinusTotal 的值
+          setMinusTotal(
+              Number(salaryRequest.SickHours) +
+              Number(salaryRequest.OutLocationAmount) +
+              Number(salaryRequest.EarlyOrLateAmount) +
+              Number(salaryRequest.ThingHours) +
+              Number(salaryRequest.MenstruationHours) +
+              Number(salaryRequest.ChildbirthHours) +
+              Number(salaryRequest.TakeCareBabyHours) +
+              Number(salaryRequest.IncomeTax) +
+              Number(salaryRequest.HealthInsurance) +
+              Number(salaryRequest.WorkerInsurance) +
+              Number(salaryRequest.EmployeeRetirement) +
+              Number(salaryRequest.SupplementaryPremium)
+          );
       }
+    
     };
 
     const handlePostResult = () => {
@@ -607,6 +685,25 @@ export default function SalaryCalculate() {
                 </Dialog>
               </Grid>
               <Grid item xs={6} />
+
+              <Grid item xs={12} style={{display:'flex',justifyContent:'center',marginBottom:'2%'}}>
+                <FormControl variant="standard">
+                  <InputLabel id="demo-simple-select-label">投保級距</InputLabel>
+                  <Select
+                    labelId="demo-simple-select-label"
+                    id="demo-simple-select"
+                    value={insuranceLevel}
+                    onChange={(e)=>setInsuranceLevel(e.target.value)}
+                  >
+                  {InsuranceClass.map((item) => (
+                    <MenuItem key={item.id} value={item.id}>
+                      {item.min}~{item.max}
+                    </MenuItem>
+                  ))}
+                  </Select>
+                </FormControl>
+              </Grid> 
+
               <Grid item xs={1}>
                   薪資加項
               </Grid>
@@ -616,8 +713,8 @@ export default function SalaryCalculate() {
                   style={{marginTop:'3%'}}
                   label="基本薪資"
                   type="number"
-                  InputLabelProps={{
-                    shrink: true,
+                  InputProps={{
+                    readOnly: true,
                   }}
                   value={salaryRequest.BasicSalary}
                   onChange={(e) => handleInputChange(e, 'BasicSalary')}
@@ -671,6 +768,9 @@ export default function SalaryCalculate() {
                 <TextField
                     id="outlined-helperText"
                     style={{marginTop:'1%'}}
+                    InputProps={{
+                      readOnly: true,
+                    }}
                     label="薪資加項總額"
                     value={plusTotal}
                   />
@@ -744,6 +844,18 @@ export default function SalaryCalculate() {
                 <TextField
                   id="outlined-helperText"
                   style={{marginTop:'3%'}}
+                  label="安胎假扣款"
+                  value={salaryRequest.TocolysisHours}
+                  onChange={(e) => handleInputChange(e, 'TocolysisHours')}
+                />
+              </Grid>
+              <Grid item xs={1}>
+                +
+              </Grid>
+              <Grid item xs={2}>
+                <TextField
+                  id="outlined-helperText"
+                  style={{marginTop:'3%'}}
                   label="遲到早退扣款"
                   value={salaryRequest.EarlyOrLateAmount}
                   onChange={(e) => handleInputChange(e, 'EarlyOrLateAmount')}
@@ -780,9 +892,12 @@ export default function SalaryCalculate() {
                 <TextField
                   id="outlined-helperText"
                   style={{marginTop:'3%'}}
+                  required
                   label="健保費"
                   value={salaryRequest.HealthInsurance}
-                  onChange={(e) => handleInputChange(e, 'HealthInsurance')}
+                  InputProps={{
+                    readOnly: true,
+                  }}
                 />
               </Grid>
               <Grid item xs={1}>
@@ -792,9 +907,12 @@ export default function SalaryCalculate() {
                 <TextField
                   id="outlined-helperText"
                   style={{marginTop:'3%'}}
+                  required
                   label="勞保費"
                   value={salaryRequest.WorkerInsurance}
-                  onChange={(e) => handleInputChange(e, 'WorkerInsurance')}
+                  InputProps={{
+                    readOnly: true,
+                  }}
                 />
               </Grid>
               <Grid item xs={1}>
@@ -829,6 +947,9 @@ export default function SalaryCalculate() {
                   id="outlined-helperText"
                   style={{marginTop:'3%'}}
                   label="薪資扣項總和"
+                  InputProps={{
+                    readOnly: true,
+                  }}
                   value={minusTotal}
                 />
               </Grid>
@@ -840,9 +961,13 @@ export default function SalaryCalculate() {
                 <TextField
                   id="outlined-helperText"
                   style={{width:'100px',marginTop:'3%'}}
+                  required
+                  helperText="必填"
                   label="健保費"
                   value={salaryRequest.HealthInsuranceFromCompany}
-                  onChange={(e) => handleInputChange(e, 'HealthInsuranceFromCompany')}
+                  InputProps={{
+                    readOnly: true,
+                  }}
                 />
               </Grid>
               <Grid item xs={1}>
@@ -852,9 +977,13 @@ export default function SalaryCalculate() {
                 <TextField
                   id="outlined-helperText"
                   style={{marginTop:'3%'}}
+                  required
+                  helperText="必填"
                   label="勞保費"
                   value={salaryRequest.WorkerInsuranceFromCompany}
-                  onChange={(e) => handleInputChange(e, 'WorkerInsuranceFromCompany')}
+                  InputProps={{
+                    readOnly: true,
+                  }}
                 />
               </Grid>
               <Grid item xs={1}>
@@ -864,9 +993,13 @@ export default function SalaryCalculate() {
                 <TextField
                   id="outlined-helperText"
                   style={{width:'100px',marginTop:'3%'}}
+                  required
+                  helperText="必填"
                   label="勞退提繳"
                   value={salaryRequest.EmployeeRetirementFromCompany}
-                  onChange={(e) => handleInputChange(e, 'EmployeeRetirementFromCompany')}
+                  InputProps={{
+                    readOnly: true,
+                  }}
                 />
               </Grid>
               <Grid item xs={1}>
@@ -889,6 +1022,9 @@ export default function SalaryCalculate() {
                   id="outlined-helperText"
                   style={{marginTop:'3%'}}
                   label="企業負擔總額"
+                  InputProps={{
+                    readOnly: true,
+                  }}
                   value={companyCostTotal}
                 /> 
               </Grid>
@@ -896,7 +1032,7 @@ export default function SalaryCalculate() {
                 <Button variant="contained" startIcon={<ReplyIcon />} onClick={handleBackClick} style={{ marginRight: '10px' }}>
                   返回
                 </Button> 
-                <Button variant="contained" startIcon={<SendIcon />} onClick={handleFinalResult}>
+                <Button variant="contained" startIcon={<SendIcon />} onClick={handleTotalResult}>
                   計算總額
                 </Button>
               </Grid>

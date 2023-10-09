@@ -34,7 +34,10 @@ const Main = styled('div')(({ theme }) => ({
     paddingRight: theme.spacing(2),
   },
 }));
-
+const MainContent = styled('div')({
+  flex: 1,                   // 使其填满所有可用空间
+  overflowY: 'auto',         // 在需要时加入滚动条
+});
 
 const Footer = styled('div')(({ theme }) => ({
   backgroundColor: 'black', // 设置背景颜色为黑色
@@ -42,7 +45,8 @@ const Footer = styled('div')(({ theme }) => ({
   padding: theme.spacing(2),
   textAlign: 'center',
   borderTop: '1px solid white', // 添加边框，可以根据需要调整宽度和样式
-  fontWeight: 'bold', // 设置文本为粗体
+  fontWeight: 'bold',
+  marginTop:'10px' // 设置文本为粗体
 }));
 
 
@@ -56,8 +60,10 @@ export default function DashboardLayout() {
       <Header onOpenNav={() => setOpen(true)} />
       {sessionStorage.getItem('AdminToken') ? <Nav openNav={open} onCloseNav={() => setOpen(false)} /> : null}
       <Main>
-        {sessionStorage.getItem('AdminToken') ? <Nav openNav={open} onCloseNav={() => setOpen(false)} /> : null}
-        <Outlet />
+        <MainContent>
+          {sessionStorage.getItem('AdminToken') ? <Nav openNav={open} onCloseNav={() => setOpen(false)} /> : null}
+          <Outlet />
+        </MainContent>
 
         {sessionStorage.getItem('AdminToken') ? 
           null :       

@@ -40,6 +40,7 @@ import { DateField } from '@mui/x-date-pickers/DateField';
 import { TimeField } from '@mui/x-date-pickers/TimeField';
 import { DateTimeField } from '@mui/x-date-pickers/DateTimeField';
 import { StaticDatePicker } from '@mui/x-date-pickers/StaticDatePicker';
+import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import Select from '@mui/material/Select';
 import Slide from '@mui/material/Slide';
 import IconButton from '@mui/material/IconButton';
@@ -119,6 +120,9 @@ export default function SalaryManage() {
             <IconButton aria-label="delete" onClick={() => handleDeleteSubmit(params.row.id)}>
               <DeleteIcon />
             </IconButton>
+            <IconButton aria-label="delete" onClick={() => handleExcelOpen(params.row.StaffId)}>
+              <ReceiptLongIcon />
+            </IconButton>
           </>
 
         ),
@@ -127,6 +131,7 @@ export default function SalaryManage() {
     const [rows,setRows] = useState([]);
     const [filterRows,setFilterRows] = useState([]);
     const [staffs,setStaffs] = useState([]);
+    const [month,setMonth] = useState(9);
     const [isCreate,setIsCreate] = useState(false);
     const [request,setRequest] = useState({
       id:0,
@@ -144,6 +149,8 @@ export default function SalaryManage() {
         navigate(`/admin/calculatesalary/${id}`);
     };
     const [open, setOpen] = useState(false);
+    const [excelOpen, setExcelOpen] = useState(false);
+    const [staffId,setStaffId] = useState(0);
 
     const handleClickOpen = (status) => {
       setRequest({
@@ -166,7 +173,14 @@ export default function SalaryManage() {
       setIsCreate(status)
       setOpen(true);
     };
-  
+    const handleExcelOpen = (id) => {
+      setStaffId(id);
+      setExcelOpen(true);
+    };
+    const handleExcelClose = () => {
+      setExcelOpen(false);
+    };
+
     const handleClose = () => {
       setOpen(false);
     };
@@ -232,16 +246,42 @@ export default function SalaryManage() {
 const handleDeleteSubmit = async (id) => {
     
   try {
-      const response = await axios.post(`${appsetting.apiUrl}/admin/salarysetting?id=${id}`, request ,config);
+      const response = await axios.delete(`${appsetting.apiUrl}/admin/salarysetting`, {
+          ...config,
+          params: { id }
+      });
+
       if (response.status === 200) {
-        alert('成功');
-        fetchData();
+          alert('成功');
+          fetchData();
       }
   } catch (error) {
-      console.error("Error logging in:", error);
+      console.error("Error deleting record:", error);
       alert('請先更改該員工就職狀態');
   }          
 }
+
+const downloadExcel = async () => {
+  try {
+      const response = await axios.get(`${appsetting.apiUrl}/admin/downloadexcel?staffId=${staffId}&month=${month}`, {
+          ...config,
+          responseType: 'blob'
+      });
+      
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', '出勤打卡單.xlsx'); // or any other format you want
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);  // Once download is done, remove the link from the DOM
+      handleExcelClose();
+  } catch (error) {
+      console.error("Error downloading the file:", error);
+  }
+}
+
+
   
 
   return (
@@ -359,6 +399,49 @@ const handleDeleteSubmit = async (id) => {
             disableRowSelectionOnClick
         />
       </Box>
+
+      <Dialog open={excelOpen} onClose={handleExcelClose}>
+        <DialogTitle>出勤狀況Excel下載申請</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+              請選擇月份，下載該員工出勤狀況
+          </DialogContentText>
+            <Grid item xs={2} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center',width:'100%',marginTop:'5%' }}>
+
+              <FormControl variant="standard" sx={{ m: 1, minWidth: 20}}>
+                <InputLabel id="demo-simple-select-standard-label">月份</InputLabel>
+                <Select
+                  labelId="demo-simple-select-standard-label"
+                  id="demo-simple-select-standard"
+                  style={{width:'100%'}}
+                  value={month}
+                  onChange={(e)=>setMonth(e.target.value)}
+                  label="月份"
+                >
+                  <MenuItem value={1}>1月</MenuItem>
+                  <MenuItem value={2}>2月</MenuItem>
+                  <MenuItem value={3}>3月</MenuItem>
+                  <MenuItem value={4}>4月</MenuItem>
+                  <MenuItem value={5}>5月</MenuItem>
+                  <MenuItem value={6}>6月</MenuItem>
+                  <MenuItem value={7}>7月</MenuItem>
+                  <MenuItem value={8}>8月</MenuItem>
+                  <MenuItem value={9}>9月</MenuItem>
+                  <MenuItem value={10}>10月</MenuItem>
+                  <MenuItem value={11}>11月</MenuItem>
+                  <MenuItem value={12}>12月</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+          
+        </DialogContent>
+        <Grid item xs={2} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center',width:'100%',marginTop:'5%' }}>
+            <DialogActions>
+              <Button onClick={handleExcelClose}>Cancel</Button>
+              <Button onClick={downloadExcel}>下載EXCEL</Button>
+            </DialogActions>
+        </Grid>
+      </Dialog>
     </>
   );
 }

@@ -87,6 +87,7 @@ export default function PersonalSalaryDetail() {
       <Typography variant="subtitle2" gutterBottom style={{margin:'5%'}}>
           薪資加項
       </Typography>
+      {detail.BasicSalary !== 0?
       <ListItem>
         <ListItemAvatar>
           <Avatar>
@@ -94,7 +95,18 @@ export default function PersonalSalaryDetail() {
           </Avatar>
         </ListItemAvatar>
         <ListItemText primary="本薪" secondary={detail.BasicSalary} />
-      </ListItem>
+      </ListItem>:null
+      }
+      {detail.ParttimeSalary !== 0 && detail.ParttimeSalary?
+      <ListItem>
+        <ListItemAvatar>
+          <Avatar>
+            <ImageIcon />
+          </Avatar>
+        </ListItemAvatar>
+        <ListItemText primary="時薪*時數" secondary={detail.ParttimeSalary} />
+      </ListItem>:null
+      }
       {detail.FullCheckInMoney !== 0?
       <ListItem>
         <ListItemAvatar>
@@ -122,7 +134,7 @@ export default function PersonalSalaryDetail() {
             <BeachAccessIcon />
           </Avatar>
         </ListItemAvatar>
-        <ListItemText primary="加班費" secondary={detail.OverTimeMoney}/>
+        <ListItemText primary="加班費" secondary={detail.OverTimeAmount}/>
       </ListItem>:null
       }
       <ListItem>

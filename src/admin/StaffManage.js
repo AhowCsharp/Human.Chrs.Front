@@ -33,6 +33,9 @@ import { DesktopDatePicker } from '@mui/x-date-pickers/DesktopDatePicker';
 import { StaticDatePicker } from '@mui/x-date-pickers/StaticDatePicker';
 import Select from '@mui/material/Select';
 import Slide from '@mui/material/Slide';
+import IconButton from '@mui/material/IconButton';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { DataGrid } from '@mui/x-data-grid';
 import appsetting from '../Appsetting';
 import StaffSearch from './StaffSearch';
@@ -108,16 +111,30 @@ export default function StaffManage() {
         },
         {
             field: 'Details',
-            headerName: '個人詳細資料',
-            width: 200,
+            headerName: '詳細資料',
+            width: 120,
             renderCell: (params) => (
               <Button onClick={() => handleDetailsClick(params.row.id)}>
-                查看詳細資料
+                詳細資料
               </Button>
+            ),
+        },
+        {
+            field: 'Action',
+            headerName: '刪除',
+            width: 200,
+            renderCell: (params) => (
+                <>
+                <IconButton aria-label="delete" onClick={() => handleSureClickOpen(params.row.id)}>
+                  <DeleteIcon />
+                </IconButton>
+              </>
             ),
         } 
     ];
     const [open, setOpen] = useState(false);
+    const [deleteId,setDeleteId] = useState(0);
+    const [sureOpen, setSureOpen] = useState(false);
     const [isCreate,setIsCreate] = useState(false);
     const [rows,setRows] = useState([]);
     const [filterRows,setFilterRows] = useState([]);
@@ -163,6 +180,7 @@ export default function StaffManage() {
         PrenatalCheckUpHours: 0,
         OverTimeHours: 0,
         StayInCompanyDays: 0,
+        ParttimeMoney:0,
         Gender: gender
     });
     const navigate = useNavigate();
@@ -171,19 +189,38 @@ export default function StaffManage() {
         // 在版本6中使用 navigate 函數進行導航
         navigate(`/admin/details/${id}`);
     };
-    // const navigate = useNavigate();
 
-    // useEffect(() => {
-    //     const token = sessionStorage.getItem('jwtData');
-    //     if (!token) {
-    //         navigate('/login');
-    //     }
-    // }, [navigate]);
     const handleClickOpen = (status) => {
         setIsCreate(status)
         setOpen(true);
     };
+
+    const handleDeleteSubmit = async (id) => {
+        try {
+            const response = await axios.delete(`${appsetting.apiUrl}/admin/removestaff`, {
+                ...config,
+                params: { id }
+            });
     
+            if (response.status === 200) {
+                alert('成功');
+                fetchData();
+                handleSureClose();
+            }
+        } catch (error) {
+            console.error("Error deleting record:", error);
+            alert('系統錯誤 權限不足');
+            handleSureClose();
+        }
+    }
+    
+    const handleSureClose = () => {
+        setSureOpen(false);
+    };
+    const handleSureClickOpen = (id) => {
+        setDeleteId(id)
+        setSureOpen(true);
+    };
       const handleClose = () => {
         setStaff({
             id: 0,
@@ -225,6 +262,7 @@ export default function StaffManage() {
             PrenatalCheckUpHours: 0,
             OverTimeHours: 0,
             StayInCompanyDays: 0,
+            ParttimeMoney:0,
             Gender: gender
         })
         setOpen(false);
@@ -276,7 +314,8 @@ export default function StaffManage() {
                 StaffAccount: '',
                 StaffPassWord: '',
                 Department: '',
-                EntryDate: getCurrentDate(), 
+                EntryDate: dayjs(getCurrentDate()),
+                ResignationDate: dayjs(getCurrentDate()),
                 LevelPosition: '',
                 WorkLocation: '',
                 Email: '',
@@ -297,7 +336,7 @@ export default function StaffManage() {
                 StaffPhoneNumber: '',
                 StaffName: '',
                 Auth: 0,
-                DepartmentId: null,
+                DepartmentId: 0,
                 MenstruationDays: 1,
                 MenstruationHours: 0,
                 TocolysisDays: 7,
@@ -308,6 +347,7 @@ export default function StaffManage() {
                 PrenatalCheckUpHours: 0,
                 OverTimeHours: 0,
                 StayInCompanyDays: 0,
+                ParttimeMoney:0,
                 Gender: gender
             });
         }
@@ -315,7 +355,7 @@ export default function StaffManage() {
 
     const handleGetDetail = async (params) => {
         handleClickOpen(false);
-        console.log(dayjs(params.row.ResignationDate))
+        console.log(params.row.EntryDate)
         setStaff({
           Id: params.row.id, // 如果为 NULL，设置为空字符串
           StaffNo: params.row.StaffNo,
@@ -357,6 +397,7 @@ export default function StaffManage() {
           TackeCareBabyHours:params.row.TackeCareBabyHours,
           PrenatalCheckUpHours:params.row.PrenatalCheckUpHours,
           OverTimeHours:params.row.OverTimeHours,
+          ParttimeMoney:params.row.ParttimeMoney
         });       
     };
     const handleInputChange = (event, propertyName) => {
@@ -514,6 +555,18 @@ export default function StaffManage() {
                                 value={staff.StaffNo}
                                 onChange={(e) => handleInputChange(e, 'StaffNo')}/>
                         </Grid>
+                        <Grid item xs={12}>
+                            <InputLabel shrink htmlFor="bootstrap-input">
+                                工作地點
+                            </InputLabel>       
+                            <TextField id="WorkLocation" 
+                                type="search" size="small"
+                                style={{width:'100%'}}
+                                inputProps={{ readOnly: true }}
+                                placeholder='選擇部門後會自動填寫'
+                                value={staff.WorkLocation}
+                                onChange={(e) => handleInputChange(e, 'WorkLocation')}/>
+                        </Grid>
                         <Grid item xs={6}>
                             <InputLabel shrink htmlFor="bootstrap-input">
                                 員工帳號
@@ -614,11 +667,11 @@ export default function StaffManage() {
                                 style={{width:'100%'}}
                                 onChange={(e) => handleInputChange(e, 'DepartmentId')}
                                 >
-                                    <MenuItem value={0}>
+                                    <MenuItem key={0} value={0}>
                                         <em>None</em>
                                     </MenuItem>
                                     {departments.map((type) => (
-                                        <MenuItem key={type.id} value={type.id} name={type.DepartmentName}>
+                                        <MenuItem key={type.id} value={type.id}>
                                             {type.DepartmentName}
                                         </MenuItem>
                                     ))}
@@ -626,16 +679,15 @@ export default function StaffManage() {
                         </Grid>
                         <Grid item xs={6}>
                             <InputLabel shrink htmlFor="bootstrap-input">
-                                工作地點
+                                手機號碼
                             </InputLabel>       
-                            <TextField id="WorkLocation" 
+                            <TextField id="Email" 
                                 type="search" size="small"
                                 style={{width:'100%'}}
-                                inputProps={{ readOnly: true }}
-                                placeholder='選擇部門後會自動填寫'
-                                value={staff.WorkLocation}
-                                onChange={(e) => handleInputChange(e, 'WorkLocation')}/>
-                        </Grid>
+                                value={staff.StaffPhoneNumber}
+                                onChange={(e) => handleInputChange(e, 'StaffPhoneNumber')}/>
+                        </Grid>      
+
                         <Grid item xs={6}>
                             <InputLabel shrink htmlFor="bootstrap-input">
                                 信箱
@@ -645,7 +697,18 @@ export default function StaffManage() {
                                 style={{width:'100%'}}
                                 value={staff.Email}
                                 onChange={(e) => handleInputChange(e, 'Email')}/>
-                        </Grid>                       
+                        </Grid>
+                        {staff.EmploymentTypeId === 2 ?
+                        <Grid item xs={3}>
+                            <InputLabel shrink htmlFor="bootstrap-input">
+                                時薪設定
+                            </InputLabel>       
+                            <TextField id="SpecialRestDays" 
+                                type="number" size="small"
+                                value={staff.ParttimeMoney}
+                                onChange={(e) => handleInputChange(e, 'ParttimeMoney')}/>
+                        </Grid> : null
+                        }                       
                         <Grid item xs={3}>
                             <InputLabel shrink htmlFor="bootstrap-input">
                                 特休餘日
@@ -865,6 +928,28 @@ export default function StaffManage() {
           <Button onClick={handleSubmit}>{isCreate?'新增':'修改'}</Button>
         </DialogActions>
       </Dialog>
+
+      <Dialog
+        open={sureOpen}
+        onClose={handleSureClose}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+        可以透過編輯將該員工設為已離職，若刪除資料則無法復原
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            確定要刪除資料嗎?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleSureClose}>Disagree</Button>
+          <Button onClick={()=>handleDeleteSubmit(deleteId)} autoFocus>
+            Agree
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 }
@@ -883,7 +968,7 @@ function getCurrentDate() {
     const year = today.getFullYear();
     const month = String(today.getMonth() + 1).padStart(2, '0');
     const day = String(today.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+    return `${year}-${month}-${day}T00:00:00`;
 }
 
 function daysBetweenDates(date1Str, date2Str) {

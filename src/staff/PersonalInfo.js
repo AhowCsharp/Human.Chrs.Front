@@ -60,7 +60,8 @@ import appsetting from '../Appsetting';
 const eventStyles = {
     0: { backgroundColor: "#466CA6", color: "white" },
     1: { backgroundColor: "green", color: "white" },
-    2: { backgroundColor: "red", color: "white" }
+    2: { backgroundColor: "red", color: "white" },
+    3: { backgroundColor: "orange", color: "white" },
 };
 
 const views = {
@@ -267,7 +268,9 @@ export default function PersonalInfo() {
                     end: moment(apiEvent.End).toDate(),
                     allDay: apiEvent.AllDay,
                     detail:apiEvent.Detail,
-                    level:apiEvent.LevelStatus
+                    level:apiEvent.LevelStatus,
+                    staffId:apiEvent.StaffId,
+                    staffName:apiEvent.StaffName
                 }));
                 setEvents(transformedEvents);
             }
@@ -667,9 +670,7 @@ export default function PersonalInfo() {
             }               
         };
 
-        const handleEventInputChange = (value, fieldName) => {   
-            console.log(value)   
-            console.log(fieldName)  
+        const handleEventInputChange = (value, fieldName) => {    
             if (fieldName === 'EventStartDate') {
                 setEventRequest((prevRequest) => ({
                   ...prevRequest,
@@ -708,7 +709,9 @@ export default function PersonalInfo() {
                         end: moment(apiEvent.End).toDate(),
                         allDay: apiEvent.AllDay,
                         detail:apiEvent.Detail,
-                        level:apiEvent.LevelStatus
+                        level:apiEvent.LevelStatus,
+                        staffId:apiEvent.StaffId,
+                        staffName:apiEvent.StaffName
                     }));
                     setEvents(transformedEvents);
                     alert('成功');
@@ -1165,8 +1168,22 @@ export default function PersonalInfo() {
                  <List>
                     {selectedEvent !== null?
                         <ListItem>
-                            <ListItemText primary={selectedEvent.title} secondary={`内容: ${selectedEvent.detail}`}/>
-                            <Button variant="text" startIcon={<DeleteIcon />} style={{color:'red'}} onClick={()=>handleDeleteEvent(selectedEvent.id)}/>
+                            {selectedEvent.level !== 3 ? 
+                            <>
+                                <ListItemText 
+                                    primary={selectedEvent.title} 
+                                    secondary={`内容: ${selectedEvent.detail}`}
+                                />
+                                <Button variant="text" startIcon={<DeleteIcon />} style={{color:'red'}} onClick={()=>handleDeleteEvent(selectedEvent.id)}/>
+                            </>
+                            :
+                            <ListItemText 
+                                primary={`${selectedEvent.title}-${selectedEvent.staffName}`}
+                                secondary={`上班地址: ${selectedEvent.detail} 員工: ${selectedEvent.staffName} 
+                                    工作時間: ${moment(selectedEvent.start).format('HH:mm')} ~ ${moment(selectedEvent.end).format('HH:mm')} 
+                                    總計: ${moment(selectedEvent.end).diff(moment(selectedEvent.start), 'hours')}小時${moment(selectedEvent.end).diff(moment(selectedEvent.start), 'minutes') % 60}分鐘`}
+                            />
+                        }                      
                         </ListItem>
                         :
                         null
