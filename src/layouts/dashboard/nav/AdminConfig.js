@@ -62,6 +62,11 @@ const AdminConfig = [
     icon: icon('ic_disabled'),
   },
   {
+    title: 'meet',
+    path: '/admin/meetmanage',
+    icon: icon('ic_disabled'),
+  },
+  {
     title: 'departments',
     path: '/admin/departmentmanage',
     icon: icon('ic_disabled'),

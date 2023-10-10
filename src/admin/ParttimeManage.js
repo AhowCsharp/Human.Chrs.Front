@@ -50,6 +50,7 @@ import { DataGrid } from '@mui/x-data-grid';
 import appsetting from '../Appsetting';
 import ParttimeSearch from './ParttimeSearch';
 import InsuranceClass from '../Insurance/Insurance';
+import OverTimeDetailList from './OverTimeDetailList';
 
 const Transition = React.forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />);
 
@@ -124,16 +125,31 @@ export default function ParttimeManage() {
 
         ),
       },
+      {
+        field: 'OverTimeList',
+        headerName: '本月加班單',
+        width: 120,
+        renderCell: (params) => (
+          <>
+            <IconButton aria-label="delete" onClick={()=>handleoverTimeClickOpen(params.row.id)}>
+              <ReceiptLongIcon />
+            </IconButton>
+          </>
+
+        ),
+      },
     ];
     const [rows,setRows] = useState([]);
     const [filterRows,setFilterRows] = useState([]);
     const [insuranceLevel,setInsuranceLevel]= useState(22);
+    const [overTimeopen, setOverTimeopen] = useState(false);  
 
     const [month,setMonth] = useState(9);
     const [selectedRow,setSelectedRow] = useState(null);
     const [salaryRequest,setSalaryRequest] = useState({
       StaffId:0,
       BasicSalary:0,
+      FoodSuportMoney:0,
       FullCheckInMoney:0,
       OverTimeHours:0,
       Bonus:0,
@@ -171,6 +187,7 @@ export default function ParttimeManage() {
         setSalaryRequest({
           StaffId:selectedRow.id,
           BasicSalary:0,
+          FoodSuportMoney:0,
           FullCheckInMoney:0,
           OverTimeHours:selectedRow.OverTimeHours,
           Bonus:0,
@@ -217,6 +234,14 @@ export default function ParttimeManage() {
       }
     }, [insuranceLevel]);
 
+    const handleoverTimeClickOpen = (id) => {
+      setStaffId(id);
+      setOverTimeopen(true);
+    };
+    const handleoverTimeClose = () => {
+      setOverTimeopen(false);
+    };
+
     const handleClickOpen = (row) => {
       setOpen(true);
       setSelectedRow(row)
@@ -224,6 +249,7 @@ export default function ParttimeManage() {
   
     const handleClose = () => {
       setOpen(false);
+      setSelectedRow(null);
     };
 
     const handleExcelOpen = (id) => {
@@ -275,23 +301,41 @@ export default function ParttimeManage() {
     }, [month]);
 
     useEffect(() => {
-      console.log(salaryRequest.Bonus)
-      console.log(salaryRequest.StaffIncomeAmount)
-      console.log(salaryRequest.Bonus)
       if(selectedRow) {
         setSalaryRequest({
           ...salaryRequest,
-          StaffIncomeAmount:calculateWage(selectedRow.ParttimeMoney,selectedRow.TotalPartimeHours,selectedRow.TotalPartimeMinutes) + Number(salaryRequest.Bonus) + Number(selectedRow.ParttimeOverTimeTotalMony)
+          StaffIncomeAmount:calculateWage(selectedRow.ParttimeMoney,selectedRow.TotalPartimeHours,selectedRow.TotalPartimeMinutes) + Number(salaryRequest.Bonus)
+           + Number(selectedRow.ParttimeOverTimeTotalMony)+ Number(salaryRequest.FoodSuportMoney)
         })
         
       }
       if((salaryRequest.Bonus === 0 || !salaryRequest.Bonus) && selectedRow) {
         setSalaryRequest({
           ...salaryRequest,
-          StaffIncomeAmount:calculateWage(selectedRow.ParttimeMoney,selectedRow.TotalPartimeHours,selectedRow.TotalPartimeMinutes)+Number(selectedRow.ParttimeOverTimeTotalMony)
+          StaffIncomeAmount:calculateWage(selectedRow.ParttimeMoney,selectedRow.TotalPartimeHours,selectedRow.TotalPartimeMinutes)
+          +Number(selectedRow.ParttimeOverTimeTotalMony)+ Number(salaryRequest.FoodSuportMoney)
         })
       }
     }, [salaryRequest.Bonus]);
+
+    useEffect(() => {
+      console.log(salaryRequest)
+      if(selectedRow) {
+        setSalaryRequest({
+          ...salaryRequest,
+          StaffIncomeAmount:calculateWage(selectedRow.ParttimeMoney,selectedRow.TotalPartimeHours,selectedRow.TotalPartimeMinutes) + Number(salaryRequest.Bonus)
+           + Number(selectedRow.ParttimeOverTimeTotalMony)+ Number(salaryRequest.FoodSuportMoney)
+        })
+        
+      }
+      if((salaryRequest.FoodSuportMoney === 0 || !salaryRequest.FoodSuportMoney) && selectedRow) {
+        setSalaryRequest({
+          ...salaryRequest,
+          StaffIncomeAmount:calculateWage(selectedRow.ParttimeMoney,selectedRow.TotalPartimeHours,selectedRow.TotalPartimeMinutes)
+          +Number(selectedRow.ParttimeOverTimeTotalMony)+ Number(salaryRequest.FoodSuportMoney)
+        })
+      }
+    }, [salaryRequest.FoodSuportMoney]);
 
     // useEffect(() => {
     //     fetchStaffDetailData();
@@ -448,7 +492,33 @@ export default function ParttimeManage() {
                                     <TextField id="StaffNo" 
                                         type="number" size="small"
                                         value={salaryRequest.Bonus}
-                                        onChange={(e) => handleInputChange(e, 'Bonus')}/>
+                                        onChange={(e) => handleInputChange(e, 'Bonus')}
+                                        onBlur={(e) => {
+                                          if(e.target.value === "" || e.target.value === null) {
+                                            setSalaryRequest({
+                                              ...salaryRequest,
+                                              Bonus:0
+                                            })
+                                          }
+                                      }} 
+                                        />
+                                </Grid>
+                                <Grid item xs={3}>      
+                                    <InputLabel shrink htmlFor="bootstrap-input">
+                                        伙食津貼
+                                    </InputLabel>       
+                                    <TextField id="StaffNo" 
+                                        type="number" size="small"
+                                        value={salaryRequest.FoodSuportMoney}
+                                        onChange={(e) => handleInputChange(e, 'FoodSuportMoney')}
+                                        onBlur={(e) => {
+                                          if(e.target.value === "" || e.target.value === null) {
+                                            setSalaryRequest({
+                                              ...salaryRequest,
+                                              FoodSuportMoney:0
+                                            })
+                                          }
+                                      }} />
                                 </Grid>
                                 <Grid item xs={3}>      
                                     <InputLabel shrink htmlFor="bootstrap-input">
@@ -618,6 +688,61 @@ export default function ParttimeManage() {
             disableRowSelectionOnClick
         />
       </Box>
+
+      <Dialog open={excelOpen} onClose={handleExcelClose}>
+        <DialogTitle>出勤狀況Excel下載申請</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+              請選擇月份，下載該員工出勤狀況
+          </DialogContentText>
+            <Grid item xs={2} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center',width:'100%',marginTop:'5%' }}>
+
+              <FormControl variant="standard" sx={{ m: 1, minWidth: 20}}>
+                <InputLabel id="demo-simple-select-standard-label">月份</InputLabel>
+                <Select
+                  labelId="demo-simple-select-standard-label"
+                  id="demo-simple-select-standard"
+                  style={{width:'100%'}}
+                  value={month}
+                  onChange={(e)=>setMonth(e.target.value)}
+                  label="月份"
+                >
+                  <MenuItem value={1}>1月</MenuItem>
+                  <MenuItem value={2}>2月</MenuItem>
+                  <MenuItem value={3}>3月</MenuItem>
+                  <MenuItem value={4}>4月</MenuItem>
+                  <MenuItem value={5}>5月</MenuItem>
+                  <MenuItem value={6}>6月</MenuItem>
+                  <MenuItem value={7}>7月</MenuItem>
+                  <MenuItem value={8}>8月</MenuItem>
+                  <MenuItem value={9}>9月</MenuItem>
+                  <MenuItem value={10}>10月</MenuItem>
+                  <MenuItem value={11}>11月</MenuItem>
+                  <MenuItem value={12}>12月</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+          
+        </DialogContent>
+        <Grid item xs={2} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center',width:'100%',marginTop:'5%' }}>
+            <DialogActions>
+              <Button onClick={handleExcelClose}>Cancel</Button>
+              <Button onClick={downloadExcel}>下載EXCEL</Button>
+            </DialogActions>
+        </Grid>
+      </Dialog>
+
+      <Dialog open={overTimeopen} onClose={handleoverTimeClose}>
+        <DialogTitle>{month}月加班狀況</DialogTitle>
+        <DialogContent>
+
+          <OverTimeDetailList staffId={parseInt(staffId, 10)}/>
+
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleoverTimeClose}>退出</Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 }

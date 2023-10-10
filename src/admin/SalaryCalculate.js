@@ -75,6 +75,7 @@ export default function SalaryCalculate() {
     const [salaryRequest,setSalaryRequest] = useState({
       StaffId:parseInt(id, 10),
       BasicSalary:0,
+      FoodSuportMoney:0,
       FullCheckInMoney:0,
       OverTimeHours:0,
       Bonus:0,
@@ -127,6 +128,7 @@ export default function SalaryCalculate() {
             setSalaryRequest((prevSalaryRequest) => ({
               ...prevSalaryRequest, // 保留原有的属性
               BasicSalary: response.data.Data.SalarySetting.BasicSalary,
+              FoodSuportMoney:response.data.Data.SalarySetting.FoodSuportMoney,
               FullCheckInMoney:response.data.Data.SalarySetting.FullCheckInMoney,
               SickHours:(response.data.Data.TotalSickHours * response.data.Data.PerHourSalary/2),
               OverTimeHours:checked? response.data.Data.OverTimeHours:0 ,
@@ -164,13 +166,14 @@ export default function SalaryCalculate() {
     useEffect(() => {
       const basicSalary = Number(salaryRequest.BasicSalary);
       const bonus = Number(salaryRequest.Bonus);
+      const foodMoney = Number(salaryRequest.FoodSuportMoney);
       const overTimeMoney = Number(salaryRequest.OverTimeMoney);
       const fullCheckInMoney = Number(salaryRequest.FullCheckInMoney);
   
       if(!checked) {
-          setPlusTotal(basicSalary + bonus + fullCheckInMoney);
+          setPlusTotal(basicSalary + bonus + fullCheckInMoney + foodMoney);
       } else {
-          setPlusTotal(basicSalary + bonus + fullCheckInMoney + overTimeMoney);
+          setPlusTotal(basicSalary + bonus + fullCheckInMoney + overTimeMoney + foodMoney);
       }
   }, [checked, salaryRequest]);
   
@@ -214,9 +217,10 @@ export default function SalaryCalculate() {
       ) {
           const basicSalary = Number(salaryRequest.BasicSalary);
           const bonus = Number(salaryRequest.Bonus);
+          const foodMoney = Number(salaryRequest.FoodSuportMoney);
           const fullCheckInMoney = Number(salaryRequest.FullCheckInMoney);
           
-          setPlusTotal(basicSalary + bonus + fullCheckInMoney);
+          setPlusTotal(basicSalary + bonus + fullCheckInMoney+foodMoney);
       }
       
       if(
@@ -229,9 +233,10 @@ export default function SalaryCalculate() {
           const basicSalary = Number(salaryRequest.BasicSalary);
           const bonus = Number(salaryRequest.Bonus);
           const fullCheckInMoney = Number(salaryRequest.FullCheckInMoney);
+          const foodMoney = Number(salaryRequest.FoodSuportMoney);
           const overTimeMoney = Number(salaryRequest.OverTimeMoney);
       
-          setPlusTotal(basicSalary + bonus + fullCheckInMoney + overTimeMoney);
+          setPlusTotal(basicSalary + bonus + fullCheckInMoney + overTimeMoney+foodMoney);
       }
       
       if(
@@ -422,6 +427,17 @@ export default function SalaryCalculate() {
                     readOnly: true,
                   }}
                   value={calculateResult.SalarySetting.FullCheckInMoney}
+                />
+              </Grid>
+              <Grid item xs={2}>
+                <TextField
+                  id="outlined-helperText"
+                  label="伙食津貼"
+                  variant="standard"
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                  value={calculateResult.SalarySetting.FoodSuportMoney}
                 />
               </Grid>
               <Grid item xs={2}>
@@ -719,6 +735,19 @@ export default function SalaryCalculate() {
                   value={salaryRequest.BasicSalary}
                   onChange={(e) => handleInputChange(e, 'BasicSalary')}
                 />
+              </Grid>
+              <Grid item xs={1}>
+                +
+              </Grid>
+              <Grid item xs={2}>
+                <TextField
+                    id="outlined-helperText"
+                    style={{marginTop:'3%'}}
+                    label="伙食津貼"
+                    type="number" 
+                    value={salaryRequest.FoodSuportMoney}
+                    onChange={(e) => handleInputChange(e, 'FoodSuportMoney')}
+                  />
               </Grid>
               <Grid item xs={1}>
                 +
@@ -1055,6 +1084,9 @@ export default function SalaryCalculate() {
                   2. 妊娠3個月以上流產 = 若年資滿半年以上 則不扣薪 若未滿半年 則產假總時數 {calculateResult.TotalChildbirthHours} * 每小時時薪/2<br/>
                   3. 妊娠2個月以上，未滿3個月流產 = 產假總時數 {calculateResult.TotalChildbirthHours} * 每小時時薪<br/>
                   4. 妊娠未滿2個月流產 = 產假總時數 {calculateResult.TotalChildbirthHours} * 每小時時薪<br/>               
+              </Grid>
+              <Grid item xs={12} style={{fontSize:'14px'}}>
+                伙食津貼是員工薪資裡的的免稅額，員工每個月有 2,400 元的額度 (30 天* 80 元) 可以列為伙食津貼，一年下來就有 2 萬 8800 元的摳搭不用被課「所得稅」，以所得稅 5% 額來算，一年可省下 1,440 元。
               </Grid>
               <Grid item xs={12} style={{fontSize:'14px'}}>
                   健保費負擔比例：<br/>

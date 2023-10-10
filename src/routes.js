@@ -29,6 +29,7 @@ import DepartmentManage from './admin/DepartmentManage';
 import ParttimeManage from './admin/ParttimeManage';
 import AmendRecordsManage from './admin/AmendRecordsManage';
 import ParttimeWorkManage from './admin/ParttimeWorkManage';
+import MeetManage from './admin/MeetManage';
 // ----------------------------------------------------------------------
 
 export default function Router() {
@@ -75,6 +76,7 @@ export default function Router() {
         { path: 'companyrulemanage', element: <CompanyRuleManage /> },
         { path: 'parttimemanage', element: <ParttimeManage /> },
         { path: 'parttimeworkmanage', element: <ParttimeWorkManage /> },
+        { path: 'meetmanage', element: <MeetManage /> },
         { path: 'amendrecordmanage', element: <AmendRecordsManage /> },
         { path: 'detail', element: <AdminDetail /> },
         { path: 'details/:id', element: <StaffDetail /> },

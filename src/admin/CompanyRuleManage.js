@@ -186,7 +186,18 @@ export default function CompanyRuleManage() {
       const modifiedRows = editedRows.map(item => ({
         ...item,
       }));
-      console.log(modifiedRows)
+      const allTimesValid = modifiedRows.every(row => 
+        isValidTime(row.CheckInStartTime) &&
+        isValidTime(row.CheckInEndTime) &&
+        isValidTime(row.CheckOutStartTime) &&
+        isValidTime(row.CheckOutEndTime)
+      );
+
+      if (!allTimesValid) {
+          alert('請確認所有的時間格式是否正確 (HH:MM:SS)');
+          return;
+      }
+
         try {
           const response = await axios.post(`${appsetting.apiUrl}/admin/modifyrule`, modifiedRows,config);
           if(response.status === 200) {     
@@ -228,6 +239,12 @@ export default function CompanyRuleManage() {
       setOpen(false);
     };
 
+    const isValidTime = (timeStr) => {
+      const regex = /^(2[0-3]|[01]?[0-9]):([0-5]?[0-9]):([0-5]?[0-9])$/;
+      return regex.test(timeStr);
+    };
+  
+
     const fetchData = async () => {
       try {       
         const response = await axios.get(`${appsetting.apiUrl}/admin/rules`,config);
@@ -258,22 +275,34 @@ export default function CompanyRuleManage() {
       fetchData();
       fetchDepartmentData();
     }, []); 
+
+
     const handleInsert = async () => {  
-        if(ruleRequest.WorkAddress.length < 5) {
+      if(!isValidTime(ruleRequest.CheckInStartTime) || 
+         !isValidTime(ruleRequest.CheckInEndTime) || 
+         !isValidTime(ruleRequest.CheckOutStartTime) || 
+         !isValidTime(ruleRequest.CheckOutEndTime)) {
+          alert('請確認時間格式是否正確 (HH:MM:SS)');
+          return;
+      }
+  
+      if(ruleRequest.WorkAddress.length < 5) {
           alert('請確認地址部分輸入是否正確');
-        }   
-        try {
-          const response = await axios.patch(`${appsetting.apiUrl}/admin/newrule`,ruleRequest,config);
+          return;
+      }   
+  
+      try {
+          const response = await axios.patch(`${appsetting.apiUrl}/admin/newrule`, ruleRequest, config);
           if (response.status === 200) {
-            alert('新增成功');
-            fetchData();
-            handleClose();
+              alert('新增成功');
+              fetchData();
+              handleClose();
           }
-        } catch (error) {
+      } catch (error) {
           console.error("Error logging in:", error);
           alert('請確認該部門是否已有規定/或是地址部分輸入是否正確');
-        }          
-    }
+      }          
+  }
     const handleInputChange = (event, propertyName) => {
       const value = event.target ? event.target.value : event;
       console.log(value)

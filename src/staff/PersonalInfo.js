@@ -62,6 +62,7 @@ const eventStyles = {
     1: { backgroundColor: "green", color: "white" },
     2: { backgroundColor: "red", color: "white" },
     3: { backgroundColor: "orange", color: "white" },
+    4: { backgroundColor: "#BE77FF", color: "white" },
 };
 
 const views = {
@@ -270,8 +271,9 @@ export default function PersonalInfo() {
                     detail:apiEvent.Detail,
                     level:apiEvent.LevelStatus,
                     staffId:apiEvent.StaffId,
-                    staffName:apiEvent.StaffName
+                    staffName:apiEvent.StaffName,
                 }));
+                console.log(transformedEvents)
                 setEvents(transformedEvents);
             }
         } catch (error) {
@@ -714,6 +716,7 @@ export default function PersonalInfo() {
                         staffName:apiEvent.StaffName
                     }));
                     setEvents(transformedEvents);
+                    setSelectEvent(null);
                     alert('成功');
                 }
             } catch (error) {
@@ -858,7 +861,7 @@ export default function PersonalInfo() {
                                     </Button>
 
                                     <Dialog open={amendCheckOpen} onClose={()=>handleClose('overTime')}>
-                                        <DialogTitle>休假申請</DialogTitle>
+                                        <DialogTitle>補卡申請</DialogTitle>
                                         <DialogContent>
                                             <FormControl>
                                             <FormLabel id="demo-row-radio-buttons-group-label">補卡類別</FormLabel>
@@ -1165,31 +1168,45 @@ export default function PersonalInfo() {
                         return { style };
                     }}
                 />
-                 <List>
-                    {selectedEvent !== null?
-                        <ListItem>
-                            {selectedEvent.level !== 3 ? 
-                            <>
-                                <ListItemText 
-                                    primary={selectedEvent.title} 
-                                    secondary={`内容: ${selectedEvent.detail}`}
-                                />
-                                <Button variant="text" startIcon={<DeleteIcon />} style={{color:'red'}} onClick={()=>handleDeleteEvent(selectedEvent.id)}/>
-                            </>
-                            :
-                            <ListItemText 
-                                primary={`${selectedEvent.title}-${selectedEvent.staffName}`}
-                                secondary={`上班地址: ${selectedEvent.detail} 員工: ${selectedEvent.staffName} 
-                                    工作時間: ${moment(selectedEvent.start).format('HH:mm')} ~ ${moment(selectedEvent.end).format('HH:mm')} 
-                                    總計: ${moment(selectedEvent.end).diff(moment(selectedEvent.start), 'hours')}小時${moment(selectedEvent.end).diff(moment(selectedEvent.start), 'minutes') % 60}分鐘`}
-                            />
-                        }                      
-                        </ListItem>
-                        :
-                        null
-                    }
-                    <Divider />
-                </List>
+                     <List>
+                        {selectedEvent !== null ? (
+                            <ListItem>
+                                {selectedEvent.level !== 3 ? (
+                                    selectedEvent.level !== 4 ? (
+                                        <>
+                                            <ListItemText
+                                                primary={selectedEvent.title}
+                                                secondary={`内容: ${selectedEvent.detail}`}
+                                            />
+                                            <Button variant="text" startIcon={<DeleteIcon />} style={{ color: 'red' }} onClick={() => handleDeleteEvent(selectedEvent.id)} />
+                                        </>
+                                    ) : (
+                                        <>
+                                            <ListItemText
+                                                primary={`會議主題: ${selectedEvent.title}`}
+                                                secondary={`内容: ${selectedEvent.detail}`}
+                                            />
+                                        </>
+                                    )
+                                ) : (
+                                    (() => {
+                                        const workMinutes = calculateWorkHours(selectedEvent.start, selectedEvent.end);
+                                        const hours = Math.floor(workMinutes / 60);
+                                        const minutes = workMinutes % 60;
+                                        return (
+                                            <ListItemText
+                                                primary={`${selectedEvent.title}-${selectedEvent.staffName}`}
+                                                secondary={`上班地址: ${selectedEvent.detail} 員工: ${selectedEvent.staffName}
+                                                工作時間: ${moment(selectedEvent.start).format('HH:mm')} ~ ${moment(selectedEvent.end).format('HH:mm')}
+                                                總計: ${hours}小時${minutes}分鐘`}
+                                            />
+                                        );
+                                    })()
+                                )}
+                            </ListItem>
+                        ) : null}
+                        <Divider />
+                    </List>
             </Dialog>
             <Dialog open={thingAddOpen} onClose={()=>setThingAddOpen(false)}>
                     <DialogTitle>行事曆新增</DialogTitle>
@@ -1288,5 +1305,31 @@ export default function PersonalInfo() {
         </>
     );
 }
+
+
+const calculateWorkHours = (start, end) => {
+    const startMoment = moment(start);
+    const endMoment = moment(end);
+    
+    const WORK_START_HOUR = startMoment.hours();
+    const WORK_END_HOUR = endMoment.hours();
+    const ONE_DAY_MINUTES = (WORK_END_HOUR - WORK_START_HOUR) * 60;
+
+    if (startMoment.isSame(endMoment, 'day')) {
+        return endMoment.diff(startMoment, 'minutes');
+    }
+
+    let totalMinutes = 0;
+    totalMinutes += moment(startMoment).set({ hour: WORK_END_HOUR, minute: 0 }).diff(startMoment, 'minutes');
+    startMoment.add(1, 'days');
+
+    while (!startMoment.isSame(endMoment, 'day')) {
+        totalMinutes += ONE_DAY_MINUTES;
+        startMoment.add(1, 'days');
+    }
+
+    totalMinutes += endMoment.diff(moment(endMoment).set({ hour: WORK_START_HOUR, minute: 0 }), 'minutes');
+    return totalMinutes;
+};
 
 

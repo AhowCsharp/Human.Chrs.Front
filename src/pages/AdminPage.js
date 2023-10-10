@@ -35,6 +35,9 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
+import ModeEditIcon from '@mui/icons-material/ModeEdit';
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
+import DoDisturbIcon from '@mui/icons-material/DoDisturb';
 // components
 import Label from '../components/label';
 import Iconify from '../components/iconify';
@@ -92,6 +95,10 @@ function applySortFilter(array, comparator, query) {
 export default function AdminPage() {
   const [open, setOpen] = useState(null);
 
+  const [isCreate ,setIsCreate] = useState(true); 
+
+  const [chooseRow,setChooseRow] = useState(null);
+
   const [formOpen, setFormOpen] = React.useState(false);
 
   const [isLoading, setIsLoading] = useState(true); 
@@ -125,6 +132,9 @@ export default function AdminPage() {
     Status:true
   });
 
+  const Auth = parseInt(sessionStorage.getItem('Auth'), 10);
+  const nowAdminId = parseInt(sessionStorage.getItem('UserId').split(',')[0],10);
+
   const config = {
     headers: {
       'X-Ap-Token': appsetting.token,
@@ -133,7 +143,23 @@ export default function AdminPage() {
       'X-Ap-AdminToken':sessionStorage.getItem('AdminToken')
     }
 };
-  const handleClickOpen = () => {
+  const handleClickOpen = (isCreate) => {
+    if(isCreate) {
+      setAdminRequest({
+        id:0,
+        CompanyId:parseInt(sessionStorage.getItem('CompanyId'), 10),
+        UserName:'',
+        Account:'',
+        Password:'',
+        Auth:0,
+        WorkPosition:'',
+        StaffNo:'',
+        DepartmentId:parseInt(sessionStorage.getItem('DepartmentId'), 10),
+        Status:true
+      })
+    }
+
+    setIsCreate(isCreate)
     setFormOpen(true);
   };
 
@@ -159,11 +185,13 @@ export default function AdminPage() {
           fetchAdminsData();
   }, []); 
 
-  const handleOpenMenu = (event) => {
+  const handleOpenMenu = (event,row) => {
+    setChooseRow(row)
     setOpen(event.currentTarget);
   };
 
   const handleCloseMenu = () => {
+    setChooseRow(null)
     setOpen(null);
   };
   const fetchDepartmentData = async () => {
@@ -178,21 +206,72 @@ export default function AdminPage() {
     }
 };
 
-const submitNewAdmin = async () => {
-  try {       
-    const response = await axios.post(`${appsetting.apiUrl}/admin/manager`,adminRequest,config);
-    // 檢查響應的結果，並設置到 state
-    if (response.status === 200) {
-      fetchAdminsData();
-      handleClose();
+  const submitNewAdmin = async () => {
+    if(adminRequest.Auth > Auth)  {
+      alert('權限不足 新增的管理員權限最高只能等於自身');
+      return;
     }
-  } catch (error) {
-    console.error('Error fetching data:', error);
-  }
-};
-    useEffect(() => {
-      fetchDepartmentData();
-    }, []); 
+    try {       
+      const response = await axios.post(`${appsetting.apiUrl}/admin/manager`,adminRequest,config);
+      // 檢查響應的結果，並設置到 state
+      if (response.status === 200) {
+        setAdmins(response.data);
+        handleClose();
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  useEffect(() => {
+    if(chooseRow) {
+      setAdminRequest({
+        id:chooseRow.id,
+        StaffNo:chooseRow.StaffNo,
+        CompanyId:chooseRow.CompanyId,
+        UserName:chooseRow.UserName,
+        Account:chooseRow.Account,
+        Auth:chooseRow.Auth,
+        WorkPosition:chooseRow.WorkPosition,
+        DepartmentId:chooseRow.DepartmentId,
+      })
+    }
+  }, [chooseRow]); 
+
+
+  const handleEditAdmin = async () => {
+
+    const request = {
+      ...adminRequest,
+      Password:''
+    }
+
+    if(Auth > 10)  {
+      alert('權限不足 新增的管理員權限最高只能等於自身');
+      return;
+    }
+
+    if(adminRequest.Auth > Auth)  {
+      alert('權限不足 新增的管理員權限最高只能等於自身');
+      return;
+    }
+
+    try {       
+      const response = await axios.post(`${appsetting.apiUrl}/admin/manager`,request,config);
+      // 檢查響應的結果，並設置到 state
+      if (response.status === 200) {
+        setAdmins(response.data);
+        handleClose();
+        handleCloseMenu();
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      handleCloseMenu();
+    }
+  };
+  useEffect(() => {
+    fetchDepartmentData();
+  }, []); 
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === 'asc';
@@ -201,6 +280,7 @@ const submitNewAdmin = async () => {
   };
 
   const handleSelectAllClick = (event) => {
+    console.log(event)
     if (event.target.checked) {
       const newSelecteds = admins.map((n) => n.name);
       setSelected(newSelecteds);
@@ -208,6 +288,43 @@ const submitNewAdmin = async () => {
     }
     setSelected([]);
   };
+
+  const handleAdminDelete = async () => {
+    try {
+      const response = await axios.delete(`${appsetting.apiUrl}/admin/manager?id=${chooseRow.id}`,config);
+        if (response.status === 200) {
+          setAdmins(response.data);
+          handleCloseMenu();
+        } 
+    } catch (error) {
+        alert('系統錯誤')
+        console.error('Error calling API:', error);
+        handleCloseMenu();
+    }
+  };
+
+  const handleAdminSwitch = async () => {
+    try {
+      const response = await axios.put(
+          `${appsetting.apiUrl}/admin/manager`, 
+          null, // 如果你不需要傳遞body，可以設為null
+          {
+              ...config, // 展開你的config，使其成為這個配置對象的一部分
+              params: {
+                  id: chooseRow.id
+              },
+          }
+      );
+      if (response.status === 200) {
+          setAdmins(response.data);
+      } 
+      handleCloseMenu();
+  } catch (error) {
+      alert('系統錯誤');
+      handleCloseMenu();
+      console.error('Error calling API:', error);
+  }
+};
 
   const handleClick = (event, name) => {
     const selectedIndex = selected.indexOf(name);
@@ -240,7 +357,6 @@ const submitNewAdmin = async () => {
 
   const handleInputChange = (event, propertyName) => {
     const value = event.target ? event.target.value : event;
-    console.log(value)
     setAdminRequest((prevData) => ({
         ...prevData,
         [propertyName]: value,
@@ -280,12 +396,12 @@ const submitNewAdmin = async () => {
           <Typography variant="h4" gutterBottom>
             管理者列表
           </Typography>
-          <Button variant="outlined" startIcon={<Iconify icon="eva:plus-fill" />} onClick={handleClickOpen}>
+          <Button variant="outlined" startIcon={<Iconify icon="eva:plus-fill" />} onClick={()=>handleClickOpen(true)}>
             新增管理者
           </Button>
 
           <Dialog open={formOpen} onClose={handleClose}>
-            <DialogTitle>新增管理者</DialogTitle>
+            <DialogTitle>{isCreate?'新增管理者':'修改管理者'}</DialogTitle>
             <DialogContent>
               <DialogContentText  style={{marginBottom:'5%'}}>
                   請確認自身權限是否足夠  權限10為上限 為最高管理者
@@ -331,17 +447,33 @@ const submitNewAdmin = async () => {
                               onChange={(e) => handleInputChange(e, 'Account')}
                             />
                         </Grid>
-                        <Grid item xs={3}> 
-                            <TextField
-                              autoFocus
-                              margin="dense"
-                              id="name"
-                              label="密碼"
-                              variant="standard"
-                              value={adminRequest.Password}
-                              onChange={(e) => handleInputChange(e, 'Password')}
-                            />
-                        </Grid>
+                        {isCreate?                        
+                          <Grid item xs={3}> 
+                              <TextField
+                                autoFocus
+                                margin="dense"
+                                id="name"
+                                label="密碼"
+                                variant="standard"
+                                value={adminRequest.Password}
+                                onChange={(e) => handleInputChange(e, 'Password')}
+                              />
+                          </Grid>:null }
+                          {!isCreate && chooseRow?.id === nowAdminId ?                        
+                              <Grid item xs={3}> 
+                                  <TextField
+                                      autoFocus
+                                      margin="dense"
+                                      id="name"
+                                      label="密碼"
+                                      variant="standard"
+                                      value={adminRequest.Password}
+                                      onChange={(e) => handleInputChange(e, 'Password')}
+                                  />
+                              </Grid>
+                          : null }
+
+
                         <Grid item xs={3}> 
                             <TextField
                               autoFocus
@@ -381,7 +513,10 @@ const submitNewAdmin = async () => {
             </DialogContent>
             <DialogActions>
               <Button onClick={handleClose}>取消</Button>
-              <Button onClick={submitNewAdmin}>新增</Button>
+              <Button onClick={isCreate ? submitNewAdmin : handleEditAdmin}>
+                  {isCreate ? '新增' : '編輯'}
+              </Button>
+
             </DialogActions>
           </Dialog>
         </Stack>
@@ -435,7 +570,7 @@ const submitNewAdmin = async () => {
 
 
                         <TableCell align="right">
-                          <IconButton size="large" color="inherit" onClick={handleOpenMenu}>
+                          <IconButton size="large" color="inherit" onClick={(e)=>handleOpenMenu(e,row)}>
                             <Iconify icon={'eva:more-vertical-fill'} />
                           </IconButton>
                         </TableCell>
@@ -506,15 +641,36 @@ const submitNewAdmin = async () => {
           },
         }}
       >
-        <MenuItem>
-          <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
-          Edit
-        </MenuItem>
+      <MenuItem>
+        <Button 
+            variant="text" 
+            fullWidth
+            startIcon={<ModeEditIcon sx={{ mr: 2, width: '100%' }} />}
+            onClick={()=>handleClickOpen(false)}>
+            Modify
+        </Button>       
+      </MenuItem>
 
-        <MenuItem sx={{ color: 'error.main' }}>
-          <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
-          Delete
-        </MenuItem>
+      <MenuItem sx={{ color: 'error.main' }}>
+          <Button 
+              variant="text" 
+              fullWidth
+              startIcon={<DeleteForeverIcon sx={{ mr: 2, width: '100%' }} />}
+              onClick={()=>handleAdminDelete()}>
+              Delete
+          </Button>
+      </MenuItem>
+
+      <MenuItem sx={{ color: 'error.main' }}>
+          <Button 
+              variant="text" 
+              fullWidth
+              startIcon={<DoDisturbIcon sx={{ mr: 2, width: '100%' }} />}
+              onClick={()=>handleAdminSwitch()}>
+              Status
+          </Button>
+      </MenuItem>
+
       </Popover>
     </>
   );

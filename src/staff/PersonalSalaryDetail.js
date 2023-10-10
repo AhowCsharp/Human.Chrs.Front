@@ -117,6 +117,16 @@ export default function PersonalSalaryDetail() {
         <ListItemText primary="全勤獎金" secondary={detail.FullCheckInMoney}/>
       </ListItem>:null
       }
+      {detail.FoodSuportMoney !== 0?
+      <ListItem>
+        <ListItemAvatar>
+          <Avatar>
+            <WorkIcon />
+          </Avatar>
+        </ListItemAvatar>
+        <ListItemText primary="伙食津貼" secondary={detail.FoodSuportMoney}/>
+      </ListItem>:null
+      }
       {detail.Bonus !== 0?
       <ListItem>
         <ListItemAvatar>

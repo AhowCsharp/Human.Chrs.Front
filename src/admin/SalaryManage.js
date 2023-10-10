@@ -90,6 +90,12 @@ export default function SalaryManage() {
           editable: false,
       },
       {
+        field: 'FoodSuportMoney',
+        headerName: '伙食津貼',
+        width: 120,
+        editable: false,
+      },
+      {
           field: 'OtherPercent',
           headerName: '分紅%數',
           width: 120,
@@ -139,6 +145,7 @@ export default function SalaryManage() {
       CompanyId:parseInt(sessionStorage.getItem('CompanyId'), 10),
       BasicSalary:0,
       FullCheckInMoney:0,
+      FoodSuportMoney:0,
       OtherPercent:0
     })
 
@@ -159,6 +166,7 @@ export default function SalaryManage() {
         CompanyId:parseInt(sessionStorage.getItem('CompanyId'), 10),
         BasicSalary:0,
         FullCheckInMoney:0,
+        FoodSuportMoney:0,
         OtherPercent:0
       })
       setIsCreate(status)
@@ -222,7 +230,11 @@ export default function SalaryManage() {
 
     const handleInputChange = (event, propertyName) => {
       const value = event.target ? event.target.value : event;
-      console.log(value)
+      if(propertyName === 'FoodSuportMoney' && value > 2400) {
+        alert('伙食津貼不列入稅收，不得超過每月2400額度')
+        return;
+      }
+      
       setRequest((prevData) => ({
           ...prevData,
           [propertyName]: value,
@@ -366,6 +378,16 @@ const downloadExcel = async () => {
 
                                   <Grid item xs={4}>      
                                       <InputLabel shrink htmlFor="bootstrap-input">
+                                          伙食津貼
+                                      </InputLabel>       
+                                      <TextField id="StaffNo" 
+                                          type="number" size="small"
+                                          value={request.FoodSuportMoney}
+                                          onChange={(e) => handleInputChange(e, 'FoodSuportMoney')}/>
+                                  </Grid>
+
+                                  <Grid item xs={4}>      
+                                      <InputLabel shrink htmlFor="bootstrap-input">
                                           獎金分紅%數設定
                                       </InputLabel>       
                                       <TextField id="StaffNo" 
@@ -437,7 +459,7 @@ const downloadExcel = async () => {
         </DialogContent>
         <Grid item xs={2} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center',width:'100%',marginTop:'5%' }}>
             <DialogActions>
-              <Button onClick={handleExcelClose}>Cancel</Button>
+              <Button onClick={handleExcelClose}>取消</Button>
               <Button onClick={downloadExcel}>下載EXCEL</Button>
             </DialogActions>
         </Grid>
