@@ -154,6 +154,16 @@ export default function PersonalDetail() {
             </Box>
         );
     }
+
+    if(!staffDetail) {
+        return (
+        <>
+            <div>
+                該員工尚未設置詳細資料 請通知貴司人資
+            </div>
+        </>
+        );
+    }
     
 
     return (

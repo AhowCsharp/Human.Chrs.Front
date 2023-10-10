@@ -63,6 +63,7 @@ const eventStyles = {
     1: { backgroundColor: "green", color: "white" },
     2: { backgroundColor: "red", color: "white" },
     3: { backgroundColor: "orange", color: "white" },
+    4: { backgroundColor: "#BE77FF", color: "white" },
 };
 
 
