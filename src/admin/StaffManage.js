@@ -6,6 +6,8 @@ import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
 import TextField from '@mui/material/TextField';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
 import { alpha, styled } from '@mui/material/styles';
 import InputBase from '@mui/material/InputBase';
 import InputLabel from '@mui/material/InputLabel';
@@ -45,6 +47,15 @@ const Transition = React.forwardRef((props, ref) => <Slide direction="left" ref=
 
 
 export default function StaffManage() {
+    const countries = [
+        { value: 'TW', label: '台灣'},
+        { value: 'ID', label: '印尼'},
+        { value: 'VN', label: '越南'},
+        { value: 'PH', label: '菲律賓'},
+        { value: 'TH', label: '泰國'},
+        { value: 'US', label: '美國'},
+      ];
+      
     const config = {
         headers: {
           'X-Ap-Token': appsetting.token,
@@ -168,6 +179,7 @@ export default function StaffManage() {
         EmploymentTypeId: 1,
         StaffPhoneNumber: '',
         StaffName: '',
+        Language:'TW',
         Auth: 0,
         DepartmentId: null,
         MenstruationDays: 1,
@@ -233,6 +245,7 @@ export default function StaffManage() {
             ResignationDate: dayjs(getCurrentDate()),
             LevelPosition: '',
             WorkLocation: '',
+            Language:'TW',
             Email: '',
             Status: 1,
             SpecialRestDays: 0,
@@ -318,6 +331,7 @@ export default function StaffManage() {
                 ResignationDate: dayjs(getCurrentDate()),
                 LevelPosition: '',
                 WorkLocation: '',
+                Language:'TW',
                 Email: '',
                 Status: 1,
                 SpecialRestDays: 0,
@@ -362,6 +376,7 @@ export default function StaffManage() {
           CompanyId: params.row.CompanyId,
           StaffAccount: params.row.StaffAccount,
           StaffPassWord: params.row.StaffPassWord,
+          Language:params.row.Language,
           Department: params.row.Department,
           EntryDate: dayjs(params.row.EntryDate),
           ResignationDate: dayjs(params.row.ResignationDate),
@@ -536,23 +551,69 @@ export default function StaffManage() {
                                     labelPlacement="end"
                                 />
                             </RadioGroup>
-                        </Grid>                       
-                        <Grid item xs={4}>      
+                        </Grid>   
+                        <Grid item xs={4}>
+                            <InputLabel shrink htmlFor="demo-simple-select-required">
+                                國籍
+                            </InputLabel>
+                            <Select
+                                labelId="demo-simple-select-required-label"
+                                id="demo-simple-select-required"
+                                value={staff.Language || 'TW'}
+                                label="Nationality"
+                                size="small"
+                                style={{ width: '100%' }}
+                                onChange={(e) => handleInputChange(e, 'Language')}
+                                renderValue={(selectedValue) => {
+                                    const selectedCountry = countries.find(country => country.value === selectedValue);
+                                    return (
+                                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                                            <img src={`/flag/${selectedValue.toLowerCase()}.svg`} alt={selectedCountry.label} style={{ width: '20px', marginRight: '8px' }} />
+                                            {selectedCountry.label}
+                                        </div>
+                                    );
+                                }}
+                            >
+                                {countries.map(country => (
+                                    <MenuItem key={country.value} value={country.value}>
+                                        <ListItemIcon>
+                                            <img src={`/flag/${country.value.toLowerCase()}.svg`} alt={country.label} style={{ width: '20px' }} />
+                                        </ListItemIcon>
+                                        <ListItemText primary={country.label} />
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </Grid>
+                        <Grid item xs={3}>      
+                            <InputLabel shrink htmlFor="bootstrap-input">
+                                年紀
+                            </InputLabel>       
+                            <TextField id="StaffNo" 
+                                type="search" size="small"
+                                value={staff.Age}
+                                style={{marginTop:'15%'}}
+                                onChange={(e) => handleInputChange(e, 'Age')}/>
+                        </Grid>
+             
+                        <Grid item xs={3}>      
                             <InputLabel shrink htmlFor="bootstrap-input">
                                 姓名
                             </InputLabel>       
                             <TextField id="StaffName" 
                                 type="search" size="small"
                                 value={staff.StaffName}
+                                style={{marginTop:'15%'}}
                                 onChange={(e) => handleInputChange(e, 'StaffName')}/>
                         </Grid>       
-                        <Grid item xs={4}>      
+
+                        <Grid item xs={3}>      
                             <InputLabel shrink htmlFor="bootstrap-input">
                                 員工編號
                             </InputLabel>       
                             <TextField id="StaffNo" 
                                 type="search" size="small"
                                 value={staff.StaffNo}
+                                style={{marginTop:'15%'}}
                                 onChange={(e) => handleInputChange(e, 'StaffNo')}/>
                         </Grid>
                         <Grid item xs={12}>
