@@ -31,33 +31,40 @@ import Scrollbar from '../../../components/scrollbar';
 import appsetting from '../../../Appsetting';
 // ----------------------------------------------------------------------
 
-const config = {
-  headers: {
-    'X-Ap-Token': appsetting.token,
-    'X-Ap-CompanyId': sessionStorage.getItem('CompanyId'),
-    'X-Ap-UserId': sessionStorage.getItem('UserId'),
-    'X-Ap-AdminToken':sessionStorage.getItem('AdminToken')
-  }
-};
-
 export default function NotificationsPopover() {
   const [notifications, setNotifications] = useState([]);
-
-
-
+    const adminToken = sessionStorage.getItem('AdminToken');
+    const isStaff = !adminToken;
+    const baseHeaders = {
+      'X-Ap-Token': appsetting.token,
+      'X-Ap-CompanyId': sessionStorage.getItem('CompanyId'),
+      'X-Ap-UserId': sessionStorage.getItem('UserId')
+  };
+  
+  const adminHeaders = isStaff ? {} : { 'X-Ap-AdminToken': sessionStorage.getItem('AdminToken') };
+  
+  const config = {
+      headers: {
+          ...baseHeaders,
+          ...adminHeaders
+      }
+  };
+  console.log(66)
+  console.log(isStaff)
   // eslint-disable-next-line consistent-return
   useEffect(() => {
     let ws;
-    const staffId = parseInt(sessionStorage.getItem('UserId').split(',')[0],10);
-    const isStaff = sessionStorage.getItem('AdminToken') === null;
-    if (isStaff) {
+    const staffId = parseInt(sessionStorage.getItem('UserId').split(',')[0], 10);
     const connect = () => {
-        // 假設你的帳號ID為123（你可以從登入信息獲取）
-        ws = new WebSocket(`${appsetting.wss}?staffId=${staffId}`);
+        // 根據是員工還是管理者，建立不同的WebSocket URL
+        const wsURL = isStaff 
+            ? `${appsetting.wss}?staffId=${staffId}`
+            : `${appsetting.wss}?AdminToken=${adminToken}&AdminId=${staffId}`;
+
+        ws = new WebSocket(wsURL);
 
         ws.onopen = () => {
             console.log('WebSocket Connected');
-            // 每30秒發送一次心跳消息以保持連接
             setInterval(() => {
                 if (ws.readyState === WebSocket.OPEN) {
                     ws.send('heartbeat');
@@ -66,15 +73,15 @@ export default function NotificationsPopover() {
         };
 
         ws.onmessage = (event) => {
-          if(event.data !== 'heartbeat') {
-            const newNotificationJsonArray = JSON.parse(event.data);
-            setNotifications(newNotificationJsonArray);
-          }          
+            if (event.data !== 'heartbeat') {
+                const newNotificationJsonArray = JSON.parse(event.data);
+                console.log(newNotificationJsonArray)
+                setNotifications(newNotificationJsonArray);
+            }
         };
 
         ws.onclose = (e) => {
             console.log('WebSocket Disconnected', e.reason);
-            // 如果連接被非正常終止（非手動關閉），嘗試重新連接
             if (e.code !== 1000) {
                 setTimeout(connect, 1000);
             }
@@ -83,13 +90,11 @@ export default function NotificationsPopover() {
 
     connect();
 
-    // 清除功能：組件卸載時關閉 WebSocket
     return () => {
         if (ws) {
-            ws.close(1000, "React component unmounting");  // 正常關閉
+            ws.close(1000, "React component unmounting");
         }
     };
-  }
 }, []);
 
 
@@ -110,17 +115,22 @@ export default function NotificationsPopover() {
     const notificationIds = notifications.map((notification) => notification.id);
 
     try {
-      const request = { NotificationIds: notificationIds };
-      const response = await axios.patch(`${appsetting.apiUrl}/staff/readallstatus`, request, config);
+        const baseUrl = appsetting.apiUrl;
+        const path = isStaff ? 'staff' : 'admin';
+        const url = `${baseUrl}/${path}/readallstatus`;
+
+        const request = { NotificationIds: notificationIds };
+        const response = await axios.patch(url, request, config);
       
-      if (response.status === 200) {
-        console.log('通知所有读取状态已更改成功');
-      }
+        if (response.status === 200) {
+            console.log('通知所有读取状态已更改成功');
+        }
     } catch (error) {
-      console.error("Error updating notification read status:", error);
-      alert('发生错误：无法更改通知读取状态');
+        console.error("Error updating notification read status:", error);
+        alert('发生错误：无法更改通知读取状态');
     }
-  }
+}
+
   
 
   return (
@@ -176,7 +186,7 @@ export default function NotificationsPopover() {
           {notifications
             .filter((notification) => notification.IsUnRead === true)
             .map((notification) => (
-              <NotificationItem key={notification.id} notification={notification} />
+              <NotificationItem key={notification.id} notification={notification} isStaff={isStaff}/>
             ))}
 
           </List>
@@ -192,7 +202,7 @@ export default function NotificationsPopover() {
           {notifications
             .filter((notification) => notification.IsUnRead === false)
             .map((notification) => (
-              <NotificationItem key={notification.id} notification={notification} />
+              <NotificationItem key={notification.id} notification={notification} isStaff={isStaff}/>
             ))}
           </List>
         </Scrollbar>
@@ -220,22 +230,45 @@ NotificationItem.propTypes = {
     Description: PropTypes.string,
     Type: PropTypes.string,
     Avatar: PropTypes.any,
+    EventDetail: PropTypes.string,
+    EventType: PropTypes.string,
   }),
 };
 
-function NotificationItem({ notification }) {
+function NotificationItem({ notification,isStaff }) {
+
+  const baseHeaders = {
+    'X-Ap-Token': appsetting.token,
+    'X-Ap-CompanyId': sessionStorage.getItem('CompanyId'),
+    'X-Ap-UserId': sessionStorage.getItem('UserId')
+  };
+
+  const adminHeaders = isStaff ? {} : { 'X-Ap-AdminToken': sessionStorage.getItem('AdminToken') };
+
+  const config = {
+    headers: {
+        ...baseHeaders,
+        ...adminHeaders
+    }
+};
 
   const handleReadLogInsert = async (notificationId) => {
+    console.log(isStaff)
     try {
-      const response = await axios.patch(`${appsetting.apiUrl}/staff/readstatus?notificationId=${notificationId}`, null, config);
-      if (response.status === 200) {
-        console.log('通知读取状态已更改成功');
-      }
+        const baseUrl = appsetting.apiUrl;
+        const path = isStaff ? 'staff' : 'admin';
+        const url = `${baseUrl}/${path}/readstatus?notificationId=${notificationId}`;
+
+        const response = await axios.patch(url, null, config);
+        if (response.status === 200) {
+            console.log('通知读取状态已更改成功');
+        }
     } catch (error) {
-      console.error("Error updating notification read status:", error);
-      alert('发生错误：无法更改通知读取状态');
+        console.error("Error updating notification read status:", error);
+        alert('发生错误：无法更改通知读取状态');
     }
-  }
+}
+
 
   return (
     <ListItemButton
@@ -255,7 +288,7 @@ function NotificationItem({ notification }) {
         </Avatar>
       </ListItemAvatar>
       <ListItemText
-        primary={notification.Title}
+        primary={isStaff?notification.Title:notification.EventType}
         secondary={
           <Typography
             variant="caption"
@@ -267,7 +300,7 @@ function NotificationItem({ notification }) {
               justifyContent: 'space-between', // 使用 justify-content 将子元素分散放置
             }}
           >
-            {notification.Description}
+            {isStaff?notification.Description:notification.EventDetail}
             <div style={{ display: 'flex', alignItems: 'center', minWidth: '115px',marginLeft:'5px' }}>
               <Iconify icon="eva:clock-outline" sx={{ mr: 0.5, width: 16, height: 16 }} />
               {formatDateTime(notification.CreateDate)}
