@@ -41,6 +41,7 @@ import { TimeField } from '@mui/x-date-pickers/TimeField';
 import { DateTimeField } from '@mui/x-date-pickers/DateTimeField';
 import { StaticDatePicker } from '@mui/x-date-pickers/StaticDatePicker';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
+import FactCheckIcon from '@mui/icons-material/FactCheck';
 import Select from '@mui/material/Select';
 import Slide from '@mui/material/Slide';
 import IconButton from '@mui/material/IconButton';
@@ -157,6 +158,7 @@ export default function SalaryManage() {
     };
     const [open, setOpen] = useState(false);
     const [excelOpen, setExcelOpen] = useState(false);
+    const [salaryExcelOpen, setSalaryExcelOpen] = useState(false);
     const [staffId,setStaffId] = useState(0);
 
     const handleClickOpen = (status) => {
@@ -187,6 +189,13 @@ export default function SalaryManage() {
     };
     const handleExcelClose = () => {
       setExcelOpen(false);
+    };
+
+    const handleSalaryExcelOpen = () => {
+      setSalaryExcelOpen(true);
+    };
+    const handleSalaryExcelClose = () => {
+      setSalaryExcelOpen(false);
     };
 
     const handleClose = () => {
@@ -293,6 +302,26 @@ const downloadExcel = async () => {
   }
 }
 
+const downloadSalaryExcel = async () => {
+  try {
+      const response = await axios.get(`${appsetting.apiUrl}/admin/downloadsalaryexcel?month=${month}`, {
+          ...config,
+          responseType: 'blob'
+      });
+      
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', '薪資發放單.xlsx'); // or any other format you want
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);  // Once download is done, remove the link from the DOM
+      handleSalaryExcelClose();
+  } catch (error) {
+      console.error("Error downloading the file:", error);
+  }
+}
+
 
   
 
@@ -316,10 +345,12 @@ const downloadExcel = async () => {
             </Grid>
 
 
-            <Grid item xs={2}>      
+            <Grid item xs={4}>      
                 <Button variant="outlined" endIcon={<PersonAddIcon/>} onClick={()=>handleClickOpen(true)}>新增設定</Button>
+                <Button variant="outlined" style={{marginLeft:'15px'}} endIcon={<FactCheckIcon/>} onClick={handleSalaryExcelOpen}>下載公司薪資單</Button>
+            </Grid>   
 
-                <Dialog open={open} 
+                            <Dialog open={open} 
                   onClose={handleClose}
                   TransitionComponent={Transition}
                   keepMounted>
@@ -402,10 +433,9 @@ const downloadExcel = async () => {
                     <Button onClick={handleClose}>取消</Button>
                     <Button onClick={handleSubmit}>{isCreate?'新增':'修改'}</Button>
                   </DialogActions>
-                </Dialog>
-  
-            </Grid>     
+                </Dialog> 
         </Grid>
+
         <DataGrid
             rows={filterRows}
             columns={columns}
@@ -423,9 +453,9 @@ const downloadExcel = async () => {
       </Box>
 
       <Dialog open={excelOpen} onClose={handleExcelClose}>
-        <DialogTitle>出勤狀況Excel下載申請</DialogTitle>
+        <DialogTitle style={{ display: 'flex', justifyContent: 'center', alignItems: 'center',width:'100%'}}>出勤狀況Excel下載申請</DialogTitle>
         <DialogContent>
-          <DialogContentText>
+          <DialogContentText style={{ display: 'flex', justifyContent: 'center', alignItems: 'center',width:'100%'}}>
               請選擇月份，下載該員工出勤狀況
           </DialogContentText>
             <Grid item xs={2} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center',width:'100%',marginTop:'5%' }}>
@@ -461,6 +491,49 @@ const downloadExcel = async () => {
             <DialogActions>
               <Button onClick={handleExcelClose}>取消</Button>
               <Button onClick={downloadExcel}>下載EXCEL</Button>
+            </DialogActions>
+        </Grid>
+      </Dialog>
+
+      <Dialog open={salaryExcelOpen} onClose={handleSalaryExcelClose}>
+        <DialogTitle style={{ display: 'flex', justifyContent: 'center', alignItems: 'center',width:'100%'}}>薪資發放Excel下載申請</DialogTitle>
+        <DialogContent>
+          <DialogContentText style={{ display: 'flex', justifyContent: 'center', alignItems: 'center',width:'100%'}}>
+              請選擇月份
+          </DialogContentText>
+            <Grid item xs={2} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center',width:'100%',marginTop:'5%' }}>
+
+              <FormControl variant="standard" sx={{ m: 1, minWidth: 20}}>
+                <InputLabel id="demo-simple-select-standard-label">月份</InputLabel>
+                <Select
+                  labelId="demo-simple-select-standard-label"
+                  id="demo-simple-select-standard"
+                  style={{width:'100%'}}
+                  value={month}
+                  onChange={(e)=>setMonth(e.target.value)}
+                  label="月份"
+                >
+                  <MenuItem value={1}>1月</MenuItem>
+                  <MenuItem value={2}>2月</MenuItem>
+                  <MenuItem value={3}>3月</MenuItem>
+                  <MenuItem value={4}>4月</MenuItem>
+                  <MenuItem value={5}>5月</MenuItem>
+                  <MenuItem value={6}>6月</MenuItem>
+                  <MenuItem value={7}>7月</MenuItem>
+                  <MenuItem value={8}>8月</MenuItem>
+                  <MenuItem value={9}>9月</MenuItem>
+                  <MenuItem value={10}>10月</MenuItem>
+                  <MenuItem value={11}>11月</MenuItem>
+                  <MenuItem value={12}>12月</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+          
+        </DialogContent>
+        <Grid item xs={2} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center',width:'100%',marginTop:'5%' }}>
+            <DialogActions>
+              <Button onClick={handleSalaryExcelClose}>取消</Button>
+              <Button onClick={downloadSalaryExcel}>下載EXCEL</Button>
             </DialogActions>
         </Grid>
       </Dialog>

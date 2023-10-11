@@ -129,10 +129,13 @@ export default function AmendRecordsManage() {
         width: 150,
         editable: true,
         renderCell: (params) => {
-          const date = new Date(params.value);
-          return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+            if (!params.value) { // Checks for null, undefined, and empty string
+                return '';
+            }
+            const date = new Date(params.value);
+            return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
         },
-      }
+      }    
     ];
     const [rows,setRows] = useState([]);
     const [filterRows,setFilterRows] = useState([]);
