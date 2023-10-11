@@ -46,6 +46,7 @@ import IconButton from '@mui/material/IconButton';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import EditIcon from '@mui/icons-material/Edit';
 import LocalAtmIcon from '@mui/icons-material/LocalAtm';
+import ListAltIcon from '@mui/icons-material/ListAlt';
 import { DataGrid } from '@mui/x-data-grid';
 import appsetting from '../Appsetting';
 import ParttimeSearch from './ParttimeSearch';
@@ -132,7 +133,7 @@ export default function ParttimeManage() {
         renderCell: (params) => (
           <>
             <IconButton aria-label="delete" onClick={()=>handleoverTimeClickOpen(params.row.id)}>
-              <ReceiptLongIcon />
+              <ListAltIcon />
             </IconButton>
           </>
 

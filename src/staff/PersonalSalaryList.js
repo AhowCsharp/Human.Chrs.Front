@@ -20,7 +20,7 @@ export default function PersonalSalaryList() {
         width: typeof window !== 'undefined' ? window.innerWidth : 0,
         height: typeof window !== 'undefined' ? window.innerHeight : 0,
     });
-
+    const Language = sessionStorage.getItem('Language');
     const config = {
         headers: {
           'X-Ap-Token': appsetting.token,
@@ -84,7 +84,10 @@ export default function PersonalSalaryList() {
                 <ImageIcon />
             </Avatar>
           </ListItemAvatar>
-          <ListItemText primary={`${item.SalaryOfMonth}月薪資單`} secondary={`發放日期: ${item.IssueDate.split('T')[0]}`} />
+          <ListItemText
+            primary={`${item.SalaryOfMonth}${Language === 'TW' ? '月薪資單' : ' Monthly Salary Statement'}`}
+            secondary={`發放日期: ${item.IssueDate.split('T')[0]}`}
+          />
         </ListItem>
       ))}
     </List>

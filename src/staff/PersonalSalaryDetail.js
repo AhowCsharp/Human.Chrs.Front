@@ -29,7 +29,7 @@ export default function PersonalSalaryDetail() {
   };
   const [isLoading, setIsLoading] = useState(true); 
   const [detail,setDetail] = useState([]); 
-
+  const Language = sessionStorage.getItem('Language');
   const fetchSalaryDetailData = async () => {
     setIsLoading(true);  // 開始加載
     try {       
@@ -78,15 +78,16 @@ export default function PersonalSalaryDetail() {
   return (
     <List sx={{ width: '95%', bgcolor: 'background.paper',margin:'auto' }} style={{height:'85vh'}}>
       <Button variant="text" style={{margin:'1%'}} onClick={handleBackClick}>返回</Button>
-      <Typography variant="subtitle2" gutterBottom style={{marginLeft:'5%'}}>
-          實發金額
+      <Typography variant="subtitle2" gutterBottom style={{ marginLeft: '5%' }}>
+        {Language === 'TW' ? '實發金額' : 'Net Amount'}
       </Typography>
       <Typography variant="h6" gutterBottom style={{margin:'5%'}}>
           {detail.StaffActualIncomeAmount}
       </Typography>
-      <Typography variant="subtitle2" gutterBottom style={{margin:'5%'}}>
-          薪資加項
+      <Typography variant="subtitle2" gutterBottom style={{ margin: '5%' }}>
+        {Language === 'TW' ? '薪資加項' : 'Salary Additions'}
       </Typography>
+
       {detail.BasicSalary !== 0?
       <ListItem>
         <ListItemAvatar>
@@ -94,7 +95,7 @@ export default function PersonalSalaryDetail() {
             <ImageIcon />
           </Avatar>
         </ListItemAvatar>
-        <ListItemText primary="本薪" secondary={detail.BasicSalary} />
+        <ListItemText primary={Language === 'TW' ? '本薪' : 'Base Salary'} secondary={detail.BasicSalary} />
       </ListItem>:null
       }
       {detail.ParttimeSalary !== 0 && detail.ParttimeSalary?
@@ -104,7 +105,7 @@ export default function PersonalSalaryDetail() {
             <ImageIcon />
           </Avatar>
         </ListItemAvatar>
-        <ListItemText primary="時薪*時數" secondary={detail.ParttimeSalary} />
+        <ListItemText primary={Language === 'TW' ? '時薪*時數' : 'Hourly Rate * Hours'} secondary={detail.ParttimeSalary} />
       </ListItem>:null
       }
       {detail.FullCheckInMoney !== 0?
@@ -114,7 +115,7 @@ export default function PersonalSalaryDetail() {
             <WorkIcon />
           </Avatar>
         </ListItemAvatar>
-        <ListItemText primary="全勤獎金" secondary={detail.FullCheckInMoney}/>
+        <ListItemText primary={Language === 'TW' ? '全勤獎金' : 'Attendance Bonus'} secondary={detail.FullCheckInMoney} />
       </ListItem>:null
       }
       {detail.FoodSuportMoney !== 0?
@@ -124,7 +125,7 @@ export default function PersonalSalaryDetail() {
             <WorkIcon />
           </Avatar>
         </ListItemAvatar>
-        <ListItemText primary="伙食津貼" secondary={detail.FoodSuportMoney}/>
+        <ListItemText primary={Language === 'TW' ? '伙食津貼' : 'Meal Allowance'} secondary={detail.FoodSuportMoney} />
       </ListItem>:null
       }
       {detail.Bonus !== 0?
@@ -134,7 +135,7 @@ export default function PersonalSalaryDetail() {
             <BeachAccessIcon />
           </Avatar>
         </ListItemAvatar>
-        <ListItemText primary="績效獎金" secondary={detail.Bonus} />
+        <ListItemText primary={Language === 'TW' ? '績效獎金' : 'Performance Bonus'} secondary={detail.Bonus} />
       </ListItem>:null
       }
       {detail.OverTimeAmount !== 0 && detail.OverTimeAmount !== null?
@@ -144,7 +145,7 @@ export default function PersonalSalaryDetail() {
             <BeachAccessIcon />
           </Avatar>
         </ListItemAvatar>
-        <ListItemText primary="加班費" secondary={detail.OverTimeAmount}/>
+        <ListItemText primary={Language === 'TW' ? '加班費' : 'Overtime Pay'} secondary={detail.OverTimeAmount} />
       </ListItem>:null
       }
       <ListItem>
@@ -153,11 +154,11 @@ export default function PersonalSalaryDetail() {
             <BeachAccessIcon />
           </Avatar>
         </ListItemAvatar>
-        <ListItemText primary="加項總額" secondary={detail.StaffIncomeAmount} />
+        <ListItemText primary={Language === 'TW' ? '加項總額' : 'Total Additional Income'} secondary={detail.StaffIncomeAmount} />
       </ListItem>
 
-      <Typography variant="subtitle2" gutterBottom style={{margin:'5%'}}>
-          薪資減項
+      <Typography variant="subtitle2" gutterBottom style={{ margin: '5%' }}>
+        {Language === 'TW' ? '薪資減項' : 'Deductions'}
       </Typography>
       {detail.ThingHours !== 0?
       <ListItem >
@@ -166,7 +167,7 @@ export default function PersonalSalaryDetail() {
             <BeachAccessIcon />
           </Avatar>
         </ListItemAvatar>
-        <ListItemText primary="事假" secondary={detail.ThingHours} />
+        <ListItemText primary={Language === 'TW' ? '事假' : 'Personal Leave'} secondary={detail.ThingHours} />
       </ListItem>:null
       }
       {detail.SickHours !== 0?
@@ -176,7 +177,7 @@ export default function PersonalSalaryDetail() {
             <BeachAccessIcon />
           </Avatar>
         </ListItemAvatar>
-        <ListItemText primary="病假" secondary={detail.SickHours}  />
+        <ListItemText primary={Language === 'TW' ? '病假' : 'Sick Leave'} secondary={detail.SickHours} />
       </ListItem>:null
       }
       {detail.MenstruationHours !== 0?
@@ -186,7 +187,7 @@ export default function PersonalSalaryDetail() {
             <BeachAccessIcon />
           </Avatar>
         </ListItemAvatar>
-        <ListItemText primary="生理假" secondary={detail.MenstruationHours}  />
+        <ListItemText primary={Language === 'TW' ? '生理假' : 'Menstrual Leave'} secondary={detail.MenstruationHours} />
       </ListItem>:null
       }
       {detail.TakeCareBabyHours !== 0?
@@ -196,7 +197,7 @@ export default function PersonalSalaryDetail() {
             <BeachAccessIcon />
           </Avatar>
         </ListItemAvatar>
-        <ListItemText primary="育嬰假" secondary={detail.TakeCareBabyHours} />
+        <ListItemText primary={Language === 'TW' ? '育嬰假' : 'Parental Leave'} secondary={detail.TakeCareBabyHours} />
       </ListItem>:null
       }
       {detail.ChildbirthHours !== 0?
@@ -206,7 +207,7 @@ export default function PersonalSalaryDetail() {
             <BeachAccessIcon />
           </Avatar>
         </ListItemAvatar>
-        <ListItemText primary="產假" secondary={detail.ChildbirthHours} />
+        <ListItemText primary={Language === 'TW' ? '產假' : 'Maternity Leave'} secondary={detail.ChildbirthHours} />
       </ListItem>:null
       }
       {detail.EarlyOrLateAmount !== 0?
@@ -216,7 +217,7 @@ export default function PersonalSalaryDetail() {
             <BeachAccessIcon />
           </Avatar>
         </ListItemAvatar>
-        <ListItemText primary="遲到早退" secondary={detail.EarlyOrLateAmount} />
+        <ListItemText primary={Language === 'TW' ? '遲到早退' : 'Late or Early Leaving'} secondary={detail.EarlyOrLateAmount} />
       </ListItem>:null
       }
       {detail.OutLocationAmount !== 0?
@@ -226,7 +227,7 @@ export default function PersonalSalaryDetail() {
             <BeachAccessIcon />
           </Avatar>
         </ListItemAvatar>
-        <ListItemText primary="打卡超出範圍" secondary={detail.OutLocationAmount}  />
+        <ListItemText primary={Language === 'TW' ? '打卡超出範圍' : 'Check-in Out of Range'} secondary={detail.OutLocationAmount} />
       </ListItem>:null
       }
       {detail.IncomeTax !== 0?
@@ -236,7 +237,7 @@ export default function PersonalSalaryDetail() {
             <BeachAccessIcon />
           </Avatar>
         </ListItemAvatar>
-        <ListItemText primary="所得稅代扣" secondary={detail.IncomeTax} />
+        <ListItemText primary={Language === 'TW' ? '所得稅代扣' : 'Income Tax Withholding'} secondary={detail.IncomeTax} />
       </ListItem>:null
       }
       {detail.HealthInsurance !== 0?
@@ -246,7 +247,7 @@ export default function PersonalSalaryDetail() {
             <BeachAccessIcon />
           </Avatar>
         </ListItemAvatar>
-        <ListItemText primary="健保費" secondary={detail.HealthInsurance} />
+        <ListItemText primary={Language === 'TW' ? '健保費' : 'Health Insurance'} secondary={detail.HealthInsurance} />
       </ListItem>:null
       }
       {detail.WorkerInsurance !== 0?
@@ -256,7 +257,7 @@ export default function PersonalSalaryDetail() {
             <BeachAccessIcon />
           </Avatar>
         </ListItemAvatar>
-        <ListItemText primary="勞保費" secondary={detail.WorkerInsurance} />
+        <ListItemText primary={Language === 'TW' ? '勞保費' : 'Worker\'s Insurance'} secondary={detail.WorkerInsurance} />
       </ListItem>:null
       }
       {detail.EmployeeRetirement !== 0?
@@ -266,7 +267,7 @@ export default function PersonalSalaryDetail() {
             <BeachAccessIcon />
           </Avatar>
         </ListItemAvatar>
-        <ListItemText primary="員工勞退" secondary={detail.EmployeeRetirement} />
+        <ListItemText primary={Language === 'TW' ? '員工勞退' : 'Employee Retirement'} secondary={detail.EmployeeRetirement} />
       </ListItem>:null
       }
       {detail.SupplementaryPremium !== 0?
@@ -276,7 +277,7 @@ export default function PersonalSalaryDetail() {
             <BeachAccessIcon />
           </Avatar>
         </ListItemAvatar>
-        <ListItemText primary="補充保費" secondary= {detail.SupplementaryPremium}/>
+        <ListItemText primary={Language === 'TW' ? '補充保費' : 'Supplementary Premium'} secondary={detail.SupplementaryPremium} />
       </ListItem>:null
       }
       <ListItem>
@@ -285,10 +286,10 @@ export default function PersonalSalaryDetail() {
             <BeachAccessIcon />
           </Avatar>
         </ListItemAvatar>
-        <ListItemText primary="減項總額" secondary={detail.StaffDeductionAmount} />
+        <ListItemText primary={Language === 'TW' ? '減項總額' : 'Total Deductions'} secondary={detail.StaffDeductionAmount} />
       </ListItem>
-      <Typography variant="subtitle2" gutterBottom style={{margin:'5%'}}>
-          雇主負擔名細
+      <Typography variant="subtitle2" gutterBottom style={{ margin: '5%' }}>
+        {Language === 'TW' ? '雇主負擔名細' : 'Employer Contributions Details'}
       </Typography>
       <ListItem>
         <ListItemAvatar>
@@ -296,7 +297,7 @@ export default function PersonalSalaryDetail() {
             <BeachAccessIcon />
           </Avatar>
         </ListItemAvatar>
-        <ListItemText primary="健保費-雇主負擔" secondary={detail.HealthInsuranceFromCompany} />
+        <ListItemText primary={Language === 'TW' ? '健保費-雇主負擔' : 'Health Insurance - Employer Contribution'} secondary={detail.HealthInsuranceFromCompany} />
       </ListItem>
       <ListItem>
         <ListItemAvatar>
@@ -304,7 +305,7 @@ export default function PersonalSalaryDetail() {
             <BeachAccessIcon />
           </Avatar>
         </ListItemAvatar>
-        <ListItemText primary="勞保費-雇主負擔" secondary={detail.WorkerInsuranceFromCompany} />
+        <ListItemText primary={Language === 'TW' ? '勞保費-雇主負擔' : 'Worker\'s Insurance - Employer Contribution'} secondary={detail.WorkerInsuranceFromCompany} />
       </ListItem>
       <ListItem>
         <ListItemAvatar>
@@ -312,7 +313,10 @@ export default function PersonalSalaryDetail() {
             <BeachAccessIcon />
           </Avatar>
         </ListItemAvatar>
-        <ListItemText primary="勞退提繳-雇主" secondary={detail.EmployeeRetirementFromCompany}  />
+        <ListItemText
+          primary={Language === 'TW' ? '勞退提繳-雇主' : 'Employee Retirement - Employer Contribution'}
+          secondary={detail.EmployeeRetirementFromCompany}
+        />
       </ListItem>
       <ListItem>
         <ListItemAvatar>
@@ -320,7 +324,10 @@ export default function PersonalSalaryDetail() {
             <BeachAccessIcon />
           </Avatar>
         </ListItemAvatar>
-        <ListItemText primary="墊償基金" secondary={detail.AdvanceFundFromCompany} />
+        <ListItemText
+          primary={Language === 'TW' ? '墊償基金' : 'Advance Fund'}
+          secondary={detail.AdvanceFundFromCompany}
+        />
       </ListItem>
       <ListItem>
         <ListItemAvatar>
@@ -328,7 +335,10 @@ export default function PersonalSalaryDetail() {
             <BeachAccessIcon />
           </Avatar>
         </ListItemAvatar>
-        <ListItemText primary="雇主負擔總額" secondary={detail.CompanyCostAmount} />
+        <ListItemText
+          primary={Language === 'TW' ? '雇主負擔總額' : 'Total Employer Contributions'}
+          secondary={detail.CompanyCostAmount}
+        />
       </ListItem>
     </List>
   );

@@ -29,7 +29,7 @@ export default function PersonalCheckList() {
         height: typeof window !== 'undefined' ? window.innerHeight : 0,
     });
     
-
+    const Language = sessionStorage.getItem('Language');
     const config = {
         headers: {
           'X-Ap-Token': appsetting.token,
@@ -89,7 +89,7 @@ export default function PersonalCheckList() {
     
     <List sx={{ width: '100%', bgcolor: 'background.paper' }} style={{height:'85vh'}}>
       <FormControl variant="standard" sx={{ m: 1, minWidth: 12,marginLeft:'3%' }}>
-        <InputLabel id="demo-simple-select-standard-label">月份</InputLabel>
+        <InputLabel id="demo-simple-select-standard-label">{Language === 'TW' ? '月份' : 'Month'}</InputLabel>
         <Select
           labelId="demo-simple-select-standard-label"
           id="demo-simple-select-standard"
@@ -97,18 +97,18 @@ export default function PersonalCheckList() {
           onChange={(e)=>setMonth(e.target.value)}
           label="月份"
         >
-          <MenuItem value={1}>1月</MenuItem>
-          <MenuItem value={2}>2月</MenuItem>
-          <MenuItem value={3}>3月</MenuItem>
-          <MenuItem value={4}>4月</MenuItem>
-          <MenuItem value={5}>5月</MenuItem>
-          <MenuItem value={6}>6月</MenuItem>
-          <MenuItem value={7}>7月</MenuItem>
-          <MenuItem value={8}>8月</MenuItem>
-          <MenuItem value={9}>9月</MenuItem>
-          <MenuItem value={10}>10月</MenuItem>
-          <MenuItem value={11}>11月</MenuItem>
-          <MenuItem value={12}>12月</MenuItem>
+          <MenuItem value={1}>{Language === 'TW' ? '1月' : 'January'}</MenuItem>
+          <MenuItem value={2}>{Language === 'TW' ? '2月' : 'February'}</MenuItem>
+          <MenuItem value={3}>{Language === 'TW' ? '3月' : 'March'}</MenuItem>
+          <MenuItem value={4}>{Language === 'TW' ? '4月' : 'April'}</MenuItem>
+          <MenuItem value={5}>{Language === 'TW' ? '5月' : 'May'}</MenuItem>
+          <MenuItem value={6}>{Language === 'TW' ? '6月' : 'June'}</MenuItem>
+          <MenuItem value={7}>{Language === 'TW' ? '7月' : 'July'}</MenuItem>
+          <MenuItem value={8}>{Language === 'TW' ? '8月' : 'August'}</MenuItem>
+          <MenuItem value={9}>{Language === 'TW' ? '9月' : 'September'}</MenuItem>
+          <MenuItem value={10}>{Language === 'TW' ? '10月' : 'October'}</MenuItem>
+          <MenuItem value={11}>{Language === 'TW' ? '11月' : 'November'}</MenuItem>
+          <MenuItem value={12}>{Language === 'TW' ? '12月' : 'December'}</MenuItem>
         </Select>
       </FormControl>
       {list.map((item) => (
@@ -118,8 +118,12 @@ export default function PersonalCheckList() {
                 <ImageIcon />
             </Avatar>
           </ListItemAvatar>
-          <ListItemText primary={`${item.CheckInTime.split('T')[0]}`} secondary={`上班: ${item.CheckInTime.split('T')[0]} 下班: ${item.CheckOutTime.split('T')[0]}`}  />
-            <Tooltip title={generateTooltip(item)}>
+          <ListItemText
+              primary={`${item.CheckInTime.split('T')[0]}`}
+              secondary={`${Language === 'TW' ? '上班' : 'Work In'}: ${item.CheckInTime.split('T')[0]} ${Language === 'TW' ? '下班' : 'Work Out'}: ${item.CheckOutTime.split('T')[0]}`}
+          />
+
+            <Tooltip title={generateTooltip(item,Language)}>
                 <IconButton>
                   <WorkHistoryIcon />
                 </IconButton>
@@ -131,23 +135,23 @@ export default function PersonalCheckList() {
 }
 
 
-function generateTooltip(record) {
+function generateTooltip(record, Language) {
   const messages = [];
 
   if (record.IsCheckInLate === 1) {
-    messages.push(`遲到${record.CheckInLateTimes}分鐘`);
+    messages.push(`${Language === 'TW' ? '遲到' : 'Late'} ${record.CheckInLateTimes} ${Language === 'TW' ? '分鐘' : 'minutes'}`);
   }
 
   if (record.IsCheckOutEarly === 1) {
-    messages.push(`早退${record.CheckOutEarlyTimes}分鐘`);
+    messages.push(`${Language === 'TW' ? '早退' : 'Early Leave'} ${record.CheckOutEarlyTimes} ${Language === 'TW' ? '分鐘' : 'minutes'}`);
   }
 
   if (record.IsCheckInOutLocation === 1) {
-    messages.push(`上班打卡位於定位外`);
+    messages.push(`${Language === 'TW' ? '上班打卡位於定位外' : 'Check-in location outside designated area'}`);
   }
 
   if (record.IsCheckOutOutLocation === 1) {
-    messages.push(`下班打卡位於定位外`);
+    messages.push(`${Language === 'TW' ? '下班打卡位於定位外' : 'Check-out location outside designated area'}`);
   }
 
   return messages.join(', ');

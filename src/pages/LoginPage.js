@@ -46,7 +46,7 @@ export default function LoginPage() {
   return (
     <>
       <Helmet>
-        <title> Login | Minimal UI </title>
+        <title> DoRey Chrs </title>
       </Helmet>
 
       <StyledRoot>
@@ -69,7 +69,7 @@ export default function LoginPage() {
 
         <Container maxWidth="sm">
           <StyledContent>
-            <Typography variant="h4" gutterBottom>
+            <Typography variant="subtitle1" gutterBottom>
               䒳芮線上人資系統
             </Typography>
 

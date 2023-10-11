@@ -16,6 +16,7 @@ import Avatar from '@mui/material/Avatar';
 import CircularProgress from '@mui/material/CircularProgress';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import PageDeviceError from '../pages/PageDeviceError';
+import PageDetailInfoError from '../pages/PageDetailInfoError';
 import appsetting from '../Appsetting';
 
 const Item = styled(Paper)(({ theme }) => ({
@@ -43,7 +44,7 @@ export default function PersonalDetail() {
         width: typeof window !== 'undefined' ? window.innerWidth : 0,
         height: typeof window !== 'undefined' ? window.innerHeight : 0,
     });
-
+    const Language = sessionStorage.getItem('Language');
     const config = {
         headers: {
           'X-Ap-Token': appsetting.token,
@@ -157,11 +158,9 @@ export default function PersonalDetail() {
 
     if(!staffDetail) {
         return (
-        <>
-            <div>
-                該員工尚未設置詳細資料 請通知貴司人資
-            </div>
-        </>
+            <>
+                <PageDetailInfoError/>
+            </>
         );
     }
     
@@ -181,18 +180,18 @@ export default function PersonalDetail() {
                                     onClick={()=>alert(6)}
                                 /> 
                                 <Typography variant="h3" gutterBottom style={{color:'white',marginLeft:'5%'}}>
-                                    {staffDetail.Name}的個人資料
+                                    {staffDetail.Name}'s {Language === 'TW' ? '個人資料' : 'Personal Information'}
                                 </Typography>
                             </Grid>
                             <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold'}}>    
                                 <Button component="label" variant="outlined" startIcon={<CloudUploadIcon />} style={{color:'white'}}>
-                                    更換大頭貼
+                                    {Language === 'TW' ? '更換大頭貼' : 'Change Profile Picture'}
                                     <VisuallyHiddenInput type="file" onChange={onFileChange} ref={fileInputRef}/>
                                 </Button>
                             </Grid>
                             <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold'}}>     
                                 <Typography variant="h6" gutterBottom style={{color:'white'}}>
-                                    {staffDetail.EnglishName} 您好
+                                    {staffDetail.EnglishName} {Language === 'TW' ? '你好' : 'Hello'}
                                 </Typography>
                             </Grid>
 
@@ -200,7 +199,7 @@ export default function PersonalDetail() {
                                 <TextField
                                 disabled
                                 id="outlined-required"
-                                label="部門"
+                                label={Language === 'TW' ? '部門' : 'Department'}
                                 value={staffDetail.Department}
                                 variant="standard"
                                 color="warning"
@@ -220,7 +219,7 @@ export default function PersonalDetail() {
                                 <TextField
                                 disabled
                                 id="outlined-required"
-                                label="電話號碼"
+                                label={Language === 'TW' ? '電話號碼' : 'Phone Number'}
                                 value={staffDetail.PhoneNumber}
                                 variant="standard"
                                 color="warning"
@@ -240,7 +239,7 @@ export default function PersonalDetail() {
                                 <TextField
                                 disabled
                                 id="outlined-required"
-                                label="信箱"
+                                label={Language === 'TW' ? '信箱' : 'Mail'}
                                 value={staffDetail.Email}
                                 variant="standard"
                                 color="warning"
@@ -260,7 +259,7 @@ export default function PersonalDetail() {
                                 <TextField
                                 disabled
                                 id="outlined-required"
-                                label="職稱"
+                                label={Language === 'TW' ? '職稱' : 'Job Title'}
                                 value={staffDetail.LevelPosition}
                                 variant="standard"
                                 color="warning"
@@ -280,7 +279,7 @@ export default function PersonalDetail() {
                                 <TextField
                                 disabled
                                 id="outlined-required"
-                                label="工作地點"
+                                label={Language === 'TW' ? '工作地點' : 'Work Location'}
                                 value={staffDetail.WorkLocation}
                                 variant="standard"
                                 color="warning"
@@ -300,7 +299,7 @@ export default function PersonalDetail() {
                                 <TextField
                                 disabled
                                 id="outlined-required"
-                                label="任職公司"
+                                label={Language === 'TW' ? '任職公司' : 'Company Name'}
                                 value={staffDetail.CompanyName}
                                 variant="standard"
                                 color="warning"
@@ -320,7 +319,7 @@ export default function PersonalDetail() {
                                 <TextField
                                 disabled
                                 id="outlined-required"
-                                label="到職日"
+                                label={Language === 'TW' ? '到職日' : 'Date of Hire'}
                                 value={staffDetail.EntryDate.split('T')[0]}
                                 variant="standard"
                                 color="warning"

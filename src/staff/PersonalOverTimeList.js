@@ -44,7 +44,7 @@ export default function PersonalOverTimeList() {
     const [list,setList] = useState([]); 
     const [month,setMonth] = useState(9); 
     const [model,setModel] = useState('加班紀錄'); 
-
+    const Language = sessionStorage.getItem('Language');
     const fetchOvertimeListData = async () => {
         setIsLoading(true);  // 開始加載
         try {       
@@ -127,16 +127,18 @@ export default function PersonalOverTimeList() {
           }}
         >
           <Typography variant="h6" gutterBottom>
-              {model}
+              {model === '加班紀錄' ? (Language === 'TW' ? '加班紀錄' : 'Overtime Record') : ''}
+              {model === '補卡紀錄' ? (Language === 'TW' ? '加班紀錄' : 'Card Replacement Record') : ''}
           </Typography>
           <ButtonGroup variant="text" aria-label="text button group">
-            <Button style={{color:'black'}} onClick={() => setModel('加班紀錄')}>加班申請紀錄</Button>
-            <Button style={{color:'black'}} onClick={() => setModel('補卡紀錄')}>補卡申請紀錄</Button>
+              <Button style={{ color: 'black' }} onClick={() => setModel(Language === 'TW' ? '加班紀錄' : 'Overtime Record')}> {Language === 'TW' ? '加班申請紀錄' : 'Overtime Application Record'}</Button>
+              <Button style={{ color: 'black' }} onClick={() => setModel(Language === 'TW' ? '補卡紀錄' : 'Card Replacement Record')}> {Language === 'TW' ? '補卡申請紀錄' : 'Card Replacement Application Record'}</Button>
+
           </ButtonGroup>
           {
             model !== '補卡紀錄' ? (
           <FormControl variant="standard" sx={{ m: 1, minWidth: 12}}>
-            <InputLabel id="demo-simple-select-standard-label">月份</InputLabel>
+            <InputLabel id="demo-simple-select-standard-label">{Language === 'TW' ? '月份' : 'Month'}</InputLabel>
             <Select
               labelId="demo-simple-select-standard-label"
               id="demo-simple-select-standard"
@@ -144,18 +146,19 @@ export default function PersonalOverTimeList() {
               onChange={(e)=>setMonth(e.target.value)}
               label="月份"
             >
-              <MenuItem value={1}>1月</MenuItem>
-              <MenuItem value={2}>2月</MenuItem>
-              <MenuItem value={3}>3月</MenuItem>
-              <MenuItem value={4}>4月</MenuItem>
-              <MenuItem value={5}>5月</MenuItem>
-              <MenuItem value={6}>6月</MenuItem>
-              <MenuItem value={7}>7月</MenuItem>
-              <MenuItem value={8}>8月</MenuItem>
-              <MenuItem value={9}>9月</MenuItem>
-              <MenuItem value={10}>10月</MenuItem>
-              <MenuItem value={11}>11月</MenuItem>
-              <MenuItem value={12}>12月</MenuItem>
+                <MenuItem value={1}>{Language === 'TW' ? '1月' : 'January'}</MenuItem>
+                <MenuItem value={2}>{Language === 'TW' ? '2月' : 'February'}</MenuItem>
+                <MenuItem value={3}>{Language === 'TW' ? '3月' : 'March'}</MenuItem>
+                <MenuItem value={4}>{Language === 'TW' ? '4月' : 'April'}</MenuItem>
+                <MenuItem value={5}>{Language === 'TW' ? '5月' : 'May'}</MenuItem>
+                <MenuItem value={6}>{Language === 'TW' ? '6月' : 'June'}</MenuItem>
+                <MenuItem value={7}>{Language === 'TW' ? '7月' : 'July'}</MenuItem>
+                <MenuItem value={8}>{Language === 'TW' ? '8月' : 'August'}</MenuItem>
+                <MenuItem value={9}>{Language === 'TW' ? '9月' : 'September'}</MenuItem>
+                <MenuItem value={10}>{Language === 'TW' ? '10月' : 'October'}</MenuItem>
+                <MenuItem value={11}>{Language === 'TW' ? '11月' : 'November'}</MenuItem>
+                <MenuItem value={12}>{Language === 'TW' ? '12月' : 'December'}</MenuItem>
+
             </Select>
           </FormControl> ) : null
           }
@@ -168,11 +171,15 @@ export default function PersonalOverTimeList() {
                   <ImageIcon />
               </Avatar>
             </ListItemAvatar>
-            <ListItemText primary={model === '加班紀錄' 
-            ? (item.OvertimeDate ? `${item.OvertimeDate.split('T')[0]}` : "N/A")
-            : (item.CheckDate ? `${item.CheckDate.split('T')[0]} 補卡類別: ${getCheckType(item.CheckType)}` : "N/A")}
+            <ListItemText
+                primary={model === '加班紀錄' 
+                    ? (item.OvertimeDate ? `${item.OvertimeDate.split('T')[0]}` : "N/A")
+                    : (item.CheckDate ? `${item.CheckDate.split('T')[0]} ${Language === 'TW' ? '補卡類別' : 'Card Replacement Type'}: ${getCheckType(item.CheckType,Language)}` : "N/A")}
+                secondary={model === '加班紀錄' 
+                    ? `${Language === 'TW' ? '時數' : 'Hours'}: ${item.OverHours} ${Language === 'TW' ? '審核情況' : 'Validation Status'}: ${getValidationStatus(item.IsValidate)}`
+                    : `${Language === 'TW' ? '時間' : 'Time'}: ${item.CheckTime.split('T')[1]} ${Language === 'TW' ? '審核情況' : 'Validation Status'}: ${getValidationStatus(item.IsValidate,Language)}`}
+            />
 
-            secondary={model === '加班紀錄' ?`時數: ${item.OverHours} 審核情況: ${getValidationStatus(item.IsValidate)}` : `時間: ${item.CheckTime.split('T')[1]} 審核情況: ${getValidationStatus(item.IsValidate)}`}  />
               <Tooltip title={item.Reason}>
                   <IconButton>
                     <WorkHistoryIcon />
@@ -186,26 +193,28 @@ export default function PersonalOverTimeList() {
   );
 }
 
-const getValidationStatus = (status) => {
+const getValidationStatus = (status, language) => {
   switch (status) {
     case -1:
-      return '未通過';
+      return language === 'TW' ? '未通過' : 'Not Approved';
     case 0:
-      return '未審核';
+      return language === 'TW' ? '未審核' : 'Not Reviewed';
     case 1:
-      return '已通過';
+      return language === 'TW' ? '已通過' : 'Approved';
     default:
       return ''; // 或者其他默認值
   }
 };
 
-const getCheckType = (type) => {
+
+const getCheckType = (type, language) => {
   switch (type) {
     case 0:
-      return '上班';
+      return language === 'TW' ? '上班' : 'Check In';
     case 1:
-      return '下班';
+      return language === 'TW' ? '下班' : 'Check Out';
     default:
       return ''; // 或者其他默認值
   }
 };
+

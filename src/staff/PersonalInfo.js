@@ -55,6 +55,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import {AppTasks} from '../sections/@dashboard/app';
 import Map from '../googleMap/Map'
 import PageDeviceError from '../pages/PageDeviceError';
+import { useLanguage } from '../layouts/LanguageContext'
 import appsetting from '../Appsetting';
 
 const eventStyles = {
@@ -136,6 +137,7 @@ export default function PersonalInfo() {
         CheckOutStartMinute:0,
         CheckOutEndHour:0,
         CheckOutEndMinute:0,
+        Language:'TW'
     })
     const [selectedEvent,setSelectEvent] = useState(null);
     const [checkOpen, setCheckOpen] = useState(false);
@@ -146,7 +148,8 @@ export default function PersonalInfo() {
     const [memo, setMemo] = useState('');
     const [center, setCenter] = useState({lat: 41.3851, lng: 2.1734 });
     const [hourModel,setHourModel] = useState(true);
-    
+    const { language, chooseLang } = useLanguage();
+
     const navigate = useNavigate();
 
     const handleSalaryListClick = () => {
@@ -197,6 +200,18 @@ export default function PersonalInfo() {
         EndTime: dayjs().millisecond(0), 
         Detail:''
     })
+    const TIME_LABELS = {
+        tw: {
+          hours: '小時',
+          minutes: '分鐘',
+          seconds: '秒'
+        },
+        en: {
+          hours: 'hours',
+          minutes: 'minutes',
+          seconds: 'seconds'
+        }
+    };
     const [currentTime, setCurrentTime] = useState(new Date());
     const workStartTime = new Date();
     workStartTime.setHours(viewInfo.CheckInStartHour, viewInfo.CheckInStartMinute, 0); // 设置上班时间为上午八点整
@@ -212,30 +227,61 @@ export default function PersonalInfo() {
     const endDate = vacationRequest.EndDate.clone().millisecond(0).second(0);
     const durationInMinutes = endDate.diff(startDate, 'minutes');
     const durationInDays = endDate.diff(startDate, 'days');
-
-
-    let remainingTime = '';
-    if(!viewInfo.IsCheckIn)  {
-        if (currentTime < workStartTime) {
-            remainingTime = `距離上班 ${formatTimeDiff(workStartTime - currentTime)}`;
-        } else if (workStartTime < currentTime && currentTime < punchInDeadline) {
-            remainingTime = `距離打卡截止 ${formatTimeDiff(punchInDeadline - currentTime)}`;
-        } else {
-            const timeDiff = currentTime - punchInDeadline;
-            remainingTime = `已超過打卡時間 ${formatTimeDiff(timeDiff)}`;
+    const timeFormatOptions = viewInfo.Language === 'TW'
+    ? { hour: '2-digit', minute: '2-digit', hour12: true }
+    : { hour: '2-digit', minute: '2-digit', hour12: true };
+  
+    const locale = viewInfo.Language === 'TW' ? 'zh-TW' : 'en-US';
+    const formattedTime = currentTime.toLocaleTimeString(locale, timeFormatOptions);
+    const MESSAGES = {
+        tw: {
+          beforeWork: '距離上班',
+          beforeDeadline: '距離打卡截止',
+          afterDeadline: '已超過打卡時間',
+          workedFor: '已經努力了',
+          restWell: '請好好休息 別打開這軟體了'
+        },
+        en: {
+          beforeWork: 'Until work starts',
+          beforeDeadline: 'Until punch-in deadline',
+          afterDeadline: 'Overdue for punch-in',
+          workedFor: 'You have worked for',
+          restWell: 'Rest well and don\'t open this app'
         }
-    }
+      };
+      
+      const lang = viewInfo.Language === 'TW' ? 'tw' : 'en';
 
-    if(viewInfo.IsCheckIn && !viewInfo.IsCheckOut)  {
-        remainingTime = `已經努力了 ${formatTimeDiff(currentTime-CheckInTime)}`;      
-    }
-
-    if(viewInfo.IsCheckIn && viewInfo.IsCheckOut)  {
-        remainingTime = `請好好休息 別打開這軟體了`;
-    }
+      let remainingTime = '';
+      if(!viewInfo.IsCheckIn) {
+          if (currentTime < workStartTime) {
+              remainingTime = `${MESSAGES[lang].beforeWork} ${formatTimeDiff((workStartTime - currentTime), lang)}`;
+          } else if (workStartTime < currentTime && currentTime < punchInDeadline) {
+              remainingTime = `${MESSAGES[lang].beforeDeadline} ${formatTimeDiff((punchInDeadline - currentTime), lang)}`;
+          } else {
+              const timeDiff = currentTime - punchInDeadline;
+              remainingTime = `${MESSAGES[lang].afterDeadline} ${formatTimeDiff(timeDiff, lang)}`;
+          }
+      }
+      
+      if(viewInfo.IsCheckIn && !viewInfo.IsCheckOut) {
+          remainingTime = `${MESSAGES[lang].workedFor} ${formatTimeDiff((currentTime-CheckInTime), lang)}`;      
+      }
+      
+      if(viewInfo.IsCheckIn && viewInfo.IsCheckOut) {
+          remainingTime = MESSAGES[lang].restWell;
+      }
+      
+    useEffect(() => {
+       
+        setViewInfo({
+            ...viewInfo,
+            Language:language
+        }); // e.newValue
+        sessionStorage.setItem('Language',language);
+      }, [language]);
 
     useEffect(() => {
-
         if ("geolocation" in navigator) {
             navigator.geolocation.getCurrentPosition((position) => {
                 setCenter({
@@ -285,6 +331,13 @@ export default function PersonalInfo() {
             const response = await axios.get(`${appsetting.apiUrl}/staff/view?longitude=${center.lng}&latitude=${center.lat}`, config);
         
             if(response.status === 200) {
+                sessionStorage.getItem('Lauguage',response.data.Language);
+                if(response.data.Language !== 'TW') {
+                    chooseLang('en');
+                } else {
+                    chooseLang('tw');
+                }
+
                 setViewInfo({
                     IsOverLocation: response.data.IsOverLocation,
                     IsCheckIn: response.data.IsCheckIn,
@@ -304,6 +357,7 @@ export default function PersonalInfo() {
                     CheckOutStartMinute:response.data.CheckOutStartMinute,
                     CheckOutEndHour:response.data.CheckOutEndHour,
                     CheckOutEndMinute:response.data.CheckOutEndMinute,
+                    Language:response.data.Language
                   });
             }
         } catch (error) {
@@ -386,13 +440,15 @@ export default function PersonalInfo() {
         const dayOfWeekChinese = daysOfWeekChinese[currentDate.getDay()]; 
         return `${year}-${month}-${day},  ${dayOfWeekChinese},  ${dayOfWeek}`;
     };
-
-    function formatTimeDiff(timeDiff) {
+    function formatTimeDiff(timeDiff, lang = 'tw') {
+        const labels = TIME_LABELS[lang];
+    
         const hours = Math.floor(timeDiff / (1000 * 60 * 60));
         const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
         const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
-        return `${hours}小時 ${minutes}分鐘 ${seconds}秒`;
+        return `${hours} ${labels.hours} ${minutes} ${labels.minutes} ${seconds} ${labels.seconds}`;
     }
+    
     const handleClickOpen = (type) => {
         switch (type) {
             case 'check':
@@ -787,9 +843,9 @@ export default function PersonalInfo() {
             {isMobile && (
             <>
             <Box sx={{ display: 'flex', flexDirection: 'row', width: '100%',position: 'relative' }}>
-                <Box sx={{width: '100%', height:`${windowDimensions.height*1.5}px`,backgroundColor:'black'}}>
+                <Box sx={{width: '100%', height:`${windowDimensions.height*1.6}px`,backgroundColor:'black'}}>
 
-                    <Box sx={{ width: '85%', height: `${windowDimensions.height/1.3}px`,backgroundColor:'white'
+                    <Box sx={{ width: '85%', height: `${windowDimensions.height/1.2}px`,backgroundColor:'white'
                     ,margin:'auto',borderRadius: '10px',padding:'25px',marginTop:'5%'}}>
                         <Box sx={{ flexGrow: 1 }}>
                             <Grid container spacing={2}>
@@ -799,12 +855,12 @@ export default function PersonalInfo() {
                                 <Grid item xs={12} sx={gradientTextStyle}>     
                                     {viewInfo.CompanyName}
                                 </Grid>
-                                <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '30px' }}>     
-                                    {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit'})}
+                                <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '30px',textAlign: 'center', }}>     
+                                        {formattedTime}
                                 </Grid>
                                 {!viewInfo.IsCheckIn && (
                                     <>
-                                        <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>     
+                                        <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold',textAlign: 'center', }}>     
                                             {remainingTime}
                                         </Grid>
                                     </>
@@ -821,23 +877,26 @@ export default function PersonalInfo() {
                                 </Grid>                               
                                 <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold',marginTop:'1%' }}>     
                                     <Button variant="contained" endIcon={<FactCheckIcon />} size="large" style={{background:'black'}} onClick={()=>handleClickOpen('check')}>
-                                        申報打卡
+                                        {viewInfo.Language === 'TW' ? '申報打卡' : 'Apply for Check-in'}
                                     </Button>
                                 </Grid>
                                 <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold',marginTop:'1%' }}>     
                                     <Button variant="contained" endIcon={<FactCheckIcon />} size="large" style={{background:'black',marginLeft:'1%'}} onClick={()=>handleClickOpen('overTime')}>
-                                        申報加班
+                                        {viewInfo.Language === 'TW' ? '申報加班' : 'Apply for Overtime'}
                                     </Button>  
                                 </Grid>   
                                 <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', fontWeight: 'bold' }}>     
-                                    工作時間
+                                    {viewInfo.Language === 'TW' ? '工作時段' : 'Work Hours'}
                                 </Grid>
                                 <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', fontWeight: 'bold', fontSize: '13px' }}>     
-                                    午休時間 {viewInfo.AfternoonRange === null ? '自由安排' : viewInfo.AfternoonRange}
+                                    {viewInfo.Language === 'TW' ? '午休時間' : 'Lunch Break'} {viewInfo.AfternoonRange === null ? '自由安排' : viewInfo.AfternoonRange}
                                 </Grid>  
-                                <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', fontWeight: 'bold', fontSize: '13px' }}>     
-                                    上班時間 {viewInfo.CheckInRange} 下班時間 {viewInfo.CheckOutRange}
-                                </Grid> 
+                                <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', fontWeight: 'bold', fontSize: '13px' }}>
+                                    {viewInfo.Language === 'TW' ? '上班時間' : 'Start Time'} {viewInfo.CheckInRange}
+                                    {viewInfo.Language !== 'TW' ? <><br /></>:'~'}
+                                    {viewInfo.Language === 'TW' ? '下班時間' : 'End Time'} {viewInfo.CheckOutRange}
+                                </Grid>
+ 
 
                             </Grid>
                         </Box>
@@ -847,24 +906,24 @@ export default function PersonalInfo() {
                             <Grid container spacing={1}>
                                 <Grid item xs={4} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center'}}>     
                                     <Button variant="contained" endIcon={<CalendarMonthIcon />} size="large" style={{background:'orange',whiteSpace: 'nowrap'}} onClick={()=>handleClickOpen('calendar')}>
-                                        行事
+                                        {viewInfo.Language === 'TW' ? '行事' : 'Calendar'}
                                     </Button>
                                 </Grid>
                                 <Grid item xs={4} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>     
                                     <Button variant="contained" endIcon={<PermContactCalendarIcon />} size="large" style={{background:'orange',whiteSpace: 'nowrap'}} onClick={()=>handleClickOpen('vacation')}>
-                                        休假
+                                        {viewInfo.Language === 'TW' ? '休假' : 'Leave'}
                                     </Button>
                                 </Grid>
                                 <Grid item xs={4} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>     
                                     <Button variant="contained" endIcon={<FactCheckIcon />} size="large" style={{background:'orange',whiteSpace: 'nowrap'}} onClick={()=>handleClickOpen('amendCheck')}>
-                                        補卡
+                                        {viewInfo.Language === 'TW' ? '補打卡' : 'Clock-In'}
                                     </Button>
 
                                     <Dialog open={amendCheckOpen} onClose={()=>handleClose('overTime')}>
-                                        <DialogTitle>補卡申請</DialogTitle>
+                                        <DialogTitle>{viewInfo.Language === 'TW' ? '補打卡申請' : 'Clock-In Request'}</DialogTitle>
                                         <DialogContent>
                                             <FormControl>
-                                            <FormLabel id="demo-row-radio-buttons-group-label">補卡類別</FormLabel>
+                                            <FormLabel id="demo-row-radio-buttons-group-label"> {viewInfo.Language === 'TW' ? '打卡類別' : 'Clock-In Category'}</FormLabel>
                                                 <RadioGroup
                                                     row
                                                     aria-labelledby="demo-row-radio-buttons-group-label"
@@ -872,15 +931,16 @@ export default function PersonalInfo() {
                                                     value={amendCheckRequest.CheckType}
                                                     onChange={(e) => handleAmendCheckInputChange(e.target.value, 'CheckType')}
                                                 >
-                                                    <FormControlLabel value={0} control={<Radio />} label="上班" />
-                                                    <FormControlLabel value={1} control={<Radio />} label="下班" />
+                                                <FormControlLabel value={0} control={<Radio />} label={viewInfo.Language === 'TW' ? '上班' : 'Clock-In'} />
+                                                <FormControlLabel value={1} control={<Radio />} label={viewInfo.Language === 'TW' ? '下班' : 'Clock-Out'} />
+
                                                 </RadioGroup>
                                             </FormControl>
                                             <LocalizationProvider dateAdapter={AdapterDayjs}>
                       
                                                 <DemoContainer components={['MobileDatePicker','MobileTimePicker',]}>
                                                     <MobileDatePicker 
-                                                        label="選擇補卡日期"
+                                                        label={viewInfo.Language === 'TW' ? '選擇補卡日期' : 'Select Make-up Clock Date'}
                                                         value={amendCheckRequest.CheckDate}
                                                         onChange={(e) => {
                                                             const formattedDate = e.clone().millisecond(0).second(0); // 將毫秒和秒設為 0
@@ -889,7 +949,7 @@ export default function PersonalInfo() {
                                                         format="YYYY-MM-DD" // 指定日期格式为 YYYY-MM-DD
                                                     />
                                                     <MobileTimePicker  
-                                                        label="打卡時間"
+                                                        label={viewInfo.Language === 'TW' ? '打卡時間' : 'Clock Time'}
                                                         value={amendCheckRequest.CheckTime}
                                                         onChange={(e) => {
                                                             const formattedDate = e.clone().millisecond(0).second(0); // 將毫秒和秒設為 0
@@ -903,7 +963,7 @@ export default function PersonalInfo() {
                                             </LocalizationProvider>
                                             <TextField
                                                 id="outlined-multiline-static"
-                                                label="補卡緣由"
+                                                label={viewInfo.Language === 'TW' ? '補卡緣由' : 'Reason for Make-up Clock'}
                                                 multiline
                                                 rows={2}
                                                 style={{marginTop:'5%',width:'100%'}}
@@ -912,8 +972,8 @@ export default function PersonalInfo() {
                                                 />
                                         </DialogContent>
                                         <DialogActions>
-                                        <Button onClick={()=>handleClose('amendCheck')}>取消</Button>
-                                        <Button onClick={handleAmendCheckSubmit}>申請</Button>
+                                        <Button onClick={()=>handleClose('amendCheck')}>{viewInfo.Language === 'TW' ? '取消' : 'Cancel'}</Button>
+                                        <Button onClick={handleAmendCheckSubmit}>{viewInfo.Language === 'TW' ? '申請' : 'Submit'}</Button>
                                         </DialogActions>
                                     </Dialog>
 
@@ -921,17 +981,17 @@ export default function PersonalInfo() {
                                 </Grid>
                                 <Grid item xs={4} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>     
                                     <Button variant="contained" endIcon={<FactCheckIcon />} size="large" style={{background:'orange',whiteSpace: 'nowrap'}} onClick={handleCheckListClick}>
-                                        出勤
+                                    {viewInfo.Language === 'TW' ? '出勤' : 'Work'}
                                     </Button>
                                 </Grid>
                                 <Grid item xs={4} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>     
                                     <Button variant="contained" endIcon={<FactCheckIcon />} size="large" style={{background:'orange',whiteSpace: 'nowrap'}} onClick={handleSalaryListClick}>
-                                        薪資
+                                    {viewInfo.Language === 'TW' ? '薪資' : 'Salary'}
                                     </Button>
                                 </Grid>
                                 <Grid item xs={4} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>     
                                     <Button variant="contained" endIcon={<FactCheckIcon />} size="large" style={{background:'orange',whiteSpace: 'nowrap'}} onClick={handleOverTimeListClick}>
-                                        紀錄
+                                    {viewInfo.Language === 'TW' ? '紀錄' : 'Records'}
                                     </Button>
                                 </Grid>
                             </Grid>
@@ -942,7 +1002,7 @@ export default function PersonalInfo() {
                             <Grid container spacing={1}>
                                 <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center'}}>     
                                     <AppTasks
-                                    title="請假紀錄"
+                                    title={viewInfo.Language === 'TW' ? '請假紀錄' : 'Leave Records'}
                                     list={
                                         viewInfo.VacationLogDTOs
                                     }
@@ -957,11 +1017,17 @@ export default function PersonalInfo() {
                 <DialogTitle>{Name}</DialogTitle>
                 <DialogContent>
                 <DialogContentText>
-                        {viewInfo.IsOverLocation === true? '您目前不在公司 確定要打卡嗎?' : '您目前位於打卡範圍內 請安心打卡'}
+                {viewInfo.Language === 'TW'
+                    ? (viewInfo.IsOverLocation === true
+                        ? '您目前不在公司 確定要打卡嗎？'
+                        : '您目前位於打卡範圍內 請安心打卡')
+                    : (viewInfo.IsOverLocation === true
+                        ? 'You are currently not at the company. Are you sure you want to clock in?'
+                        : 'You are currently within the clock-in range. Please proceed to clock in.')}
                 </DialogContentText>
                 <TextField
                     id="outlined-multiline-static"
-                    label="備註"
+                    label={viewInfo.Language === 'TW' ? '備註' : 'Memo'}
                     multiline
                     rows={6}
                     style={{marginTop:'10%',width:'100%'}}
@@ -970,18 +1036,18 @@ export default function PersonalInfo() {
                     />
                 </DialogContent>
                 <DialogActions>
-                <Button onClick={()=>handleClose('check')}>取消</Button>
-                <Button onClick={handleSubmit}>打卡</Button>
+                <Button onClick={()=>handleClose('check')}>{viewInfo.Language === 'TW' ? '取消' : 'Cancel'}</Button>
+                <Button onClick={handleSubmit}>{viewInfo.Language === 'TW' ? '打卡' : 'Check-In-Out'}</Button>
                 </DialogActions>
             </Dialog>
 
             <Dialog open={overTimeOpen} onClose={()=>handleClose('overTime')}>
-                <DialogTitle>加班申請</DialogTitle>
+                <DialogTitle>{viewInfo.Language === 'TW' ? '加班申請' : 'Overtime Application'}</DialogTitle>
                 <DialogContent>
                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DemoContainer components={['MobileDatePicker']}>
                                 <MobileDatePicker
-                                label="加班日期"
+                                label={viewInfo.Language === 'TW' ? '加班日期' : 'Overtime Date'}
                                 value={overTimeRequest.ChooseDate}
                                 onChange={(e) => handleOverTimeInputChange(e, 'ChooseDate')}
                                 format="YYYY-MM-DD" // 指定日期格式为 YYYY-MM-DD
@@ -991,14 +1057,14 @@ export default function PersonalInfo() {
                     </LocalizationProvider>
                 <TextField
                     id="outlined-multiline-static"
-                    label="時數"
+                    label={viewInfo.Language === 'TW' ? '時數' : 'Hours'}
                     style={{marginTop:'10%',width:'100%'}}
                     value={overTimeRequest.Hours}
                     onChange={(e) => handleOverTimeInputChange(e.target.value, 'Hours')}
                 />
                 <TextField
                     id="outlined-multiline-static"
-                    label="加班緣由"
+                    label={viewInfo.Language === 'TW' ? '加班緣由' : 'Overtime Reason'}
                     multiline
                     rows={4}
                     style={{marginTop:'10%',width:'100%'}}
@@ -1007,15 +1073,15 @@ export default function PersonalInfo() {
                     />
                 </DialogContent>
                 <DialogActions>
-                <Button onClick={()=>handleClose('overTime')}>取消</Button>
-                <Button onClick={handleOverTimeSubmit}>申報</Button>
+                <Button onClick={()=>handleClose('overTime')}>{viewInfo.Language === 'TW' ? '取消' : 'Cancel'}</Button>
+                <Button onClick={handleOverTimeSubmit}>{viewInfo.Language === 'TW' ? '申報' : 'Submit'}</Button>
                 </DialogActions>
             </Dialog>
             <Dialog open={vacationOpen} onClose={()=>handleClose('overTime')}>
-                <DialogTitle>休假申請</DialogTitle>
+                <DialogTitle>{viewInfo.Language === 'TW' ? '休假申請' : 'Leave Application'}</DialogTitle>
                 <DialogContent>
                     <FormControl>
-                    <FormLabel id="demo-row-radio-buttons-group-label">申請模式</FormLabel>
+                    <FormLabel id="demo-row-radio-buttons-group-label">{viewInfo.Language === 'TW' ? '申請模式' : 'Application Mode'}</FormLabel>
                         <RadioGroup
                             row
                             aria-labelledby="demo-row-radio-buttons-group-label"
@@ -1023,15 +1089,15 @@ export default function PersonalInfo() {
                             value={hourModel}
                             onChange={()=>setHourModel(!hourModel)}
                         >
-                            <FormControlLabel value='true' control={<Radio />} label="小時" />
-                            <FormControlLabel value='false' control={<Radio />} label="天數" />
+                            <FormControlLabel value='true' control={<Radio />} label={viewInfo.Language === 'TW' ? '小時' : 'Hours'} />
+                            <FormControlLabel value='false' control={<Radio />} label={viewInfo.Language === 'TW' ? '天數' : 'Days'} />
                         </RadioGroup>
                     </FormControl>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                     {hourModel === true ?
                         <DemoContainer components={['MobileDatePicker']}>
                             <MobileDateTimePicker 
-                                label="起始日"
+                                label={viewInfo.Language === 'TW' ? '起始日' : 'Start Date'}
                                 value={vacationRequest.StartDate}
                                 onChange={(e) => {
                                     const formattedDate = e.clone().millisecond(0).second(0); // 將毫秒和秒設為 0
@@ -1040,7 +1106,7 @@ export default function PersonalInfo() {
                                 format="YYYY-MM-DD HH:mm" // 指定日期格式为 YYYY-MM-DD
                             />
                             <MobileDateTimePicker 
-                                label="截止日"
+                                label={viewInfo.Language === 'TW' ? '截止日' : 'End Date'}
                                 value={vacationRequest.EndDate}
                                 onChange={(e) => {
                                     const formattedDate = e.clone().millisecond(0).second(0); // 將毫秒和秒設為 0
@@ -1052,7 +1118,7 @@ export default function PersonalInfo() {
                         :                         
                         <DemoContainer components={['MobileDatePicker']}>
                             <MobileDatePicker 
-                                label="起始日"
+                                label={viewInfo.Language === 'TW' ? '起始日' : 'Start Date'}
                                 value={vacationRequest.StartDate}
                                 onChange={(e) => {
                                     const formattedDate = e.clone().millisecond(0).second(0); // 將毫秒和秒設為 0
@@ -1061,7 +1127,7 @@ export default function PersonalInfo() {
                                 format="YYYY-MM-DD" // 指定日期格式为 YYYY-MM-DD
                             />
                             <MobileDatePicker 
-                                label="截止日"
+                                label={viewInfo.Language === 'TW' ? '截止日' : 'End Date'}
                                 value={vacationRequest.EndDate}
                                 onChange={(e) => {
                                     const formattedDate = e.clone().millisecond(0).second(0); // 將毫秒和秒設為 0
@@ -1075,7 +1141,7 @@ export default function PersonalInfo() {
                     </LocalizationProvider>
                     <TextField
                         id="outlined-multiline-static"
-                        label="時數"
+                        label={viewInfo.Language === 'TW' ? '時數' : 'Hours'}
                         style={{marginTop:'10%',width:'100%'}}
                         value={vacationRequest.Hours}
                         InputProps={{
@@ -1083,7 +1149,7 @@ export default function PersonalInfo() {
                         }}
                     />
                     <FormControl required style={{minWidth:'120px',marginTop:'5%'}} size="small">
-                        <InputLabel id="demo-simple-select-required-label">休假類別</InputLabel>
+                        <InputLabel id="demo-simple-select-required-label">{viewInfo.Language === 'TW' ? '休假類別' : 'Leave Type'}</InputLabel>
                         <Select
                         labelId="demo-simple-select-required-label"
                         id="demo-simple-select-required"
@@ -1092,28 +1158,46 @@ export default function PersonalInfo() {
                         onChange={(e) => handleVacationInputChange(e.target.value, 'Type')}
                         >
                         <MenuItem value={0}>
-                            特休
+                            {viewInfo.Language === 'TW' ? '特休' : 'Vacation'}
                         </MenuItem>
                         <MenuItem value={1}>
-                            病假
+                            {viewInfo.Language === 'TW' ? '病假' : 'Sick Leave'}
                         </MenuItem>
                         <MenuItem value={2}>
-                            事假
+                            {viewInfo.Language === 'TW' ? '事假' : 'Personal Leave'}
                         </MenuItem>
                         <MenuItem value={3}>
-                            生育假
+                            {viewInfo.Language === 'TW' ? '生育假' : 'Maternity Leave'}
                         </MenuItem>
                         <MenuItem value={4}>
-                            喪假
+                            {viewInfo.Language === 'TW' ? '喪假' : 'Bereavement Leave'}
                         </MenuItem>
                         <MenuItem value={5}>
-                            婚假
+                            {viewInfo.Language === 'TW' ? '婚假' : 'Marriage Leave'}
+                        </MenuItem>
+                        <MenuItem value={6}>
+                            {viewInfo.Language === 'TW' ? '公假' : 'Public Holiday'}
+                        </MenuItem>
+                        <MenuItem value={7}>
+                            {viewInfo.Language === 'TW' ? '工傷病假' : 'Work-Related Injury Leave'}
+                        </MenuItem>
+                        <MenuItem value={8}>
+                            {viewInfo.Language === 'TW' ? '生理假' : 'Menstrual Leave'}
+                        </MenuItem>
+                        <MenuItem value={9}>
+                            {viewInfo.Language === 'TW' ? '育嬰留職停薪假' : 'Maternity Unpaid Leave'}
+                        </MenuItem>
+                        <MenuItem value={10}>
+                            {viewInfo.Language === 'TW' ? '安胎假' : 'Pregnancy Safety Leave'}
+                        </MenuItem>
+                        <MenuItem value={11}>
+                            {viewInfo.Language === 'TW' ? '產檢假' : 'Prenatal Examination Leave'}
                         </MenuItem>
                         </Select>
                     </FormControl>
                     <TextField
                         id="outlined-multiline-static"
-                        label="請假緣由"
+                        label={viewInfo.Language === 'TW' ? '請假原因' : 'Reason'}
                         multiline
                         rows={2}
                         style={{marginTop:'5%',width:'100%'}}
@@ -1122,8 +1206,8 @@ export default function PersonalInfo() {
                         />
                 </DialogContent>
                 <DialogActions>
-                <Button onClick={()=>handleClose('vacation')}>取消</Button>
-                <Button onClick={handleVacationSubmit}>申請</Button>
+                <Button onClick={()=>handleClose('vacation')}>{viewInfo.Language === 'TW' ? '取消' : 'Cancel'}</Button>
+                <Button onClick={handleVacationSubmit}>{viewInfo.Language === 'TW' ? '申請' : 'Submit'}</Button>
                 </DialogActions>
             </Dialog>
             <Dialog
@@ -1142,7 +1226,7 @@ export default function PersonalInfo() {
                     <CloseIcon />
                     </IconButton>
                     <Typography sx={{ ml: 16, flex: 1 }} variant="h6" component="div" >
-                    Calendar
+                    {viewInfo.Language === 'TW' ? '行事曆' : 'Calandar'}
                     </Typography>
                 </Toolbar>
                 </AppBar>
@@ -1176,15 +1260,15 @@ export default function PersonalInfo() {
                                         <>
                                             <ListItemText
                                                 primary={selectedEvent.title}
-                                                secondary={`内容: ${selectedEvent.detail}`}
+                                                secondary={`${viewInfo.Language === 'TW' ? '內容' : 'Content'}: ${selectedEvent.detail}`}
                                             />
                                             <Button variant="text" startIcon={<DeleteIcon />} style={{ color: 'red' }} onClick={() => handleDeleteEvent(selectedEvent.id)} />
                                         </>
                                     ) : (
                                         <>
                                             <ListItemText
-                                                primary={`會議主題: ${selectedEvent.title}`}
-                                                secondary={`内容: ${selectedEvent.detail}`}
+                                                primary={`${viewInfo.Language === 'TW' ? '會議主題' : 'Meeting Topic'}: ${selectedEvent.title}`}
+                                                secondary={`${viewInfo.Language === 'TW' ? '內容' : 'Content'}: ${selectedEvent.detail}`}
                                             />
                                         </>
                                     )
@@ -1195,10 +1279,10 @@ export default function PersonalInfo() {
                                         const minutes = workMinutes % 60;
                                         return (
                                             <ListItemText
-                                                primary={`${selectedEvent.title}-${selectedEvent.staffName}`}
-                                                secondary={`上班地址: ${selectedEvent.detail} 員工: ${selectedEvent.staffName}
-                                                工作時間: ${moment(selectedEvent.start).format('HH:mm')} ~ ${moment(selectedEvent.end).format('HH:mm')}
-                                                總計: ${hours}小時${minutes}分鐘`}
+                                                primary={`${viewInfo.Language === 'TW' ? selectedEvent.title : 'Meeting Topic'} - ${selectedEvent.staffName}`}
+                                                secondary={`${viewInfo.Language === 'TW' ? '上班地址' : 'Work Location'}: ${selectedEvent.detail} ${viewInfo.Language === 'TW' ? '員工' : 'Employee'}: ${selectedEvent.staffName}
+                                                            ${viewInfo.Language === 'TW' ? '工作時間' : 'Work Time'}: ${moment(selectedEvent.start).format('HH:mm')} ~ ${moment(selectedEvent.end).format('HH:mm')}
+                                                            ${viewInfo.Language === 'TW' ? '總計' : 'Total'}: ${hours}${viewInfo.Language === 'TW' ? '小時' : 'hours'}${minutes}${viewInfo.Language === 'TW' ? '分鐘' : 'minutes'}`}
                                             />
                                         );
                                     })()
@@ -1209,14 +1293,14 @@ export default function PersonalInfo() {
                     </List>
             </Dialog>
             <Dialog open={thingAddOpen} onClose={()=>setThingAddOpen(false)}>
-                    <DialogTitle>行事曆新增</DialogTitle>
+                    <DialogTitle>{viewInfo.Language === 'TW' ? '行事曆新增' : 'Calendar Add'}</DialogTitle>
                     <DialogContent>
                         <div style={{ display: 'flex', alignItems: 'center' }}>
                             <TextField
                                 autoFocus
                                 margin="dense"
                                 id="name"
-                                label="事件標題"
+                                label={viewInfo.Language === 'TW' ? '事件標題' : 'Event Title'}
                                 fullWidth
                                 value={eventRequest.Title}
                                 onChange={(e) => handleEventInputChange(e.target.value, 'Title')}
@@ -1224,23 +1308,23 @@ export default function PersonalInfo() {
                                 style={{ flex: 1 }} // 拉伸以占据可用空间
                             />
                             <FormControl sx={{ m: 1, minWidth: 60 }} size="small" style={{ marginLeft: '20px' }}>
-                                <InputLabel id="demo-select-small-label">緊急性</InputLabel>
+                                <InputLabel id="demo-select-small-label">{viewInfo.Language === 'TW' ? '緊急性' : 'Urgency'}</InputLabel>
                                 <Select
                                 labelId="demo-select-small-label"
                                 id="demo-select-small"
                                 value={eventRequest.LevelStatus}
                                 onChange={(e) => handleEventInputChange(e.target.value, 'LevelStatus')}
                                 >
-                                <MenuItem value={0}>日常</MenuItem>
-                                <MenuItem value={1}>普通</MenuItem>
-                                <MenuItem value={2}>緊急</MenuItem>
+                                <MenuItem value={0}>{viewInfo.Language === 'TW' ? '日常' : 'Routine'}</MenuItem>
+                                <MenuItem value={1}>{viewInfo.Language === 'TW' ? '普通' : 'Normal'}</MenuItem>
+                                <MenuItem value={2}>{viewInfo.Language === 'TW' ? '緊急' : 'Urgent'}</MenuItem>
                                 </Select>
                             </FormControl>
                         </div>
                         <LocalizationProvider dateAdapter={AdapterDayjs}>
                             <DemoContainer components={['MobileDatePicker']}>
                                 <MobileDatePicker 
-                                    label="起始日"
+                                    label={viewInfo.Language === 'TW' ? '起始日' : 'Start Date'}
                                     value={eventRequest.EventStartDate}
                                     onChange={(e) => {
                                         const formattedDate = e.clone().millisecond(0).second(0); // 將毫秒和秒設為 0
@@ -1249,7 +1333,7 @@ export default function PersonalInfo() {
                                     format="YYYY-MM-DD" // 指定日期格式为 YYYY-MM-DD
                                 />
                                 <MobileDatePicker 
-                                    label="截止日"
+                                    label={viewInfo.Language === 'TW' ? '截止日' : 'End Date'}
                                     value={eventRequest.EventEndDate}
                                     onChange={(e) => {
                                         const formattedDate = e.clone().millisecond(0).second(0); // 將毫秒和秒設為 0
@@ -1261,7 +1345,7 @@ export default function PersonalInfo() {
                             <DemoContainer components={['TimePicker', 'TimePicker']}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                     <TimePicker
-                                        label="起始時間"
+                                        label={viewInfo.Language === 'TW' ? '起始時間' : 'Start Time'}
                                         value={eventRequest.StartTime}
                                         style={{ width: '45%' }}
                                         onChange={(e) => {
@@ -1272,7 +1356,7 @@ export default function PersonalInfo() {
                                     />
                                     ~
                                     <TimePicker
-                                        label="截止時間"
+                                        label={viewInfo.Language === 'TW' ? '截止時間' : 'End Time'}
                                         value={eventRequest.EndTime}
                                         style={{ width: '45%' }}
                                         onChange={(e) => {
@@ -1286,7 +1370,7 @@ export default function PersonalInfo() {
                         </LocalizationProvider>
                         <TextField
                         id="outlined-multiline-static"
-                        label="事件內容"
+                        label={viewInfo.Language === 'TW' ? '事件內容' : 'Event Content'}
                         multiline
                         rows={2}
                         style={{marginTop:'5%',width:'100%'}}
@@ -1296,8 +1380,8 @@ export default function PersonalInfo() {
                     </DialogContent>
                     <DialogActions>
                     
-                    <Button onClick={()=>setThingAddOpen(false)}>取消</Button>
-                    <Button onClick={handleEventSubmit}>新增</Button>
+                    <Button onClick={()=>setThingAddOpen(false)}>{viewInfo.Language === 'TW' ? '取消' : 'Cancel'}</Button>
+                    <Button onClick={handleEventSubmit}>{viewInfo.Language === 'TW' ? '新增' : 'Add'}</Button>
                     </DialogActions>
                 </Dialog>
           </>

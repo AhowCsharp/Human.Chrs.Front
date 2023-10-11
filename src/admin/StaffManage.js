@@ -193,7 +193,7 @@ export default function StaffManage() {
         OverTimeHours: 0,
         StayInCompanyDays: 0,
         ParttimeMoney:0,
-        Gender: gender
+        Gender: gender,
     });
     const navigate = useNavigate();
 
@@ -276,7 +276,7 @@ export default function StaffManage() {
             OverTimeHours: 0,
             StayInCompanyDays: 0,
             ParttimeMoney:0,
-            Gender: gender
+            Gender: gender,
         })
         setOpen(false);
     };
@@ -362,7 +362,7 @@ export default function StaffManage() {
                 OverTimeHours: 0,
                 StayInCompanyDays: 0,
                 ParttimeMoney:0,
-                Gender: gender
+                Gender: gender,
             });
         }
     }, [isCreate]);
@@ -412,7 +412,7 @@ export default function StaffManage() {
           TackeCareBabyHours:params.row.TackeCareBabyHours,
           PrenatalCheckUpHours:params.row.PrenatalCheckUpHours,
           OverTimeHours:params.row.OverTimeHours,
-          ParttimeMoney:params.row.ParttimeMoney
+          ParttimeMoney:params.row.ParttimeMoney,
         });       
     };
     const handleInputChange = (event, propertyName) => {
@@ -552,6 +552,7 @@ export default function StaffManage() {
                                 />
                             </RadioGroup>
                         </Grid>   
+                        <Grid item xs={8}/>     
                         <Grid item xs={4}>
                             <InputLabel shrink htmlFor="demo-simple-select-required">
                                 國籍
@@ -584,36 +585,26 @@ export default function StaffManage() {
                                 ))}
                             </Select>
                         </Grid>
-                        <Grid item xs={3}>      
-                            <InputLabel shrink htmlFor="bootstrap-input">
-                                年紀
-                            </InputLabel>       
-                            <TextField id="StaffNo" 
-                                type="search" size="small"
-                                value={staff.Age}
-                                style={{marginTop:'15%'}}
-                                onChange={(e) => handleInputChange(e, 'Age')}/>
-                        </Grid>
+                         
+
              
-                        <Grid item xs={3}>      
+                        <Grid item xs={4}>      
                             <InputLabel shrink htmlFor="bootstrap-input">
                                 姓名
                             </InputLabel>       
                             <TextField id="StaffName" 
                                 type="search" size="small"
                                 value={staff.StaffName}
-                                style={{marginTop:'15%'}}
                                 onChange={(e) => handleInputChange(e, 'StaffName')}/>
                         </Grid>       
 
-                        <Grid item xs={3}>      
+                        <Grid item xs={4}>      
                             <InputLabel shrink htmlFor="bootstrap-input">
                                 員工編號
                             </InputLabel>       
                             <TextField id="StaffNo" 
                                 type="search" size="small"
                                 value={staff.StaffNo}
-                                style={{marginTop:'15%'}}
                                 onChange={(e) => handleInputChange(e, 'StaffNo')}/>
                         </Grid>
                         <Grid item xs={12}>

@@ -162,15 +162,16 @@ export default function StaffDetail() {
 
               <Grid item xs={4}>
 
-                <TextField
+              <TextField
                   id="outlined-helperText"
-                  label="編號 - Id"
+                  label={`編號 - Id (年齡: ${calculateAge(staffInfo.BirthDay)} 歲)`}
                   value={staffInfo.id}
                   InputProps={{
                     readOnly: true,
                   }}
                   helperText="此欄位自動輸入 無須填寫"
-                />
+              />
+
               </Grid>
               <Grid item xs={4}>
                 <TextField
@@ -186,6 +187,56 @@ export default function StaffDetail() {
                   label="英文姓名 - EnglishName"
                   value={staffInfo.EnglishName}
                   onChange={(e) => handleInputChange(e, 'EnglishName')}
+                />
+              </Grid>
+              <Grid item xs={4}>
+                <TextField
+                  id="outlined-helperText"
+                  label="生日 - Birthday"
+                  value={staffInfo.BirthDay !== ''? staffInfo.BirthDay.split('T')[0]:getCurrentDate()}
+                  onChange={(e) => handleInputChange(e, 'Birthday')}
+                  helperText="請輸入YYYY-MM-DD格式"
+                />
+              </Grid>
+              <Grid item xs={4}>
+                <TextField
+                  id="outlined-helperText"
+                  label="身高 - Height"
+                  value={staffInfo.Height}
+                  onChange={(e) => handleInputChange(e, 'Height')}
+                />
+              </Grid>
+              <Grid item xs={4}>
+                <TextField
+                  id="outlined-helperText"
+                  label="體重 -Weight"
+                  value={staffInfo.Weight}
+                  onChange={(e) => handleInputChange(e, 'Weight')}
+                />
+              </Grid>
+              <Grid item xs={4}>
+                <TextField
+                  id="outlined-helperText"
+                  label="身分證 - IdentityNo"
+                  value={staffInfo.IdentityNo}
+                  onChange={(e) => handleInputChange(e, 'IdentityNo')}
+                />
+              </Grid>
+              <Grid item xs={4}>
+                <TextField
+                  id="outlined-helperText"
+                  label="良民證狀態 - Has Crime Record"
+                  value={staffInfo.HasCrimeRecord}
+                  onChange={(e) => handleInputChange(e, 'HasCrimeRecord')}
+                  helperText="有良民證請填 1 無良民證請填 0"
+                />
+              </Grid>
+              <Grid item xs={4}>
+                <TextField
+                  id="outlined-helperText"
+                  label="備註 - Memo"
+                  value={staffInfo.Memo}
+                  onChange={(e) => handleInputChange(e, 'Memo')}                 
                 />
               </Grid>
               <Grid item xs={4}>
@@ -251,56 +302,6 @@ export default function StaffDetail() {
                         </MenuItem>
                   </Select>
               </Grid>
-              <Grid item xs={4}>
-                <TextField
-                  id="outlined-helperText"
-                  label="生日 - Birthday"
-                  value={staffInfo.BirthDay !== ''? staffInfo.BirthDay.split('T')[0]:getCurrentDate()}
-                  onChange={(e) => handleInputChange(e, 'Birthday')}
-                  helperText="請輸入YYYY-MM-DD格式"
-                />
-              </Grid>
-              <Grid item xs={4}>
-                <TextField
-                  id="outlined-helperText"
-                  label="身高 - Height"
-                  value={staffInfo.Height}
-                  onChange={(e) => handleInputChange(e, 'Height')}
-                />
-              </Grid>
-              <Grid item xs={4}>
-                <TextField
-                  id="outlined-helperText"
-                  label="體重 -Weight"
-                  value={staffInfo.Weight}
-                  onChange={(e) => handleInputChange(e, 'Weight')}
-                />
-              </Grid>
-              <Grid item xs={4}>
-                <TextField
-                  id="outlined-helperText"
-                  label="身分證 - IdentityNo"
-                  value={staffInfo.IdentityNo}
-                  onChange={(e) => handleInputChange(e, 'IdentityNo')}
-                />
-              </Grid>
-              <Grid item xs={4}>
-                <TextField
-                  id="outlined-helperText"
-                  label="良民證狀態 - Has Crime Record"
-                  value={staffInfo.HasCrimeRecord}
-                  onChange={(e) => handleInputChange(e, 'HasCrimeRecord')}
-                  helperText="有良民證請填 1 無良民證請填 0"
-                />
-              </Grid>
-              <Grid item xs={4}>
-                <TextField
-                  id="outlined-helperText"
-                  label="備註 - Memo"
-                  value={staffInfo.Memo}
-                  onChange={(e) => handleInputChange(e, 'Memo')}                 
-                />
-              </Grid>
               <Grid item xs={12} style={{display:'flex',justifyContent:'center',marginBottom:'2%'}}>     
                 <Button variant="contained" startIcon={<ReplyIcon />} onClick={handleBackClick} style={{ marginRight: '10px' }}>
                    返回
@@ -347,4 +348,21 @@ function daysBetweenDates(date1Str, date2Str) {
   
     return diffDays;
 }
+
+function calculateAge(birthdate) {
+  const today = new Date();
+  const birthDate = new Date(birthdate);
+  
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+
+  // 如果當前月份還沒到達生日月份或者當前月份是生日月份但當天還沒到達生日，則年齡要減1
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    // eslint-disable-next-line no-plusplus
+    age--;
+  }
+
+  return age;
+}
+
     

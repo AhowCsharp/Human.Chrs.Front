@@ -1,4 +1,5 @@
 import PropTypes from 'prop-types';
+import { useState,useRef,useEffect,useCallback} from 'react';
 // @mui
 import { styled } from '@mui/material/styles';
 import { Box, Stack, AppBar, Toolbar, IconButton } from '@mui/material';
@@ -44,6 +45,7 @@ Header.propTypes = {
 
 export default function Header({ onOpenNav }) {
   const isAdmin = sessionStorage.getItem('AdminToken') !== null;
+
   return (
     <StyledRoot>
       <StyledToolbar>
@@ -69,7 +71,7 @@ export default function Header({ onOpenNav }) {
             sm: 1,
           }}
         >
-          <LanguagePopover />
+          <LanguagePopover/>
           <NotificationsPopover />
           <AccountPopover isAdmin={isAdmin}/>
         </Stack>

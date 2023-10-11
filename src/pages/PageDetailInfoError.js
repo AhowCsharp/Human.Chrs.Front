@@ -18,7 +18,7 @@ const StyledContent = styled('div')(({ theme }) => ({
 
 // ----------------------------------------------------------------------
 
-export default function PageDeviceError() {
+export default function PageDetailInfoError() {
   return (
     <>
       <Helmet>
@@ -28,16 +28,17 @@ export default function PageDeviceError() {
       <Container>
         <StyledContent sx={{ textAlign: 'center', alignItems: 'center' }}>
           <Typography variant="h3" paragraph>
-            請使用手機設備操作本系統
+            尚未註冊個人詳細訊息 <br/>
+            請通知貴司人資
           </Typography>
 
           <Typography sx={{ color: 'text.secondary' }}>
-              Please use a mobile device to operate this system. Computer access is not available. Thank you for your cooperation.
+              You have not registered your personal details yet. Please notify the HR department.
           </Typography>
 
           <Box
             component="img"
-            src="/image/phone.png"
+            src="/image/searching.png"
             sx={{ height: 260, mx: 'auto', my: { xs: 5, sm: 10 } }}
           />
 

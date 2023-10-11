@@ -15,12 +15,14 @@ import {
   CardHeader,
   FormControlLabel,
 } from '@mui/material';
+import Typography from '@mui/material/Typography';
 // components
 import { styled } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import Chip from '@mui/material/Chip';
 import Grid from '@mui/material/Grid';
+import { useLanguage } from '../../../layouts/LanguageContext'
 
 const Item = styled(Paper)(({ theme }) => ({
   backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
@@ -44,32 +46,40 @@ export default function AppTasks({ title, subheader, list, ...other }) {
       taskCompleted: ['2'],
     },
   });
-
+  const { language } = useLanguage();
   return (
-    <Card {...other} style={{width:'90%'}}>
-      <CardHeader title={title} subheader={subheader} style={{marginBottom:'5%'}}/>
-      <Controller
-        name="taskCompleted"
-        control={control}
-        render={({ field }) => {
-          const onSelected = (task) =>
-            field.value.includes(task) ? field.value.filter((value) => value !== task) : [...field.value, task];
+      <Card {...other} style={{width:'90%'}}>
+        <CardHeader title={title} subheader={subheader} style={{marginBottom:'5%'}}/>
+        <Controller
+          name="taskCompleted"
+          control={control}
+          render={({ field }) => {
+            const onSelected = (task) =>
+              field.value.includes(task) ? field.value.filter((value) => value !== task) : [...field.value, task];
 
-          return (
-            <>
-              {list.map((task) => (
-                <TaskItem
-                  key={task.id}
-                  task={task}
-                  checked={field.value.includes(task.id)}
-                  onChange={() => field.onChange(onSelected(task.id))}
-                />
-              ))}
-            </>
-          );
-        }}
-      />
-    </Card>
+            return (
+              <>
+                {list.length === 0 ? (
+                  <Box display="flex" justifyContent="center" alignItems="center" flexDirection="column" height="100px">
+                    <Typography variant="h6" color="textSecondary">
+                      {language === 'TW' ? '目前沒有資料' : 'No data available'}
+                    </Typography>
+                  </Box>
+                ) : (
+                  list.map((task) => (
+                    <TaskItem
+                      key={task.id}
+                      task={task}
+                      checked={field.value.includes(task.id)}
+                      onChange={() => field.onChange(onSelected(task.id))}
+                    />
+                  ))
+                )}
+              </>
+            );
+          }}
+        />
+      </Card>
   );
 }
 
