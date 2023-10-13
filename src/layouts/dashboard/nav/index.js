@@ -15,6 +15,7 @@ import NavSection from '../../../components/nav-section';
 //
 import navConfig from './config';
 import AdminConfig from './AdminConfig';
+import SuperAdminConfig from './SuperAdminConfig';
 // ----------------------------------------------------------------------
 
 const NAV_WIDTH = 280;
@@ -38,6 +39,7 @@ export default function Nav({ openNav, onCloseNav }) {
   const { pathname } = useLocation();
 
   const isDesktop = useResponsive('up', 'lg');
+  const isSuperAdmin = sessionStorage.getItem('SuperToken')!== null;
 
   useEffect(() => {
     if (openNav) {
@@ -75,7 +77,14 @@ export default function Nav({ openNav, onCloseNav }) {
         </Link>
       </Box>
 
-      {sessionStorage.getItem('AdminToken') !== null? <NavSection data={AdminConfig} /> :<NavSection data={navConfig} />}
+      {sessionStorage.getItem('AdminToken') !== null 
+        ? (isSuperAdmin 
+            ? <NavSection data={SuperAdminConfig} /> 
+            : <NavSection data={AdminConfig} />
+          )
+        : <NavSection data={navConfig} />
+      }
+
 
       <Box sx={{ flexGrow: 1 }} />
 

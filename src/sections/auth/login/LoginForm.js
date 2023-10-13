@@ -40,7 +40,7 @@ export default function LoginForm() {
     Email:'',
     Account:''
   })
-
+  const isSuperAdmin = sessionStorage.getItem('SuperToken')!== null;
 
   const handleResetClickOpen = () => {
     setResetOpen(true);
@@ -56,7 +56,12 @@ export default function LoginForm() {
       if(isStaff) {
         navigate('/staff', { replace: true }); 
       }else {
-        navigate('/admin', { replace: true });
+        if(isSuperAdmin) {
+          navigate('/super', { replace: true });
+        }
+        if(!isSuperAdmin) {
+          navigate('/admin', { replace: true });
+        }      
       }
     }
   };
@@ -114,6 +119,9 @@ export default function LoginForm() {
             sessionStorage.setItem('Auth',response.data.Auth.toString());
             sessionStorage.setItem('AdminToken',response.data.AdminToken);
             sessionStorage.setItem('AvatarUrl',`${appsetting.apiUrl}${response.data.AvatarUrl}`);
+            if(response.data.SuperToken !== null) {
+              sessionStorage.setItem('SuperToken',response.data.SuperToken);
+            }
             setIsStaff(false);
           }
       }

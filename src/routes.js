@@ -30,6 +30,9 @@ import ParttimeManage from './admin/ParttimeManage';
 import AmendRecordsManage from './admin/AmendRecordsManage';
 import ParttimeWorkManage from './admin/ParttimeWorkManage';
 import MeetManage from './admin/MeetManage';
+
+import CompanyManage from './super/CompanyManage';
+import ContractManage from './super/ContractManage';
 // ----------------------------------------------------------------------
 
 export default function Router() {
@@ -81,6 +84,16 @@ export default function Router() {
         { path: 'detail', element: <AdminDetail /> },
         { path: 'details/:id', element: <StaffDetail /> },
         { path: 'calculatesalary/:id', element: <SalaryCalculate /> },
+      ],
+    },
+    {
+      path: '/super',
+      element: <DashboardLayout />,
+      children: [
+        { element: <Navigate to="/super/companylist" />, index: true },
+        { path: 'app', element: <DashboardAppPage /> },
+        { path: 'companylist', element: <CompanyManage /> },
+        { path: 'contracts', element: <ContractManage /> },
       ],
     },
     {

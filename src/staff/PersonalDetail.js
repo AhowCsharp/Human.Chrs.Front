@@ -12,6 +12,13 @@ import Button from '@mui/material/Button';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import PermContactCalendarIcon from '@mui/icons-material/PermContactCalendar';
 import FactCheckIcon from '@mui/icons-material/FactCheck';
+import IconButton from '@mui/material/IconButton';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+import Fingerprint from '@mui/icons-material/Fingerprint';
 import Avatar from '@mui/material/Avatar';
 import CircularProgress from '@mui/material/CircularProgress';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
@@ -57,6 +64,19 @@ export default function PersonalDetail() {
     const [staffDetail,setStaffDetail] = useState(null);
     const [isLoading, setIsLoading] = useState(true); 
     const [avatarUrl, setAvatarUrl] = useState(sessionStorage.getItem('AvatarUrl'));
+    const [open, setOpen] = React.useState(false);
+    const [resetRequest,setResetRequest] = useState({
+        Password:'',
+        NewPassword:'',
+    });
+
+    const handleClickOpen = () => {
+      setOpen(true);
+    };
+  
+    const handleClose = () => {
+      setOpen(false);
+    };
 
     useEffect(() => {
         // 監聽 sessionStorage 中 AvatarUrl 的變化
@@ -132,6 +152,38 @@ export default function PersonalDetail() {
             console.error('Error uploading avatar:', error);
         }
     };
+
+    const handleReset = async () => {
+        try {
+          const response = await axios.put(
+              `${appsetting.apiUrl}/staff/resetpw`, 
+              resetRequest, // 如果你不需要傳遞body，可以設為null
+              {
+                  ...config, // 展開你的config，使其成為這個配置對象的一部分
+              }
+          );
+          if (response.status === 200) {
+              alert('修改成功')
+              handleClose();
+          } 
+
+      } catch (error) {
+          alert('修改失敗 原先密碼輸入錯誤');
+          console.error('Error calling API:', error);
+      }
+    };
+
+
+    const handleInputChange = (event, propertyName) => {
+        const value = event.target ? event.target.value : event;
+        
+        setResetRequest((prevData) => ({
+            ...prevData,
+            [propertyName]: value,
+        }));   
+    };
+
+
     if(!isMobile) {
         return(
             <>
@@ -335,6 +387,41 @@ export default function PersonalDetail() {
                                 }}
                                 />
                             </Grid>
+                            <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>   
+                                    <Button variant="text" endIcon={<Fingerprint style={{color:'red'}}/>} style={{color:'white'}} onClick={handleClickOpen}>
+                                            變更密碼
+                                    </Button>                       
+                            </Grid>
+                            <Dialog open={open} onClose={handleClose}>
+                                <DialogTitle>變更密碼-ResetPassword</DialogTitle>
+                                <DialogContent>
+                                <TextField
+                                    autoFocus
+                                    margin="dense"
+                                    id="name"
+                                    label="原密碼-Now Password"
+                                    type="password"
+                                    value={resetRequest.Password}
+                                    onChange={(e) => handleInputChange(e, 'Password')}
+                                    fullWidth
+                                    variant="standard"
+                                />
+                                <TextField
+                                    margin="dense"
+                                    id="name"
+                                    label="新密碼-New Password"
+                                    type="password"
+                                    value={resetRequest.NewPassword}
+                                    onChange={(e) => handleInputChange(e, 'NewPassword')}
+                                    fullWidth
+                                    variant="standard"
+                                />
+                                </DialogContent>
+                                <DialogActions>
+                                <Button onClick={handleClose}>取消-Cancel</Button>
+                                <Button onClick={handleReset}>送出-Submit</Button>
+                                </DialogActions>
+                            </Dialog>
                         </Grid>
                     </Box>                 
                 </Box>
