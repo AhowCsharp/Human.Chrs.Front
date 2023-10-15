@@ -6,73 +6,73 @@ import SvgColor from '../../../components/svg-color';
 const icon = (name) => <SvgColor src={`/assets/icons/navbar/${name}.svg`} sx={{ width: 1, height: 1 }} />;
 
 const AdminConfig = [
+  // {
+  //   title: 'dashboard',
+  //   path: '/admin/app',
+  //   icon: icon('ic_analytics'),
+  // },
   {
-    title: 'dashboard',
-    path: '/admin/app',
-    icon: icon('ic_analytics'),
-  },
-  {
-    title: 'adminList',
+    title: '管理者列表',
     path: '/admin/adminlist',
     icon: icon('ic_user'),
   },
+  // {
+  //   title: 'product',
+  //   path: '/admin/products',
+  //   icon: icon('ic_cart'),
+  // },
+  // {
+  //   title: 'blog',
+  //   path: '/admin/blog',
+  //   icon: icon('ic_blog'),
+  // },
   {
-    title: 'product',
-    path: '/admin/products',
-    icon: icon('ic_cart'),
-  },
-  {
-    title: 'blog',
-    path: '/admin/blog',
-    icon: icon('ic_blog'),
-  },
-  {
-    title: 'staffs',
+    title: '員工列表',
     path: '/admin/staffmanage',
     icon: icon('ic_disabled'),
   },
   {
-    title: 'vacations',
+    title: '休假申請列表',
     path: '/admin/vacationsmanage',
     icon: icon('ic_disabled'),
   },
   {
-    title: 'overtimes',
+    title: '加班申請列表',
     path: '/admin/overtimesmanage',
     icon: icon('ic_disabled'),
   },
   {
-    title: 'amendrecord',
+    title: '補打卡申請列表',
     path: '/admin/amendrecordmanage',
     icon: icon('ic_disabled'),
   },
   {
-    title: 'salarySetting',
+    title: '發放薪資設定',
     path: '/admin/salarymanage',
     icon: icon('ic_disabled'),
   },
   {
-    title: 'parttime',
+    title: '部分工時人員列表',
     path: '/admin/parttimemanage',
     icon: icon('ic_disabled'),
   },
   {
-    title: 'parttimework',
+    title: '部分工時人員排班',
     path: '/admin/parttimeworkmanage',
     icon: icon('ic_disabled'),
   },
   {
-    title: 'meet',
+    title: '會議安排',
     path: '/admin/meetmanage',
     icon: icon('ic_disabled'),
   },
   {
-    title: 'departments',
+    title: '部門設定',
     path: '/admin/departmentmanage',
     icon: icon('ic_disabled'),
   },
   {
-    title: 'companyRule',
+    title: '公司規定設置',
     path: '/admin/companyrulemanage',
     icon: icon('ic_disabled'),
   },

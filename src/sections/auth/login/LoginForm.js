@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { useState,useContext,useEffect } from 'react';
 import axios from 'axios';
 import { Link, Stack, IconButton, InputAdornment, TextField, Checkbox } from '@mui/material';
+import { isMobile,isTablet } from 'react-device-detect';
 import { LoadingButton } from '@mui/lab';
 // components
 import Button from '@mui/material/Button';
@@ -161,32 +162,36 @@ export default function LoginForm() {
       <Backdrop open={isLoading} style={{ zIndex: 1301, color: '#fff' }}>  {/* 增加 zIndex 使遮罩在其他元素之上 */}
         <CircularProgress color="inherit" />
       </Backdrop>
-      <Stack spacing={3}>
-        <TextField name="staff" label="Account" 
-        onChange={(e) => handleInputChange(e, 'Account')}/>
+      <Box       sx={{
+        marginBottom: isMobile ? '100px' : '0px',
+      }}>
+        <Stack spacing={3}>
+          <TextField name="staff" label="Account" 
+          onChange={(e) => handleInputChange(e, 'Account')}/>
 
-        <TextField
-          name="password"
-          label="Password"
-          type={showPassword ? 'text' : 'password'}
-          onChange={(e) => handleInputChange(e, 'Password')}
-          InputProps={{
-            endAdornment: (
-              <InputAdornment position="end">
-                <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
-                  <Iconify icon={showPassword ? 'eva:eye-fill' : 'eva:eye-off-fill'} />
-                </IconButton>
-              </InputAdornment>
-            ),
-          }}
-        />
-      </Stack>
-      <Button variant="text" size="small" style={{marginTop:'5%',width:'20%'}} onClick={handleResetClickOpen}>
-          忘記密碼
-      </Button>
-      <LoadingButton style={{marginTop:'20px'}} fullWidth size="large" type="submit" variant="contained" onClick={handleSubmit}>
-        Login
-      </LoadingButton>
+          <TextField
+            name="password"
+            label="Password"
+            type={showPassword ? 'text' : 'password'}
+            onChange={(e) => handleInputChange(e, 'Password')}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
+                    <Iconify icon={showPassword ? 'eva:eye-fill' : 'eva:eye-off-fill'} />
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+          />
+        </Stack>
+        <Button variant="text" size="small" style={{marginTop:'5%',width:'20%'}} onClick={handleResetClickOpen}>
+            忘記密碼
+        </Button>
+        <LoadingButton style={{marginTop:'20px'}} fullWidth size="large" type="submit" variant="contained" onClick={handleSubmit}>
+          Login
+        </LoadingButton>
+      </Box>
       <Dialog
         open={open}
         keepMounted

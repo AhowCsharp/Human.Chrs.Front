@@ -388,7 +388,7 @@ export default function AdminPage() {
   return (
     <>
       <Helmet>
-        <title> 管理者列表 </title>
+        <title> 䒳芮線上人資雲系統 </title>
       </Helmet>
 
       <Container  sx={{width:'95%' }}>

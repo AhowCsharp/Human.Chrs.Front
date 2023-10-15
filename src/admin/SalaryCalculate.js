@@ -29,6 +29,8 @@ import FormLabel from '@mui/material/FormLabel';
 import Stack from '@mui/material/Stack';
 import Snackbar from '@mui/material/Snackbar';
 import Switch from '@mui/material/Switch';
+import AddIcon from '@mui/icons-material/Add';
+import EastTwoToneIcon from '@mui/icons-material/EastTwoTone';
 import dayjs from 'dayjs';
 import { DemoContainer, DemoItem } from '@mui/x-date-pickers/internals/demo';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -736,9 +738,17 @@ export default function SalaryCalculate() {
                   onChange={(e) => handleInputChange(e, 'BasicSalary')}
                 />
               </Grid>
-              <Grid item xs={1}>
-                +
+              <Grid
+                  item
+                  xs={1}
+                  container
+                  direction="row"
+                  justifyContent="center"
+                  alignItems="center"
+                >
+                  <AddIcon />
               </Grid>
+
               <Grid item xs={2}>
                 <TextField
                     id="outlined-helperText"
@@ -749,8 +759,15 @@ export default function SalaryCalculate() {
                     onChange={(e) => handleInputChange(e, 'FoodSuportMoney')}
                   />
               </Grid>
-              <Grid item xs={1}>
-                +
+              <Grid
+                  item
+                  xs={1}
+                  container
+                  direction="row"
+                  justifyContent="center"
+                  alignItems="center"
+                >
+                  <AddIcon />
               </Grid>
               <Grid item xs={2}>
                 <TextField
@@ -762,8 +779,15 @@ export default function SalaryCalculate() {
                     onChange={(e) => handleInputChange(e, 'FullCheckInMoney')}
                   />
               </Grid>
-              <Grid item xs={1}>
-                +
+              <Grid
+                  item
+                  xs={1}
+                  container
+                  direction="row"
+                  justifyContent="center"
+                  alignItems="center"
+                >
+                  <AddIcon />
               </Grid>
               <Grid item xs={2}>
                 <TextField
@@ -776,8 +800,15 @@ export default function SalaryCalculate() {
               </Grid>
               {checked?
                 <>
-                  <Grid item xs={1}>
-                    +
+                  <Grid
+                      item
+                      xs={1}
+                      container
+                      direction="row"
+                      justifyContent="center"
+                      alignItems="center"
+                    >
+                      <AddIcon />
                   </Grid>
                   <Grid item xs={2}>
                     <TextField
@@ -790,8 +821,15 @@ export default function SalaryCalculate() {
                   </Grid>
                 </>:null
               }
-              <Grid item xs={1}>
-                =
+              <Grid
+                  item
+                  xs={1}
+                  container
+                  direction="row"
+                  justifyContent="center"
+                  alignItems="center"
+                >
+                  <EastTwoToneIcon  />
               </Grid>
               <Grid item xs={2}>
                 <TextField
@@ -818,8 +856,15 @@ export default function SalaryCalculate() {
                   onChange={(e) => handleInputChange(e, 'SickHours')}
                 />
               </Grid>
-              <Grid item xs={1}>
-                +
+              <Grid
+                  item
+                  xs={1}
+                  container
+                  direction="row"
+                  justifyContent="center"
+                  alignItems="center"
+                >
+                  <AddIcon />
               </Grid>
               <Grid item xs={2}>
                 <TextField
@@ -830,8 +875,15 @@ export default function SalaryCalculate() {
                   onChange={(e) => handleInputChange(e, 'ThingHours')}
                 />
               </Grid>
-              <Grid item xs={1}>
-                +
+              <Grid
+                  item
+                  xs={1}
+                  container
+                  direction="row"
+                  justifyContent="center"
+                  alignItems="center"
+                >
+                  <AddIcon />
               </Grid>
               <Grid item xs={2}>
                 <TextField
@@ -842,8 +894,15 @@ export default function SalaryCalculate() {
                   onChange={(e) => handleInputChange(e, 'MenstruationHours')}
                 />
               </Grid>
-              <Grid item xs={1}>
-                +
+              <Grid
+                  item
+                  xs={1}
+                  container
+                  direction="row"
+                  justifyContent="center"
+                  alignItems="center"
+                >
+                  <AddIcon />
               </Grid>
               <Grid item xs={2}>
                 <TextField
@@ -854,8 +913,15 @@ export default function SalaryCalculate() {
                   onChange={(e) => handleInputChange(e, 'ChildbirthHours')}
                 /> 
               </Grid>
-              <Grid item xs={1}>
-                +
+              <Grid
+                  item
+                  xs={1}
+                  container
+                  direction="row"
+                  justifyContent="center"
+                  alignItems="center"
+                >
+                  <AddIcon />
               </Grid>
               <Grid item xs={2}>
                 <TextField
@@ -866,8 +932,15 @@ export default function SalaryCalculate() {
                   onChange={(e) => handleInputChange(e, 'TakeCareBabyHours')}
                 />
               </Grid>
-              <Grid item xs={1}>
-                +
+              <Grid
+                  item
+                  xs={1}
+                  container
+                  direction="row"
+                  justifyContent="center"
+                  alignItems="center"
+                >
+                  <AddIcon />
               </Grid>
               <Grid item xs={2}>
                 <TextField
@@ -878,8 +951,15 @@ export default function SalaryCalculate() {
                   onChange={(e) => handleInputChange(e, 'TocolysisHours')}
                 />
               </Grid>
-              <Grid item xs={1}>
-                +
+              <Grid
+                  item
+                  xs={1}
+                  container
+                  direction="row"
+                  justifyContent="center"
+                  alignItems="center"
+                >
+                  <AddIcon />
               </Grid>
               <Grid item xs={2}>
                 <TextField
@@ -890,8 +970,15 @@ export default function SalaryCalculate() {
                   onChange={(e) => handleInputChange(e, 'EarlyOrLateAmount')}
                 />
               </Grid>
-              <Grid item xs={1}>
-                +
+              <Grid
+                  item
+                  xs={1}
+                  container
+                  direction="row"
+                  justifyContent="center"
+                  alignItems="center"
+                >
+                  <AddIcon />
               </Grid>
               <Grid item xs={2}>
                 <TextField
@@ -902,8 +989,15 @@ export default function SalaryCalculate() {
                   onChange={(e) => handleInputChange(e, 'OutLocationAmount')}
                 />
               </Grid>
-              <Grid item xs={1}>
-                +
+              <Grid
+                  item
+                  xs={1}
+                  container
+                  direction="row"
+                  justifyContent="center"
+                  alignItems="center"
+                >
+                  <AddIcon />
               </Grid>
               <Grid item xs={2}>
                 <TextField
@@ -914,8 +1008,15 @@ export default function SalaryCalculate() {
                   onChange={(e) => handleInputChange(e, 'IncomeTax')}
                 />
               </Grid>
-              <Grid item xs={1}>
-                +
+              <Grid
+                  item
+                  xs={1}
+                  container
+                  direction="row"
+                  justifyContent="center"
+                  alignItems="center"
+                >
+                  <AddIcon />
               </Grid>
               <Grid item xs={2}>
                 <TextField
@@ -929,8 +1030,15 @@ export default function SalaryCalculate() {
                   }}
                 />
               </Grid>
-              <Grid item xs={1}>
-                +
+              <Grid
+                  item
+                  xs={1}
+                  container
+                  direction="row"
+                  justifyContent="center"
+                  alignItems="center"
+                >
+                  <AddIcon />
               </Grid>
               <Grid item xs={2}>
                 <TextField
@@ -944,8 +1052,15 @@ export default function SalaryCalculate() {
                   }}
                 />
               </Grid>
-              <Grid item xs={1}>
-                +
+              <Grid
+                  item
+                  xs={1}
+                  container
+                  direction="row"
+                  justifyContent="center"
+                  alignItems="center"
+                >
+                  <AddIcon />
               </Grid>
               <Grid item xs={2}>
                 <TextField
@@ -956,8 +1071,15 @@ export default function SalaryCalculate() {
                   onChange={(e) => handleInputChange(e, 'EmployeeRetirement')}
                 />
               </Grid>              
-              <Grid item xs={1}>
-                +
+              <Grid
+                  item
+                  xs={1}
+                  container
+                  direction="row"
+                  justifyContent="center"
+                  alignItems="center"
+                >
+                  <AddIcon />
               </Grid>
               <Grid item xs={2}>
                 <TextField
@@ -968,8 +1090,15 @@ export default function SalaryCalculate() {
                   onChange={(e) => handleInputChange(e, 'SupplementaryPremium')}
                 />
               </Grid>
-              <Grid item xs={1}>
-                =
+              <Grid
+                  item
+                  xs={1}
+                  container
+                  direction="row"
+                  justifyContent="center"
+                  alignItems="center"
+                >
+                  <EastTwoToneIcon  />
               </Grid>
               <Grid item xs={3}>
                 <TextField
@@ -999,8 +1128,15 @@ export default function SalaryCalculate() {
                   }}
                 />
               </Grid>
-              <Grid item xs={1}>
-                +
+              <Grid
+                  item
+                  xs={1}
+                  container
+                  direction="row"
+                  justifyContent="center"
+                  alignItems="center"
+                >
+                  <AddIcon />
               </Grid>
               <Grid item xs={1}>
                 <TextField
@@ -1015,8 +1151,15 @@ export default function SalaryCalculate() {
                   }}
                 />
               </Grid>
-              <Grid item xs={1}>
-                +
+              <Grid
+                  item
+                  xs={1}
+                  container
+                  direction="row"
+                  justifyContent="center"
+                  alignItems="center"
+                >
+                  <AddIcon />
               </Grid>
               <Grid item xs={1}>
                 <TextField
@@ -1031,8 +1174,15 @@ export default function SalaryCalculate() {
                   }}
                 />
               </Grid>
-              <Grid item xs={1}>
-                +
+              <Grid
+                  item
+                  xs={1}
+                  container
+                  direction="row"
+                  justifyContent="center"
+                  alignItems="center"
+                >
+                  <AddIcon />
               </Grid>
               <Grid item xs={1}>
                 <TextField
@@ -1043,8 +1193,15 @@ export default function SalaryCalculate() {
                   onChange={(e) => handleInputChange(e, 'AdvanceFundFromCompany')}
                 /> 
               </Grid>
-              <Grid item xs={1}>
-                =
+              <Grid
+                  item
+                  xs={1}
+                  container
+                  direction="row"
+                  justifyContent="center"
+                  alignItems="center"
+                >
+                  <EastTwoToneIcon  />
               </Grid>
               <Grid item xs={2}>
                 <TextField
