@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 // @mui
 import { useState,useContext,useEffect } from 'react';
+import FingerprintJS from '@fingerprintjs/fingerprintjs';
 import axios from 'axios';
 import { Link, Stack, IconButton, InputAdornment, TextField, Checkbox } from '@mui/material';
 import { isMobile,isTablet } from 'react-device-detect';
@@ -33,6 +34,10 @@ export default function LoginForm() {
   const [isStaff, setIsStaff] = useState(false);
   const [open, setOpen] = useState(false);
   const [resetOpen, setResetOpen] = useState(false);
+  const [deviceOpen, setDeviceOpen] = useState(false);
+  const [visitorId, setVisitorId] = useState('');
+  const [deviceStatus, setDeviceStatus] = useState('');
+
   const [loginRequest, setLoginRequest] = useState({
     Account:'',
     Password:''
@@ -49,6 +54,14 @@ export default function LoginForm() {
 
   const handleResetClose = () => {
     setResetOpen(false);
+  };
+
+  const handleDeviceClickOpen = () => {
+    setDeviceOpen(true);
+  };
+
+  const handleDeviceClose = () => {
+    setDeviceOpen(false);
   };
 
   const handleClose = () => {
@@ -86,9 +99,7 @@ export default function LoginForm() {
     }));
   };
 
-    const handleSubmit = async () => {
-    // 創建一個物件來存儲帳號和密碼
-    // 設定 header 的 token
+  const handleSubmit = async () => {
     const config = {
       headers: {
         'X-Ap-Token': appsetting.token
@@ -101,7 +112,8 @@ export default function LoginForm() {
 
       if(response.status === 200) {
           setIsLogin(true);
-          if(response.data.AdminToken === null) {
+          if(response.data.AdminToken === null) {      
+            VerifyDeviceSubmit();    
             sessionStorage.setItem('UserId',response.data.UserId);
             sessionStorage.setItem('CompanyId',response.data.CompanyId.toString());
             sessionStorage.setItem('DepartmentId',response.data.DepartmentId.toString());
@@ -124,11 +136,78 @@ export default function LoginForm() {
               sessionStorage.setItem('SuperToken',response.data.SuperToken);
             }
             setIsStaff(false);
+            setOpen(true);
           }
       }
-      setOpen(true);
+      
     } catch (error) {
       setOpen(true);
+      console.error("Error logging in:", error);
+    }
+  };
+
+  const VerifyDeviceSubmit = async () => {
+    const config = {
+      headers: {
+        'X-Ap-Token': appsetting.token
+      }
+    };
+    const deviceRequest = {
+      ...loginRequest,
+      DeviceId:visitorId
+    }
+    // 發送 POST 請求
+    try {
+      const response = await axios.post(`${appsetting.apiUrl}/login/deviceid`, deviceRequest, config);
+
+      if(response.status === 200) {
+        const resultCode = response.data;
+        switch (resultCode) {
+          case 0:
+            setDeviceStatus('尚未綁定');
+            setOpen(false);
+            handleDeviceClickOpen();
+            break;
+          case 1:
+            setDeviceStatus('符合該設備');
+            setOpen(true);
+            break;
+          case -1:
+            setDeviceStatus('不支援多重設備登入');
+            setIsLogin(false);
+            setOpen(true);
+            break;
+          default:
+            console.error('未知的返回代码', resultCode);
+            break;
+        }
+      }
+    } catch (error) {
+      console.error("Error logging in:", error);
+    }
+  };
+
+  const RegisterDeviceIdSubmit = async () => {
+    const config = {
+      headers: {
+        'X-Ap-Token': appsetting.token
+      }
+    };
+    const deviceRequest = {
+      ...loginRequest,
+      DeviceId:visitorId
+    }
+    // 發送 POST 請求
+    try {
+      const response = await axios.put(`${appsetting.apiUrl}/login/deviceid`, deviceRequest, config);
+
+      if(response.status === 200) {
+          alert('綁定成功')
+          handleDeviceClose();
+      }
+    } catch (error) {
+      alert('綁定失敗')
+      handleDeviceClose();
       console.error("Error logging in:", error);
     }
   };
@@ -156,6 +235,47 @@ export default function LoginForm() {
       setIsLoading(false);  // 關閉過場動畫
     }
   };
+
+  useEffect(() => {
+    // 在组件加载时获取指纹信息
+    const getFingerprint = async () => {
+      try {
+        // 加载 FingerprintJS 库的实例
+        const fp = await FingerprintJS.load();
+
+        // 获取访问者的指纹信息
+        const result = await fp.get();
+
+        // result.visitorId 是访问者的唯一ID（设备的指纹）
+        setVisitorId(result.visitorId);
+
+        // TODO: 你可以选择将 visitorId 发送到你的服务器
+        // 和/或执行其他你需要的操作
+      } catch (error) {
+        console.error("Fingerprinting failed", error);
+      }
+    };
+
+    getFingerprint();
+  }, []);
+
+  let message;
+  switch (deviceStatus) {
+    case '':
+      message = "登入失敗，請再試一次";  
+      break;
+    case '尚未綁定':
+      message = "帳號尚未綁定";
+      break;
+    case '符合該設備':
+      message = "登入成功 即將跳轉";
+      break;
+    case '不支援多重設備登入':
+      message = "請勿幫人代打卡";
+      break;
+    default:
+      message = "登入失敗，請再試一次";  
+  }
 
   return (
     <>
@@ -201,7 +321,7 @@ export default function LoginForm() {
         <DialogTitle>{isLogin ? `${sessionStorage.getItem('StaffName')}，您好！` : ''}</DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-slide-description">
-          {isLogin ? "登入成功 按下OK轉導頁面" : "登入失敗，請再試一次"}
+          {isLogin ? "登入成功 按下OK轉導頁面" : message}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -240,6 +360,22 @@ export default function LoginForm() {
         <DialogActions>
           <Button onClick={handleResetClose}>取消</Button>
           <Button onClick={handleResetSubmit}>送出</Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={deviceOpen} onClose={handleDeviceClose}>
+        <DialogTitle>初次登入 請綁定設備</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            綁定設備後不得更換設備登入<br/>
+            若需要更換設備登入<br/>
+            請洽公司人資消除設備綁定<br/>
+            綁定成功後請重新登入
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDeviceClose}>取消</Button>
+          <Button onClick={RegisterDeviceIdSubmit}>送出</Button>
         </DialogActions>
       </Dialog>
     </>

@@ -64,42 +64,17 @@ export default function CompanyRuleManage() {
 
     const columns = [
      
-        {   field: 'id', headerName: 'ID', width: 90 },
+        {   field: 'id', headerName: 'ID', width: 30 },
         {
             field: 'DepartmentName',
             headerName: '部門名稱',
             width: 150,
             editable: false,        
-            // renderCell: (params) => (
-            //   <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
-            //       <Select 
-            //         value={params.formattedValue}
-            //         onChange={(e) => {
-            //           const newValue = e.target.value;               
-            //           const updatedRows = filterRows.map((row) => {
-            //             if (row.id === params.id) {
-            //               const newRow = {...row, DepartmentId: newValue}   
-            //               processRowUpdate(newRow)                      
-            //               return { ...row, DepartmentId: newValue };                       
-            //             }
-            //             return row;
-            //           });                    
-            //           setFilterRows(updatedRows);
-            //         }}
-            //       >
-            //         {departments.map((option) => (
-            //           <MenuItem  key={option.id} value={option.id}>
-            //             {option.DepartmentName}
-            //           </MenuItem >
-            //         ))}
-            //       </Select >
-            //   </FormControl>
-            // ),
         },
         {
             field: 'NeedWorkMinute',
-            headerName: '工作需滿分鐘',
-            width: 152,
+            headerName: '工作時長',
+            width: 120,
             editable: false,    
             renderCell: (params) => {
               const hours = Math.floor(params.value / 60);
@@ -332,7 +307,7 @@ export default function CompanyRuleManage() {
             </Grid> */}
 
 
-            <Grid item xs={1}>      
+            <Grid item xs={4}>      
                 <Button variant="outlined" endIcon={<PersonAddIcon/>} onClick={handleClickOpen}>新增規定</Button>
 
                 <Dialog open={open} onClose={handleClose}>
@@ -449,17 +424,14 @@ export default function CompanyRuleManage() {
                   </DialogActions>
                 </Dialog>
 
-            </Grid>  
-            <Grid item xs={1}>  
-                <Button variant="outlined" disabled={isDisabled} onClick={handleRuleUpdateSave}  endIcon={<SaveIcon />}> 
+                <Button variant="outlined" disabled={isDisabled} onClick={handleRuleUpdateSave}  endIcon={<SaveIcon />} style={{marginLeft:'2%'}}> 
                 儲存修改
                 </Button>
-            </Grid>
-            <Grid item xs={1}>  
-                <Button variant="outlined" disabled={isDisabled} onClick={handleCancelUpdate}  endIcon={<ClearIcon />}> 
+
+                <Button variant="outlined" disabled={isDisabled} onClick={handleCancelUpdate}  endIcon={<ClearIcon />} style={{marginLeft:'2%'}}> 
                   取消修改
                 </Button>
-            </Grid>   
+            </Grid>  
         </Grid>
         <DataGrid
             rows={filterRows}

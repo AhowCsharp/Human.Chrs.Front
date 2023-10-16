@@ -39,6 +39,7 @@ import IconButton from '@mui/material/IconButton';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { DataGrid } from '@mui/x-data-grid';
+import Iconify from '../components/iconify';
 import appsetting from '../Appsetting';
 
 
@@ -108,6 +109,30 @@ export default function CompanyManage() {
     ];
     const [rows,setRows] = useState([]);
     const [filterRows,setFilterRows] = useState([]);
+    const [formOpen, setFormOpen] = React.useState(false);
+    const [comOpen, setComOpen] = React.useState(false);
+    const [adminRequest,setAdminRequest] = useState({
+        id:0,
+        CompanyId:0,
+        UserName:'',
+        Account:'',
+        Password:'',
+        PrePassword:'',
+        Auth:10,
+        WorkPosition:'',
+        StaffNo:'',
+        DepartmentId:0,
+        Status:true
+    });
+    const [comRequest,setComRequest] = useState({
+        id:0,
+        CompanyName:'',
+        CapitalAmount:0,
+        Address:'',
+        ContractStartDate:'',
+        ContractEndDate:'',
+        ContractType:1,
+    });
 
     const fetchData = async () => {
         try {       
@@ -121,7 +146,61 @@ export default function CompanyManage() {
           console.error('Error fetching data:', error);
         }
     };
+    const handleClickOpen = () => {
+        setFormOpen(true);
+    };
+    const handleClose = () => {
+        setFormOpen(false);
+    };
+    const handleComClickOpen = () => {
+        setComOpen(true);
+    };
+    const handleComClose = () => {
+        setComOpen(false);
+    };
 
+    const handleInputChange = (event, propertyName) => {
+        const value = event.target ? event.target.value : event;
+        setAdminRequest((prevData) => ({
+            ...prevData,
+            [propertyName]: value,
+        }));   
+    };
+
+    const handleComInputChange = (event, propertyName) => {
+        const value = event.target ? event.target.value : event;
+        setComRequest((prevData) => ({
+            ...prevData,
+            [propertyName]: value,
+        }));   
+    };
+
+    const submitNewAdmin = async () => {
+        try {       
+          const response = await axios.post(`${appsetting.apiUrl}/super/newadmin`,adminRequest,config);
+          // 檢查響應的結果，並設置到 state
+          if (response.status === 200) {
+            alert('成功')
+            handleClose();
+          }
+        } catch (error) {
+          console.error('Error fetching data:', error);
+        }
+    };
+
+    const submitNewCom = async () => {
+        try {       
+          const response = await axios.post(`${appsetting.apiUrl}/super/newcompany`,comRequest,config);
+          // 檢查響應的結果，並設置到 state
+          if (response.status === 200) {
+            alert('成功')
+            fetchData()
+            handleComClose();
+          }
+        } catch (error) {
+          console.error('Error fetching data:', error);
+        }
+    };
 
 
     useEffect(() => {
@@ -148,9 +227,14 @@ export default function CompanyManage() {
                 <StaffSearch rows={rows} setFilterRows={setFilterRows}/>
             </Grid>
             <Grid item xs={6}/> */}
-            {/* <Grid item xs={2}>      
-                <Button variant="outlined" endIcon={<PersonAddIcon/>} onClick={()=>handleClickOpen(true)}>新增員工</Button>
-            </Grid>      */}
+            <Grid item xs={3}>   
+                <Button variant="outlined" startIcon={<Iconify icon="eva:plus-fill" />} onClick={handleComClickOpen}>
+                新增公司
+                </Button>   
+                <Button variant="outlined" startIcon={<Iconify icon="eva:plus-fill" />} onClick={handleClickOpen} style={{marginLeft:'2%'}}>
+                新增管理者
+                </Button>
+            </Grid>     
         </Grid>
         
         <DataGrid
@@ -167,6 +251,199 @@ export default function CompanyManage() {
             pageSizeOptions={[30,20,10]}
             disableRowSelectionOnClick
         />
+
+        <Dialog open={formOpen} onClose={handleClose}>
+            <DialogTitle>新增管理者</DialogTitle>
+            <DialogContent>
+              <DialogContentText  style={{marginBottom:'5%'}}>
+                  請確認好公司，再行新增
+              </DialogContentText>
+              <Grid container spacing={2} style={{marginBottom:'1%'}}>
+                        <Grid item xs={3}> 
+                            <TextField
+                              autoFocus
+                              margin="dense"
+                              id="name"
+                              label="管理者名稱"
+                              variant="standard"
+                              value={adminRequest.UserName}
+                              onChange={(e) => handleInputChange(e, 'UserName')}
+                            />
+                        </Grid>
+                        <Grid item xs={3}> 
+                            <TextField
+                              autoFocus
+                              margin="dense"
+                              id="name"
+                              label="管理者公司"
+                              variant="standard"
+                              value={adminRequest.CompanyId}
+                              onChange={(e) => handleInputChange(e, 'CompanyId')}
+                            />
+                        </Grid>
+                        <Grid item xs={3}> 
+                            <TextField
+                              autoFocus
+                              margin="dense"
+                              id="name"
+                              label="部門"
+                              variant="standard"
+                              value={adminRequest.DepartmentId}
+                              onChange={(e) => handleInputChange(e, 'DepartmentId')}
+                            />
+                        </Grid>
+                        <Grid item xs={3}> 
+                            <TextField
+                              autoFocus
+                              margin="dense"
+                              id="name"
+                              label="帳號"
+                              variant="standard"
+                              value={adminRequest.Account}
+                              onChange={(e) => handleInputChange(e, 'Account')}
+                            />
+                        </Grid>
+                        <Grid item xs={3}> 
+                            <TextField
+                              autoFocus
+                              margin="dense"
+                              id="name"
+                              label="權限"
+                              type='number'
+                              variant="standard"
+                              value={adminRequest.Auth}
+                              onChange={(e) => handleInputChange(e, 'Auth')}
+                            />
+                        </Grid>                       
+                          <Grid item xs={3}> 
+                              <TextField
+                                autoFocus
+                                margin="dense"
+                                id="name"
+                                label="密碼"
+                                variant="standard"
+                                value={adminRequest.Password}
+                                onChange={(e) => handleInputChange(e, 'Password')}
+                              />
+                          </Grid>
+
+                        <Grid item xs={3}> 
+                            <TextField
+                              autoFocus
+                              margin="dense"
+                              id="name"
+                              label="職位"
+                              variant="standard"
+                              value={adminRequest.WorkPosition}
+                              onChange={(e) => handleInputChange(e, 'WorkPosition')}
+                            />
+                        </Grid>
+                        <Grid item xs={3}> 
+                            <TextField
+                              autoFocus
+                              margin="dense"
+                              id="name"
+                              label="員編"
+                              variant="standard"
+                              placeholder='自由設定'
+                              value={adminRequest.StaffNo}
+                              onChange={(e) => handleInputChange(e, 'StaffNo')}
+                            />
+                        </Grid>
+                    </Grid>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleClose}>取消</Button>
+              <Button onClick={submitNewAdmin}>
+                  新增
+              </Button>
+
+            </DialogActions>
+          </Dialog>
+
+          <Dialog open={comOpen} onClose={handleComClose}>
+            <DialogTitle>新增公司</DialogTitle>
+            <DialogContent>
+              <DialogContentText  style={{marginBottom:'5%'}}>
+                  請確認好公司合約
+              </DialogContentText>
+              <Grid container spacing={2} style={{marginBottom:'1%'}}>
+                        <Grid item xs={3}> 
+                            <TextField
+                              autoFocus
+                              margin="dense"
+                              id="name"
+                              label="公司名稱"
+                              variant="standard"
+                              value={comRequest.CompanyName}
+                              onChange={(e) => handleComInputChange(e, 'CompanyName')}
+                            />
+                        </Grid>
+                        <Grid item xs={3}> 
+                        <TextField
+                              autoFocus
+                              margin="dense"
+                              id="name"
+                              label="資本額"
+                              variant="standard"
+                              value={comRequest.CapitalAmount}
+                              onChange={(e) => handleComInputChange(e, 'CapitalAmount')}
+                            />
+                        </Grid>
+                        <Grid item xs={3}> 
+                        <TextField
+                              autoFocus
+                              margin="dense"
+                              id="name"
+                              label="地址"
+                              variant="standard"
+                              value={comRequest.Address}
+                              onChange={(e) => handleComInputChange(e, 'Address')}
+                            />
+                        </Grid>
+                        <Grid item xs={3}> 
+                        <TextField
+                              autoFocus
+                              margin="dense"
+                              id="name"
+                              label="合約起始日"
+                              variant="standard"
+                              value={comRequest.ContractStartDate}
+                              onChange={(e) => handleComInputChange(e, 'ContractStartDate')}
+                            />
+                        </Grid>
+                        <Grid item xs={3}> 
+                        <TextField
+                              autoFocus
+                              margin="dense"
+                              id="name"
+                              label="合約終止日"
+                              variant="standard"
+                              value={comRequest.ContractEndDate}
+                              onChange={(e) => handleComInputChange(e, 'ContractEndDate')}
+                            />
+                        </Grid>                       
+                          <Grid item xs={3}> 
+                          <TextField
+                              autoFocus
+                              margin="dense"
+                              id="name"
+                              label="合約類別"
+                              variant="standard"
+                              value={comRequest.ContractType}
+                              onChange={(e) => handleComInputChange(e, 'ContractType')}
+                            />
+                          </Grid>
+                    </Grid>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleComClose}>取消</Button>
+              <Button onClick={submitNewCom}>
+                  新增
+              </Button>
+
+            </DialogActions>
+          </Dialog>
     </Box>
     </>
   );

@@ -25,6 +25,8 @@ import MenuItem from '@mui/material/MenuItem';
 import FormHelperText from '@mui/material/FormHelperText';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormLabel from '@mui/material/FormLabel';
+import AlertTitle from '@mui/material/AlertTitle';
+import Alert from '@mui/material/Alert';
 import dayjs from 'dayjs';
 import { DemoContainer, DemoItem } from '@mui/x-date-pickers/internals/demo';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -417,7 +419,6 @@ export default function StaffManage() {
     };
     const handleInputChange = (event, propertyName) => {
         const value = event.target ? event.target.value : event;
-        console.log(value)
         setStaff((prevData) => ({
             ...prevData,
             [propertyName]: value,
@@ -489,7 +490,13 @@ export default function StaffManage() {
                     員工列表
                 </Typography>
             </Grid>
-            <Grid item xs={6}>      
+            <Grid item xs={12} style={{display:'flex',justifyContent:'center'}}>      
+                <Alert severity="warning">
+                  <AlertTitle>請注意</AlertTitle>
+                  員工信箱請填寫正確 若填寫不正確 則無法啟用忘記密碼功能<strong>--若需要修改 請雙擊該列</strong>
+                </Alert>
+            </Grid>
+            <Grid item xs={6} >      
                 <StaffSearch rows={rows} setFilterRows={setFilterRows}/>
             </Grid>
             <Grid item xs={6}/>
@@ -967,10 +974,10 @@ export default function StaffManage() {
                             <InputLabel shrink htmlFor="bootstrap-input">
                                 權限級別
                             </InputLabel>       
-                            <TextField id="StayInCompanyDays" 
+                            <TextField id="Auth" 
                                 type="search" size="small"
                                 value={staff.Auth}
-                                onChange={(e) => handleInputChange(e, 'StayInCompanyDays')}/>
+                                onChange={(e) => handleInputChange(e, 'Auth')}/>
                         </Grid>
                     </Grid>
                 </Box>

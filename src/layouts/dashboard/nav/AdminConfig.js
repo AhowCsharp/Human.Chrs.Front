@@ -67,7 +67,7 @@ const AdminConfig = [
     icon: icon('ic_disabled'),
   },
   {
-    title: '部門設定',
+    title: '部門列表設定',
     path: '/admin/departmentmanage',
     icon: icon('ic_disabled'),
   },

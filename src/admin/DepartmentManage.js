@@ -44,6 +44,8 @@ import MapsHomeWorkIcon from '@mui/icons-material/MapsHomeWork';
 import AlertTitle from '@mui/material/AlertTitle';
 import ClearIcon from '@mui/icons-material/Clear';
 import SaveIcon from '@mui/icons-material/Save';
+import IconButton from '@mui/material/IconButton';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import Select from '@mui/material/Select';
 import Slide from '@mui/material/Slide';
 import { DataGrid } from '@mui/x-data-grid';
@@ -81,22 +83,70 @@ export default function DepartmentManage() {
             field: 'CompanyRuleId',
             headerName: '部門準則編號',
             width: 150,
-            editable: true,
+            editable: false,
+        },
+        {
+          field: 'Actions',
+          headerName: '刪除',
+          width: 120,
+          renderCell: (params) => {
+            // 假设 yourArray 是您想检查的数组
+            const isButtonDisabled = filterRows.length < 2;
+        
+            return (
+              <>
+                <IconButton 
+                  aria-label="delete" 
+                  onClick={() => handleRmDepartment(params.row.id)}
+                  disabled={isButtonDisabled}  // 根据条件禁用或启用按钮
+                >
+                  <DeleteOutlineIcon />
+                </IconButton>
+              </>
+            );
+          },
         }
+        
     ];
     const [rows,setRows] = useState([]);
-    const [editedRows, setEditedRows] = React.useState([]);
+    const [editedRows, setEditedRows] = useState([]);
+    const [departments, setDepartments] = useState([]);
+    const [rmRequest,setRmquest] = useState({
+      DepartmentId:0,
+      OtherDepartmentId:0
+    })
     const [filterRows,setFilterRows] = useState([]);
     const [open, setOpen] = useState(false);
+    const [rmOpen, setRmOpen] = useState(false);
     const [departmentName,setDepartmentName] = useState('');
     const isDisabled = editedRows.length === 0;
 
-    const handleClickOpen = (params) => {
+    const handleClickOpen = () => {
       setOpen(true);
     };
   
     const handleClose = () => {
       setOpen(false);
+    };
+
+    const handleRmDepartment = (id) => {
+      // 使用filter方法创建一个新数组，其中不包含具有指定id的项
+      setRmquest(prevState => ({
+        ...prevState,
+        DepartmentId: id
+      }));
+      const newDepartments = filterRows.filter((item) => item.id !== id);
+      setDepartments(newDepartments);
+      handleRmClickOpen();
+    };
+    
+
+    const handleRmClickOpen = () => {
+      setRmOpen(true);
+    };
+  
+    const handleRmClose = () => {
+      setRmOpen(false);
     };
     
     const fetchData = async () => {
@@ -110,6 +160,31 @@ export default function DepartmentManage() {
       } catch (error) {
         console.error('Error fetching data:', error);
       }
+  };
+  const deleteDepartment = async () => {
+    if(rmRequest.OtherDepartmentId === 0) {
+      alert('尚未選擇替補部門')
+      return;
+    }
+
+    try {
+      const url = `${appsetting.apiUrl}/admin/department?departmentId=${rmRequest.DepartmentId}&otherDepartmentId=${rmRequest.OtherDepartmentId}`;
+
+      // 发送带有配置的请求
+      const response = await axios.delete(url, config);
+  
+      // 检查响应状态
+      if (response.status === 200) {
+        alert('刪除成功 請注意替補部門是否有設置規定')
+        handleRmClose();
+        fetchData();
+      } else {
+        alert('刪除失敗')
+      }
+    } catch (error) {
+      alert('刪除失敗')
+      console.error('Error deleting department:', error);
+    }
   };
 
     useEffect(() => {
@@ -146,7 +221,13 @@ export default function DepartmentManage() {
       setEditedRows([...editedRows, newRow]);
       return newRow;
     };
-
+    const handleChange = (event) => {
+      // 用当前的 rmRequest 对象更新状态，但只更改 OtherDepartmentId
+      setRmquest(prevState => ({
+        ...prevState,
+        OtherDepartmentId: event.target.value,
+      }));
+    };
 
     const handleMultUpdateSave = async () => {
       const modifiedRows = editedRows.map(item => ({
@@ -187,7 +268,8 @@ export default function DepartmentManage() {
             <Grid item xs={12} style={{display:'flex',justifyContent:'center'}}>      
                 <Alert severity="warning">
                   <AlertTitle>請注意</AlertTitle>
-                  若是部門準則編號為0 即代表該部門尚未設置上下班時間<strong>--請馬上處理 避免打卡錯誤</strong>
+                  若是部門準則編號為0 即代表該部門尚未設置上下班時間<strong>--請馬上處理 避免打卡錯誤</strong><br/>
+                  若刪除該部門 請選擇替補部門 以免該部門員工打卡失敗<strong>--刪除部門會跟著刪除該部門規定設置</strong>
                 </Alert>
             </Grid>
             {/* <Grid item xs={12}>      
@@ -226,7 +308,46 @@ export default function DepartmentManage() {
                 <Button onClick={handleClose}>取消</Button>
                 <Button onClick={handleInsertSubmmit}>送出</Button>
               </DialogActions>
-          </Dialog>     
+          </Dialog>   
+
+
+
+          <Dialog open={rmOpen} onClose={handleRmClose}>
+            <DialogTitle>請選擇替補部門</DialogTitle>
+            <DialogContent sx={{ 
+                display: 'flex', 
+                flexDirection: 'column', 
+                alignItems: 'center', 
+                justifyContent: 'center' 
+              }}>
+              <DialogContentText style={{marginBottom:'5%'}}>
+                刪除部門之後<br/><br/>底下員工會改採用替補部門的設置
+              </DialogContentText>
+              <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
+                  <InputLabel id="demo-select-small-label">替補部門</InputLabel>
+                  <Select
+                    labelId="demo-select-small-label"
+                    id="demo-select-small"
+                    value={rmRequest.OtherDepartmentId}
+                    label="Age"
+                    onChange={handleChange} // 使用 handleChange 方法处理变化
+                  >
+                    <MenuItem value={0}>
+                      <em>None</em>
+                    </MenuItem>
+                    {departments.map((department) => ( // 使用数组动态生成选项
+                      <MenuItem key={department.id} value={department.id}>
+                        {department.DepartmentName}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleRmClose}>取消</Button>
+              <Button onClick={deleteDepartment}>送出</Button>
+            </DialogActions>
+          </Dialog>  
         </Grid>
         <DataGrid
             rows={filterRows}

@@ -166,6 +166,7 @@ export default function AdminPage() {
   };
 
   const handleClose = () => {
+    handleCloseMenu();
     setFormOpen(false);
   };
   const fetchAdminsData = async () => {
@@ -211,6 +212,11 @@ export default function AdminPage() {
   const submitNewAdmin = async () => {
     if(adminRequest.Auth > Auth)  {
       alert('權限不足 新增的管理員權限最高只能等於自身');
+      return;
+    }
+
+    if(adminRequest.Auth > 10)  {
+      alert('權限最高為10');
       return;
     }
     try {       
@@ -262,11 +268,10 @@ export default function AdminPage() {
       if (response.status === 200) {
         setAdmins(response.data);
         handleClose();
-        handleCloseMenu();
       }
     } catch (error) {
       console.error('Error fetching data:', error);
-      handleCloseMenu();
+      alert('先前密碼錯誤')
     }
   };
   useEffect(() => {
@@ -428,6 +433,9 @@ export default function AdminPage() {
                               label="Age"
                               onChange={(e) => handleInputChange(e, 'DepartmentId')}
                             >
+                                <MenuItem  key={0} value={0}>
+                                  超級管理員
+                                </MenuItem >
                               {departments.map((option) => (
                                 <MenuItem  key={option.id} value={option.id}>
                                   {option.DepartmentName}
