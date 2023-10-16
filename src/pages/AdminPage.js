@@ -125,6 +125,7 @@ export default function AdminPage() {
     UserName:'',
     Account:'',
     Password:'',
+    PrePassword:'',
     Auth:0,
     WorkPosition:'',
     StaffNo:'',
@@ -154,6 +155,7 @@ export default function AdminPage() {
         Auth:0,
         WorkPosition:'',
         StaffNo:'',
+        PrePassword:'',
         DepartmentId:parseInt(sessionStorage.getItem('DepartmentId'), 10),
         Status:true
       })
@@ -234,6 +236,8 @@ export default function AdminPage() {
         Auth:chooseRow.Auth,
         WorkPosition:chooseRow.WorkPosition,
         DepartmentId:chooseRow.DepartmentId,
+        PrePassword:'',
+        Password:''
       })
     }
   }, [chooseRow]); 
@@ -241,10 +245,6 @@ export default function AdminPage() {
 
   const handleEditAdmin = async () => {
 
-    const request = {
-      ...adminRequest,
-      Password:''
-    }
 
     if(Auth > 10)  {
       alert('權限不足 新增的管理員權限最高只能等於自身');
@@ -257,7 +257,7 @@ export default function AdminPage() {
     }
 
     try {       
-      const response = await axios.post(`${appsetting.apiUrl}/admin/manager`,request,config);
+      const response = await axios.post(`${appsetting.apiUrl}/admin/manager`,adminRequest,config);
       // 檢查響應的結果，並設置到 state
       if (response.status === 200) {
         setAdmins(response.data);
@@ -447,33 +447,6 @@ export default function AdminPage() {
                               onChange={(e) => handleInputChange(e, 'Account')}
                             />
                         </Grid>
-                        {isCreate?                        
-                          <Grid item xs={3}> 
-                              <TextField
-                                autoFocus
-                                margin="dense"
-                                id="name"
-                                label="密碼"
-                                variant="standard"
-                                value={adminRequest.Password}
-                                onChange={(e) => handleInputChange(e, 'Password')}
-                              />
-                          </Grid>:null }
-                          {!isCreate && chooseRow?.id === nowAdminId ?                        
-                              <Grid item xs={3}> 
-                                  <TextField
-                                      autoFocus
-                                      margin="dense"
-                                      id="name"
-                                      label="密碼"
-                                      variant="standard"
-                                      value={adminRequest.Password}
-                                      onChange={(e) => handleInputChange(e, 'Password')}
-                                  />
-                              </Grid>
-                          : null }
-
-
                         <Grid item xs={3}> 
                             <TextField
                               autoFocus
@@ -486,6 +459,48 @@ export default function AdminPage() {
                               onChange={(e) => handleInputChange(e, 'Auth')}
                             />
                         </Grid>
+                        {isCreate?                        
+                          <Grid item xs={3}> 
+                              <TextField
+                                autoFocus
+                                margin="dense"
+                                id="name"
+                                label="密碼"
+                                variant="standard"
+                                value={adminRequest.Password}
+                                onChange={(e) => handleInputChange(e, 'Password')}
+                              />
+                          </Grid>:null }
+
+
+                          {!isCreate && chooseRow?.id === nowAdminId ?                        
+                              <Grid item xs={3}> 
+                                  <TextField
+                                      autoFocus
+                                      margin="dense"
+                                      id="name"
+                                      label="先前密碼"
+                                      variant="standard"
+                                      value={adminRequest.PrePassword}
+                                      onChange={(e) => handleInputChange(e, 'PrePassword')}
+                                  />
+                              </Grid>
+                          : null }
+
+                          {!isCreate && chooseRow?.id === nowAdminId ?                        
+                              <Grid item xs={3}> 
+                                  <TextField
+                                      autoFocus
+                                      margin="dense"
+                                      id="name"
+                                      label="新密碼"
+                                      variant="standard"
+                                      value={adminRequest.Password}
+                                      onChange={(e) => handleInputChange(e, 'Password')}
+                                  />
+                              </Grid>
+                          : null }
+
                         <Grid item xs={3}> 
                             <TextField
                               autoFocus
