@@ -852,7 +852,7 @@ export default function PersonalInfo() {
         <>
             {isMobile && (
             <>
-            <Box sx={{ display: 'flex', flexDirection: 'row', width: '100%', position: 'relative', overflow: 'auto', WebkitOverflowScrolling: 'touch', overflowScrolling: 'touch' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'row', width: '100%', position: 'relative', overflow: 'hidden', WebkitOverflowScrolling: 'touch', overflowScrolling: 'touch' }}>
                 <Box sx={{width: '100%',minHeight: '1300px', height:`${windowDimensions.height*1.6}px`,backgroundColor:'black'}}>
 
                     <Box sx={{ width: '85%', height: `${windowDimensions.height/1.2}px`,minHeight: '750px',backgroundColor:'white'

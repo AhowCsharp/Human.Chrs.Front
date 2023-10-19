@@ -26,7 +26,7 @@ const Main = styled('div')(({ theme }) => ({
     flexDirection: 'column',    // 设置子元素垂直堆叠
   }),
   flexGrow: 1,
-  overflow: 'auto',
+  overflow: isMobile ? 'hidden' : 'auto',
   minHeight: '100%',
   paddingTop: APP_BAR_MOBILE,
   [theme.breakpoints.up('lg')]: {
@@ -36,8 +36,7 @@ const Main = styled('div')(({ theme }) => ({
   },
 }));
 const MainContent = styled('div')({
-  flex: 1,                   // 使其填满所有可用空间
-  overflowY: 'auto',         // 在需要时加入滚动条
+  flex: 1,                   // 使其填满所有可用空间        // 在需要时加入滚动条
 });
 
 const Footer = styled('div')(({ theme }) => ({
