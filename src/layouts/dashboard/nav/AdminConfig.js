@@ -27,8 +27,23 @@ const AdminConfig = [
   //   icon: icon('ic_blog'),
   // },
   {
-    title: '員工列表',
+    title: '公司員工列表',
     path: '/admin/staffmanage',
+    icon: icon('ic_disabled'),
+  },
+  {
+    title: '正職人員薪資',
+    path: '/admin/salarymanage',
+    icon: icon('ic_disabled'),
+  },
+  {
+    title: '日薪制人員薪資',
+    path: '/admin/daysalarymanage',
+    icon: icon('ic_disabled'),
+  },
+  {
+    title: '部分工時人員薪資',
+    path: '/admin/parttimemanage',
     icon: icon('ic_disabled'),
   },
   {
@@ -47,27 +62,17 @@ const AdminConfig = [
     icon: icon('ic_disabled'),
   },
   {
-    title: '發放薪資設定',
-    path: '/admin/salarymanage',
-    icon: icon('ic_disabled'),
-  },
-  {
-    title: '部分工時人員列表',
-    path: '/admin/parttimemanage',
-    icon: icon('ic_disabled'),
-  },
-  {
-    title: '部分工時人員排班',
+    title: '部分工時人員排班系統',
     path: '/admin/parttimeworkmanage',
     icon: icon('ic_disabled'),
   },
   {
-    title: '會議安排',
+    title: '會議安排系統',
     path: '/admin/meetmanage',
     icon: icon('ic_disabled'),
   },
   {
-    title: '部門列表設定',
+    title: '部門新增設定',
     path: '/admin/departmentmanage',
     icon: icon('ic_disabled'),
   },

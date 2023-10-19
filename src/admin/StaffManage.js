@@ -164,6 +164,7 @@ export default function StaffManage() {
         ResignationDate: dayjs(getCurrentDate()),
         LevelPosition: '',
         WorkLocation: '',
+        DaySalary:0,
         Email: '',
         Status: 1,
         SpecialRestDays: 0,
@@ -247,6 +248,7 @@ export default function StaffManage() {
             ResignationDate: dayjs(getCurrentDate()),
             LevelPosition: '',
             WorkLocation: '',
+            DaySalary:0,
             Language:'TW',
             Email: '',
             Status: 1,
@@ -337,6 +339,7 @@ export default function StaffManage() {
                 Email: '',
                 Status: 1,
                 SpecialRestDays: 0,
+                DaySalary:0,
                 SickDays: 30,
                 ThingDays: 14,
                 ChildbirthDays: 0,
@@ -415,6 +418,7 @@ export default function StaffManage() {
           PrenatalCheckUpHours:params.row.PrenatalCheckUpHours,
           OverTimeHours:params.row.OverTimeHours,
           ParttimeMoney:params.row.ParttimeMoney,
+          DaySalary:params.row.DaySalary === null? 0:params.row.DaySalary,
         });       
     };
     const handleInputChange = (event, propertyName) => {
@@ -716,6 +720,7 @@ export default function StaffManage() {
                             >
                                 <MenuItem value={1}>全職</MenuItem>
                                 <MenuItem value={2}>部分工時</MenuItem>
+                                <MenuItem value={3}>日薪制</MenuItem>
                             </Select>
                         </Grid>
                         <Grid item xs={3}>
@@ -764,7 +769,7 @@ export default function StaffManage() {
                         </Grid>
                         {staff.EmploymentTypeId === 2 ?
                         <Grid item xs={3}>
-                            <InputLabel shrink htmlFor="bootstrap-input">
+                            <InputLabel shrink htmlFor="bootstrap-input"  style={{ color: 'red' }}>
                                 時薪設定
                             </InputLabel>       
                             <TextField id="SpecialRestDays" 
@@ -772,7 +777,18 @@ export default function StaffManage() {
                                 value={staff.ParttimeMoney}
                                 onChange={(e) => handleInputChange(e, 'ParttimeMoney')}/>
                         </Grid> : null
-                        }                       
+                        }            
+                        {staff.EmploymentTypeId === 3 ?
+                        <Grid item xs={3}>
+                            <InputLabel shrink htmlFor="bootstrap-input"  style={{ color: 'red' }}>
+                                日薪設定
+                            </InputLabel>       
+                            <TextField id="SpecialRestDays" 
+                                type="number" size="small"
+                                value={staff.DaySalary}
+                                onChange={(e) => handleInputChange(e, 'DaySalary')}/>
+                        </Grid> : null
+                        }              
                         <Grid item xs={3}>
                             <InputLabel shrink htmlFor="bootstrap-input">
                                 特休餘日

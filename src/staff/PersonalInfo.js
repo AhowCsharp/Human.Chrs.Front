@@ -421,7 +421,7 @@ export default function PersonalInfo() {
                 if(durationInDays === 0) {
                     setVacationRequest((prevRequest) => ({
                         ...prevRequest,
-                        Hours: 0, 
+                        Hours: 8, 
                     })); 
                 }
     
@@ -586,10 +586,6 @@ export default function PersonalInfo() {
                 alert('起始時間不能大於終止時間');
                 return;
             } 
-            if (endDate.isSame(startDate)) {
-                alert('起始時間不能等於終止時間');
-                return;
-            } 
 
             if (durationInMinutes < 60) {               
                 alert('請假時數至少1小時');
@@ -634,8 +630,8 @@ export default function PersonalInfo() {
             try {
                 const response = await axios.post(`${appsetting.apiUrl}/staff/amendcheck`, request, config);
                 if (response.status === 200) {
-                alert('申請成功');
-                fetchData();
+                    alert('申請成功');
+                    fetchData();
                 }
                 handleClose('amendCheck')
             } catch (error) {
@@ -659,7 +655,7 @@ export default function PersonalInfo() {
                 alert('標題不得為空');
                 return;
             }
-            console.log(request)
+            
             if (eventRequest.EventEndDate.isBefore(eventRequest.EventStartDate)) {
                 alert('起始時間不能大於終止時間');
                 return;
@@ -853,7 +849,7 @@ export default function PersonalInfo() {
             {isMobile && (
             <>
             <Box sx={{ display: 'flex', flexDirection: 'row', width: '100%', position: 'relative', overflow: 'hidden', WebkitOverflowScrolling: 'touch', overflowScrolling: 'touch' }}>
-                <Box sx={{width: '100%',minHeight: '1300px', height:`${windowDimensions.height*1.6}px`,backgroundColor:'black'}}>
+                <Box sx={{width: '100%',minHeight: '1350px', height:`${windowDimensions.height*1.6}px`,backgroundColor:'black'}}>
 
                     <Box sx={{ width: '85%', height: `${windowDimensions.height/1.2}px`,minHeight: '750px',backgroundColor:'white'
                     ,margin:'auto',borderRadius: '10px',padding:'25px',marginTop:'5%'}}>
@@ -885,7 +881,7 @@ export default function PersonalInfo() {
                                 <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold',marginTop:'10%' }}>     
                                     <Map center={center}/>
                                 </Grid>                               
-                                <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold',marginTop:'1%' }}>     
+                                <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold',marginTop:'5%' }}>     
                                     <Button variant="contained" endIcon={<FactCheckIcon />} size="large" style={{background:'black'}} onClick={()=>handleClickOpen('check')}>
                                         {viewInfo.Language === 'TW' ? '申報打卡' : 'Apply for Check-in'}
                                     </Button>
@@ -895,7 +891,7 @@ export default function PersonalInfo() {
                                         {viewInfo.Language === 'TW' ? '申報加班' : 'Apply for Overtime'}
                                     </Button>  
                                 </Grid>   
-                                <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', fontWeight: 'bold' }}>     
+                                <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', fontWeight: 'bold',marginTop:'5%'  }}>     
                                     {viewInfo.Language === 'TW' ? '工作時段' : 'Work Hours'}
                                 </Grid>
                                 <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', fontWeight: 'bold', fontSize: '13px' }}>     
@@ -1007,7 +1003,7 @@ export default function PersonalInfo() {
                             </Grid>
                         </Box>
                     </Box>
-                    <Box sx={{width: '100%', height:`${windowDimensions.height/2}px`,minHeight: '400px'}}>
+                    <Box sx={{width: '100%', height:`${windowDimensions.height/2}px`,minHeight: '500px'}}>
                         <Box sx={{ flexGrow: 1,margin:'1%' }}>
                             <Grid container spacing={1}>
                                 <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center'}}>     

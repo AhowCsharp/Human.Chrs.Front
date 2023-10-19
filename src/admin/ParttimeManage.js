@@ -441,7 +441,7 @@ export default function ParttimeManage() {
               </FormControl> 
             </Grid>
             <Grid item xs={2}>      
-              <Dialog open={open} 
+            <Dialog open={open} 
               onClose={handleClose}
               TransitionComponent={Transition}
               keepMounted>

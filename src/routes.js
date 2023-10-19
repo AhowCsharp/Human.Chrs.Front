@@ -30,6 +30,7 @@ import ParttimeManage from './admin/ParttimeManage';
 import AmendRecordsManage from './admin/AmendRecordsManage';
 import ParttimeWorkManage from './admin/ParttimeWorkManage';
 import MeetManage from './admin/MeetManage';
+import DaySalaryStaffManage from './admin/DaySalaryStaffManage';
 
 import CompanyManage from './super/CompanyManage';
 import ContractManage from './super/ContractManage';
@@ -72,6 +73,7 @@ export default function Router() {
         { path: 'products', element: <ProductsPage /> },
         { path: 'blog', element: <BlogPage /> },
         { path: 'staffmanage', element: <StaffManage /> },
+        { path: 'daysalarymanage', element: <DaySalaryStaffManage /> },
         { path: 'salarymanage', element: <SalaryManage /> },
         { path: 'vacationsmanage', element: <VacationsManage /> },
         { path: 'overtimesmanage', element: <OvertTimeManage /> },
