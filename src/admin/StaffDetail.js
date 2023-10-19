@@ -60,7 +60,7 @@ export default function StaffDetail() {
       Name:'',
       StaffId: id,
       EnglishName:'',
-      BirthDay:'',
+      BirthDay:'1900-01-01',
       Gender:'',
       IsMarried:0,
       HasLicense:0,
@@ -77,7 +77,11 @@ export default function StaffDetail() {
           const response = await axios.get(`${appsetting.apiUrl}/staff/detail?id=${id}`,config);
           // 檢查響應的結果，並設置到 state
           if (response.status === 200) {
-            setStaffInfo(response.data);
+            setStaffInfo({
+              ...response.data,
+              BirthDay: response.data.BirthDay.split('T')[0],
+            });       
+            setStaffStatus(true);            
             console.log(response.data)
           }
           if(response.status === 204) {
@@ -193,8 +197,8 @@ export default function StaffDetail() {
                 <TextField
                   id="outlined-helperText"
                   label="生日 - Birthday"
-                  value={staffInfo.BirthDay !== ''? staffInfo.BirthDay.split('T')[0]:getCurrentDate()}
-                  onChange={(e) => handleInputChange(e, 'Birthday')}
+                  value={staffInfo.BirthDay}
+                  onChange={(e) => handleInputChange(e, 'BirthDay')}
                   helperText="請輸入YYYY-MM-DD格式"
                 />
               </Grid>

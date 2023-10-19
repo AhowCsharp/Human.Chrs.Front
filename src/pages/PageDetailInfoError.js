@@ -22,7 +22,7 @@ export default function PageDetailInfoError() {
   return (
     <>
       <Helmet>
-        <title> 䒳芮線上人資系統 </title>
+        <title> Dorey Chrs </title>
       </Helmet>
 
       <Container>

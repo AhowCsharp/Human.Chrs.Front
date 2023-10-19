@@ -8,7 +8,7 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import Avatar from '@mui/material/Avatar';
 import ImageIcon from '@mui/icons-material/Image';
-import WorkIcon from '@mui/icons-material/Work';
+import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import BeachAccessIcon from '@mui/icons-material/BeachAccess';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -111,6 +111,11 @@ export default function PersonalCheckList() {
           <MenuItem value={12}>{Language === 'TW' ? '12月' : 'December'}</MenuItem>
         </Select>
       </FormControl>
+      {list.length === 0?     
+      <Alert severity="success" color="info" style={{marginTop:'60%'}}>
+        目前還沒有資料 — 請選擇正確月份!<br/>
+        There is no data available at the moment - please select the correct month!
+      </Alert>:null}
       {list.map((item) => (
         <ListItem key={item.id}>
           <ListItemAvatar>

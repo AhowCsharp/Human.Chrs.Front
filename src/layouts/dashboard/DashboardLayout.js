@@ -13,11 +13,12 @@ import Nav from './nav';
 const APP_BAR_MOBILE = 64;
 const APP_BAR_DESKTOP = 92;
 
-const StyledRoot = styled('div')({
+const StyledRoot = styled('div')(({ theme }) => ({
   display: 'flex',
   minHeight: '100%',
-  overflow: 'hidden',
-});
+  overflow: isMobile ? 'auto' : 'hidden', // Conditional style here
+  // Add other styles here as required
+}));
 
 const Main = styled('div')(({ theme }) => ({
   ...(sessionStorage.getItem('AdminToken') && {
@@ -27,7 +28,7 @@ const Main = styled('div')(({ theme }) => ({
   flexGrow: 1,
   overflow: 'auto',
   minHeight: '100%',
-  paddingTop: APP_BAR_MOBILE + 24,
+  paddingTop: APP_BAR_MOBILE,
   [theme.breakpoints.up('lg')]: {
     paddingTop: APP_BAR_DESKTOP + 24,
     paddingLeft: theme.spacing(2),
@@ -56,6 +57,7 @@ export default function DashboardLayout() {
   const [open, setOpen] = useState(false);
 
   return (
+    <>
     <StyledRoot>
       <Header onOpenNav={() => setOpen(true)} />
       {sessionStorage.getItem('AdminToken') ? <Nav openNav={open} onCloseNav={() => setOpen(false)} /> : null}
@@ -69,12 +71,13 @@ export default function DashboardLayout() {
           null :       
           (isMobile ? 
             <Footer>
-              © 2023 DoRay Technology Studio.<br/> All Rights Reserved.
+              © 2023 DoRey Technology Studio.<br/> All Rights Reserved.
             </Footer> 
             : 
             null)
         }
       </Main>
     </StyledRoot>
+    </>
   );
 }

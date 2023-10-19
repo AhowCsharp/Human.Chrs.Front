@@ -49,8 +49,6 @@ export default function NotificationsPopover() {
           ...adminHeaders
       }
   };
-  console.log(66)
-  console.log(isStaff)
   // eslint-disable-next-line consistent-return
   useEffect(() => {
     let ws;

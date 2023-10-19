@@ -237,26 +237,25 @@ export default function LoginForm() {
   };
 
   useEffect(() => {
-    // 在组件加载时获取指纹信息
-    const getFingerprint = async () => {
-      try {
-        // 加载 FingerprintJS 库的实例
-        const fp = await FingerprintJS.load();
+    try {
+      // 获取用户代理信息中的平台部分
+      const platform = navigator.platform; // 例如 'iPhone', 'Android' 等
 
-        // 获取访问者的指纹信息
-        const result = await fp.get();
+      // 获取屏幕分辨率
+      const screenWidth = window.screen.width;
+      const screenHeight = window.screen.height;
 
-        // result.visitorId 是访问者的唯一ID（设备的指纹）
-        setVisitorId(result.visitorId);
+      // 组合成一个基本的“指纹”字符串
+      const fingerprint = `${platform}-${screenWidth}x${screenHeight}`;
 
-        // TODO: 你可以选择将 visitorId 发送到你的服务器
-        // 和/或执行其他你需要的操作
-      } catch (error) {
-        console.error("Fingerprinting failed", error);
-      }
-    };
+      // 设置 visitorId 状态
+      setVisitorId(fingerprint);
 
-    getFingerprint();
+      // TODO: 可以选择将此 fingerprint 发送到服务器
+      // 或进行其他操作
+    } catch (error) {
+      console.error("Failed to generate fingerprint", error);
+    }
   }, []);
 
   let message;

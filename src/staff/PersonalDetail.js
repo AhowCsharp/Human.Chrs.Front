@@ -124,22 +124,26 @@ export default function PersonalDetail() {
     }, []); 
 
     const onFileChange = async (e) => {
-        setFile(e.target.files[0]);
+        if (e.target.files.length === 0) {
+            return;
+        }
     
-        // 調整此處，確保已選擇檔案後再上傳
-        if (e.target.files[0]) {
-            await uploadAvatar();
+        const selectedFile = e.target.files[0];
+        // 直接將文件作為參數傳遞
+        await uploadAvatar(selectedFile);
+    
+        if (fileInputRef.current) {
+            fileInputRef.current.value = "";
         }
     };
-
-    const uploadAvatar = async () => {
-        if (!file) {
+    const uploadAvatar = async (fileToUpload) => {
+        if (!fileToUpload) {
             console.error('No file selected!');
             return;
         }
     
         const formData = new FormData();
-        formData.append('avatar', file);
+        formData.append('avatar', fileToUpload);
     
         try {
             const response = await axios.post(`${appsetting.apiUrl}/staff/avatar`, formData, config);
@@ -149,6 +153,7 @@ export default function PersonalDetail() {
                 setAvatarUrl(newAvatarUrl); // 這行會觸發組件重新渲染
             }
         } catch (error) {
+            alert('圖片檔案過大 請選擇畫素較低之圖檔')
             console.error('Error uploading avatar:', error);
         }
     };
@@ -221,7 +226,7 @@ export default function PersonalDetail() {
         <>
             {isMobile && staffDetail && (
             <Box sx={{ display: 'flex', flexDirection: 'row', width: '100%',position: 'relative' }}>
-                <Box sx={{width: '100%', height:`${windowDimensions.height}px`,backgroundColor:'black',padding:'5%'}}>
+                <Box sx={{width: '100%', height:`800px`,backgroundColor:'black',padding:'5%'}}>
                     <Box sx={{ flexGrow: 1 }}>
                         <Grid container spacing={2}>
                             <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold'}}>    
@@ -253,6 +258,7 @@ export default function PersonalDetail() {
                                 id="outlined-required"
                                 label={Language === 'TW' ? '部門' : 'Department'}
                                 value={staffDetail.Department}
+                                style={{width:'80%'}}
                                 variant="standard"
                                 color="warning"
                                 InputProps={{
@@ -273,6 +279,7 @@ export default function PersonalDetail() {
                                 id="outlined-required"
                                 label={Language === 'TW' ? '電話號碼' : 'Phone Number'}
                                 value={staffDetail.PhoneNumber}
+                                style={{width:'80%'}}
                                 variant="standard"
                                 color="warning"
                                 InputProps={{
@@ -293,6 +300,7 @@ export default function PersonalDetail() {
                                 id="outlined-required"
                                 label={Language === 'TW' ? '信箱' : 'Mail'}
                                 value={staffDetail.Email}
+                                style={{width:'80%'}}
                                 variant="standard"
                                 color="warning"
                                 InputProps={{
@@ -313,6 +321,7 @@ export default function PersonalDetail() {
                                 id="outlined-required"
                                 label={Language === 'TW' ? '職稱' : 'Job Title'}
                                 value={staffDetail.LevelPosition}
+                                style={{width:'80%'}}
                                 variant="standard"
                                 color="warning"
                                 InputProps={{
@@ -333,6 +342,7 @@ export default function PersonalDetail() {
                                 id="outlined-required"
                                 label={Language === 'TW' ? '工作地點' : 'Work Location'}
                                 value={staffDetail.WorkLocation}
+                                style={{width:'80%'}}
                                 variant="standard"
                                 color="warning"
                                 InputProps={{
@@ -353,6 +363,7 @@ export default function PersonalDetail() {
                                 id="outlined-required"
                                 label={Language === 'TW' ? '任職公司' : 'Company Name'}
                                 value={staffDetail.CompanyName}
+                                style={{width:'80%'}}
                                 variant="standard"
                                 color="warning"
                                 InputProps={{
@@ -373,6 +384,7 @@ export default function PersonalDetail() {
                                 id="outlined-required"
                                 label={Language === 'TW' ? '到職日' : 'Date of Hire'}
                                 value={staffDetail.EntryDate.split('T')[0]}
+                                style={{width:'80%'}}
                                 variant="standard"
                                 color="warning"
                                 InputProps={{

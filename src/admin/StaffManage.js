@@ -534,6 +534,11 @@ export default function StaffManage() {
                 }}
                 >
                     <Grid container spacing={2} >
+                        <Grid item xs={1} /> 
+                        <Grid item xs={10}> 
+                            <Alert severity="warning">若部門規定尚未設置 則無法新增該部門員工</Alert>
+                        </Grid> 
+                        <Grid item xs={1} /> 
                         <Grid item xs={4} >      
                             <InputLabel shrink htmlFor="bootstrap-input">
                                 性別

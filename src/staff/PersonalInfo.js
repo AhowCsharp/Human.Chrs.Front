@@ -27,6 +27,8 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import FormControlLabel from '@mui/material/FormControlLabel';
+import Stack from '@mui/material/Stack';
+import CircularProgress from '@mui/material/CircularProgress';
 import FormLabel from '@mui/material/FormLabel';
 import Button from '@mui/material/Button';
 import ListItemText from '@mui/material/ListItemText';
@@ -357,7 +359,14 @@ export default function PersonalInfo() {
                     CheckOutStartMinute:response.data.CheckOutStartMinute,
                     CheckOutEndHour:response.data.CheckOutEndHour,
                     CheckOutEndMinute:response.data.CheckOutEndMinute,
-                    Language:response.data.Language
+                    Language:response.data.Language,
+                    DeathDays:response.data.DeathDays,
+                    MarriedDays:response.data.MarriedDays,
+                    PrenatalCheckUpDays:response.data.PrenatalCheckUpDays,
+                    SickDays:response.data.SickDays,
+                    SpecialRestDays:response.data.SpecialRestDays,
+                    ThingDays:response.data.ThingDays,
+
                   });
             }
         } catch (error) {
@@ -419,7 +428,7 @@ export default function PersonalInfo() {
                 if(durationInDays !== 0) {
                     setVacationRequest((prevRequest) => ({
                         ...prevRequest,
-                        Hours: durationInDays, 
+                        Hours: (durationInDays*8+8), 
                     })); 
                 }
             }
@@ -780,7 +789,8 @@ export default function PersonalInfo() {
                 alert('失敗');
             }          
         }
-
+          
+        
         const CustomToolbar = (toolbarProps) => {          
             const currentMonth = toolbarProps.date.getMonth()+1;
             const currentYear = toolbarProps.date.getFullYear(); // 获取年份
@@ -842,10 +852,10 @@ export default function PersonalInfo() {
         <>
             {isMobile && (
             <>
-            <Box sx={{ display: 'flex', flexDirection: 'row', width: '100%',position: 'relative' }}>
-                <Box sx={{width: '100%', height:`${windowDimensions.height*1.6}px`,backgroundColor:'black'}}>
+            <Box sx={{ display: 'flex', flexDirection: 'row', width: '100%', position: 'relative', overflow: 'auto', WebkitOverflowScrolling: 'touch', overflowScrolling: 'touch' }}>
+                <Box sx={{width: '100%',minHeight: '1300px', height:`${windowDimensions.height*1.6}px`,backgroundColor:'black'}}>
 
-                    <Box sx={{ width: '85%', height: `${windowDimensions.height/1.2}px`,backgroundColor:'white'
+                    <Box sx={{ width: '85%', height: `${windowDimensions.height/1.2}px`,minHeight: '750px',backgroundColor:'white'
                     ,margin:'auto',borderRadius: '10px',padding:'25px',marginTop:'5%'}}>
                         <Box sx={{ flexGrow: 1 }}>
                             <Grid container spacing={2}>
@@ -916,7 +926,7 @@ export default function PersonalInfo() {
                                 </Grid>
                                 <Grid item xs={4} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>     
                                     <Button variant="contained" endIcon={<FactCheckIcon />} size="large" style={{background:'orange',whiteSpace: 'nowrap'}} onClick={()=>handleClickOpen('amendCheck')}>
-                                        {viewInfo.Language === 'TW' ? '補打卡' : 'Clock-In'}
+                                        {viewInfo.Language === 'TW' ? '補卡' : 'Clock-In'}
                                     </Button>
 
                                     <Dialog open={amendCheckOpen} onClose={()=>handleClose('overTime')}>
@@ -997,7 +1007,7 @@ export default function PersonalInfo() {
                             </Grid>
                         </Box>
                     </Box>
-                    <Box sx={{width: '100%', height:`${windowDimensions.height/2}px`}}>
+                    <Box sx={{width: '100%', height:`${windowDimensions.height/2}px`,minHeight: '400px'}}>
                         <Box sx={{ flexGrow: 1,margin:'1%' }}>
                             <Grid container spacing={1}>
                                 <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center'}}>     
@@ -1080,6 +1090,128 @@ export default function PersonalInfo() {
             <Dialog open={vacationOpen} onClose={()=>handleClose('overTime')}>
                 <DialogTitle>{viewInfo.Language === 'TW' ? '休假申請' : 'Leave Application'}</DialogTitle>
                 <DialogContent>
+                    <div style={{
+                    display: 'flex', 
+                    overflowX: 'auto', 
+                    whiteSpace: 'nowrap',
+                    gap: '20px'  // 可根据需要调整
+                    }}>
+                    <Stack spacing={2} direction="row" style={{marginBottom:'5%'}}>
+                        <Box sx={{ position: 'relative', display: 'inline-flex' }}>
+                            <CircularProgress variant="determinate"value={Math.min(100, (viewInfo.ThingDays/120) * 100)} size={80} color='inherit'/>
+                            <Box
+                                sx={{
+                                top: 0,
+                                left: 0,
+                                bottom: 0,
+                                right: 0,
+                                position: 'absolute',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                }}
+                            >
+                                <Typography
+                                variant="caption"
+                                component="div"
+                                color="text.secondary"
+                                >事假<br/>{`${Math.floor(viewInfo.ThingDays / 8)}天${ viewInfo.ThingDays % 8}小時`}</Typography>
+                            </Box>
+                        </Box>
+                    </Stack>
+                    <Stack spacing={2} direction="row" style={{marginBottom:'5%'}}>
+                        <Box sx={{ position: 'relative', display: 'inline-flex' }}>
+                            <CircularProgress variant="determinate"value={Math.min(100, (viewInfo.SickDays/240) * 100)} size={80} color='success'/>
+                            <Box
+                                sx={{
+                                top: 0,
+                                left: 0,
+                                bottom: 0,
+                                right: 0,
+                                position: 'absolute',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                }}
+                            >
+                                <Typography
+                                variant="caption"
+                                component="div"
+                                color="text.secondary"
+                                >病假<br/>{`${Math.floor(viewInfo.SickDays / 8)}天${ viewInfo.SickDays % 8}小時`}</Typography>
+                            </Box>
+                        </Box>
+                    </Stack>
+                    <Stack spacing={2} direction="row" style={{marginBottom:'5%'}}>
+                        <Box sx={{ position: 'relative', display: 'inline-flex' }}>
+                            <CircularProgress variant="determinate"value={Math.min(100, (viewInfo.PrenatalCheckUpDays/56) * 100)} size={80} color='secondary'/>
+                            <Box
+                                sx={{
+                                top: 0,
+                                left: 0,
+                                bottom: 0,
+                                right: 0,
+                                position: 'absolute',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                }}
+                            >
+                                <Typography
+                                variant="caption"
+                                component="div"
+                                color="text.secondary"
+                                >產檢假<br/>{`${Math.floor(viewInfo.PrenatalCheckUpDays / 8)}天${ viewInfo.PrenatalCheckUpDays % 8}小時`}</Typography>
+                            </Box>
+                        </Box>
+                    </Stack>
+                    <Stack spacing={2} direction="row" style={{marginBottom:'5%'}}>
+                        <Box sx={{ position: 'relative', display: 'inline-flex' }}>
+                            <CircularProgress variant="determinate"value={Math.min(100, (viewInfo.SpecialRestDays/240) * 100)} size={80} color='info'/>
+                            <Box
+                                sx={{
+                                top: 0,
+                                left: 0,
+                                bottom: 0,
+                                right: 0,
+                                position: 'absolute',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                }}
+                            >
+                                <Typography
+                                variant="caption"
+                                component="div"
+                                color="text.secondary"
+                                >特休<br/>{`${Math.floor(viewInfo.SpecialRestDays / 8)}天${ viewInfo.SpecialRestDays % 8}小時`}</Typography>
+                            </Box>
+                        </Box>
+                    </Stack>
+                    <Stack spacing={2} direction="row" style={{marginBottom:'5%'}}>
+                        <Box sx={{ position: 'relative', display: 'inline-flex' }}>
+                            <CircularProgress variant="determinate"value={Math.min(100, (viewInfo.DeathDays/56) * 100)} size={80} color='warning'/>
+                            <Box
+                                sx={{
+                                top: 0,
+                                left: 0,
+                                bottom: 0,
+                                right: 0,
+                                position: 'absolute',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                }}
+                            >
+                                <Typography
+                                variant="caption"
+                                component="div"
+                                color="text.secondary"
+                                >喪假<br/>{`${Math.floor(viewInfo.DeathDays / 8)}天${ viewInfo.DeathDays % 8}小時`}</Typography>
+                            </Box>
+                        </Box>
+                    </Stack>
+                    </div>
                     <FormControl>
                     <FormLabel id="demo-row-radio-buttons-group-label">{viewInfo.Language === 'TW' ? '申請模式' : 'Application Mode'}</FormLabel>
                         <RadioGroup

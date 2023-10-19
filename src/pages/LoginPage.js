@@ -71,7 +71,7 @@ export default function LoginPage() {
         {mdUp && (
           <StyledSection>
             <Typography variant="h3" sx={{ px: 5, mt: 10, mb: 5 }}>
-              歡迎來到䒳芮線上人資雲
+             Dorey Chrs
             </Typography>
             <img src="/assets/illustrations/illustration_login.png" alt="login" />
           </StyledSection>
@@ -118,7 +118,7 @@ export default function LoginPage() {
         </Container>
       </StyledRoot>
       <Footer>
-              © 2023 DoRay Technology Studio.<br/> All Rights Reserved.
+              © 2023 DoRey Technology Studio.<br/> All Rights Reserved.
         </Footer> 
     </>
   );
