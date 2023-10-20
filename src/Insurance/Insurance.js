@@ -1,6 +1,16 @@
 const InsuranceClass = 
 [
     {
+        id:0,
+        min:0,
+        max:0,
+        WorkInsurance:0,
+        WorkInsuranceCompany:0,
+        Retirement:0,
+        HealthInsurance:0,
+        HealthInsuranceCompany:0
+    },
+    {
         id:1,
         min:1,
         max:1500,

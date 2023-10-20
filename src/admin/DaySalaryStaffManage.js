@@ -111,7 +111,7 @@ export default function DaySalaryStaffManage() {
             width: 120,
             renderCell: (params) => (
               <>
-                <IconButton aria-label="delete" onClick={() => handleClickOpen(params.row)}>
+                <IconButton aria-label="delete" onClick={() => handleSalaryClickOpen(params.row.id)}>
                   <LocalAtmIcon />
                 </IconButton>
               </>
@@ -151,7 +151,9 @@ export default function DaySalaryStaffManage() {
     const [rows,setRows] = useState([]);
     const [filterRows,setFilterRows] = useState([]);
     const [excelOpen, setExcelOpen] = useState(false);
+    const [salaryOpen, setSalaryOpen] = useState(false);
     const [overTimeopen, setOverTimeopen] = useState(false); 
+    const [salaryView,setSalaryView] = useState(null);
     const [insuranceLevel,setInsuranceLevel]= useState(22);
     const [month,setMonth] = useState(9);
     const [salaryRequest,setSalaryRequest] = useState({
@@ -186,14 +188,60 @@ export default function DaySalaryStaffManage() {
         ChangeOverTimeToMoney:true,
       });  
 
-    const handleClickOpen = (row) => {
+    const resetData = () => {
+      setSalaryRequest({
+        StaffId:0,
+        BasicSalary:0,
+        FoodSuportMoney:0,
+        FullCheckInMoney:0,
+        OverTimeHours:0,
+        Bonus:0,
+        SickHours:0,
+        ThingHours:0,
+        MenstruationHours:0,
+        ChildbirthHours:0,
+        TakeCareBabyHours:0,
+        IncomeTax:0,
+        HealthInsurance:0,
+        WorkerInsurance:0,
+        EmployeeRetirement:0,
+        SupplementaryPremium:0, //
+        HealthInsuranceFromCompany:0,
+        WorkerInsuranceFromCompany:0,
+        EmployeeRetirementFromCompany:0,
+        AdvanceFundFromCompany:0,
+        EarlyOrLateAmount:0, 
+        OutLocationAmount:0,
+        OverTimeMoney:0,
+        SalaryOfMonth:month,
+        StaffIncomeAmount:0 ,
+        StaffActualIncomeAmount:0,
+        StaffDeductionAmount:0,
+        CompanyCostAmount:0,
+        ChangeOverTimeToMoney:true,
+      })
+    }
+    const handleClickOpen = () => {
         setOpen(true);
-        setSelectedRow(row)
+    };
+
+    const handleSalaryClickOpen = (id) => {
+      setStaffId(id)
+      setSalaryOpen(true);
+    };
+    const handleSalaryClose = () => {
+      resetData();
+      setSalaryOpen(false);
+
     };
 
     const handleExcelOpen = (id) => {
         setStaffId(id);
         setExcelOpen(true);
+    };
+
+    const handleExcelClose = () => {
+      setExcelOpen(false);
     };
 
     const handleoverTimeClickOpen = (id) => {
@@ -218,6 +266,49 @@ export default function DaySalaryStaffManage() {
           console.error('Error fetching data:', error);
         }
     };
+
+    const handleFetchSalaryData = async () => {
+
+
+
+      try {       
+        const response = await axios.get(`${appsetting.apiUrl}/admin/daystaff?staffId=${staffId}&month=${month}`,config);
+        // 檢查響應的結果，並設置到 state
+        if (response.status === 200) {
+          setSalaryView(response.data)
+          setSalaryRequest({
+            ...salaryRequest,
+            OverTimeMoney: response.data.OverTimeSalary
+          });
+        
+          handleSalaryClose();
+          handleClickOpen();          
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+  };
+
+    const downloadExcel = async () => {
+      try {
+          const response = await axios.get(`${appsetting.apiUrl}/admin/downloadexcel?staffId=${staffId}&month=${month}`, {
+              ...config,
+              responseType: 'blob'
+          });
+          
+          const url = window.URL.createObjectURL(new Blob([response.data]));
+          const link = document.createElement('a');
+          link.href = url;
+          link.setAttribute('download', '出勤打卡單.xlsx'); // or any other format you want
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);  // Once download is done, remove the link from the DOM
+          handleExcelClose();
+      } catch (error) {
+          console.error("Error downloading the file:", error);
+      }
+    }
+
     const handleInputChange = (event, propertyName) => {
         const value = event.target.value;
     
@@ -233,20 +324,21 @@ export default function DaySalaryStaffManage() {
     };
 
     const handleMinusTotal = () => {
-        setSalaryRequest({
-          ...salaryRequest,
-          StaffDeductionAmount: salaryRequest.IncomeTax + salaryRequest.HealthInsurance 
-          + salaryRequest.WorkerInsurance + salaryRequest.EmployeeRetirement + salaryRequest.SupplementaryPremium
-        })
+      setSalaryRequest({
+        ...salaryRequest,
+        StaffDeductionAmount: Number(salaryRequest.IncomeTax) + Number(salaryRequest.HealthInsurance) 
+        + Number(salaryRequest.WorkerInsurance) + Number(salaryRequest.EmployeeRetirement) + Number(salaryRequest.SupplementaryPremium) + Number(salaryRequest.OutLocationAmount) + Number(salaryRequest.EarlyOrLateAmount)
+      })
     }
-
+    
     const handleCompanyCostTotal = () => {
         setSalaryRequest({
           ...salaryRequest,
-          CompanyCostAmount: salaryRequest.HealthInsuranceFromCompany + salaryRequest.WorkerInsuranceFromCompany 
-          + salaryRequest.EmployeeRetirementFromCompany + salaryRequest.AdvanceFundFromCompany
+          CompanyCostAmount: Number(salaryRequest.HealthInsuranceFromCompany) + Number(salaryRequest.WorkerInsuranceFromCompany) 
+          + Number(salaryRequest.EmployeeRetirementFromCompany) + Number(salaryRequest.AdvanceFundFromCompany)
         })
     }
+    
 
     const handleSalarySubmit = async () => {   
         if(salaryRequest.WorkerInsuranceFromCompany === 0 || salaryRequest.HealthInsuranceFromCompany === 0 
@@ -257,7 +349,8 @@ export default function DaySalaryStaffManage() {
         
         const newSalaryRequest = { ...salaryRequest };
         newSalaryRequest.StaffActualIncomeAmount = salaryRequest.StaffIncomeAmount - salaryRequest.StaffDeductionAmount;
-        newSalaryRequest.ParttimeSalary = calculateWage(selectedRow.ParttimeMoney, selectedRow.TotalPartimeHours, selectedRow.TotalPartimeMinutes);
+        newSalaryRequest.StaffId = staffId;
+        // newSalaryRequest.ParttimeSalary = calculateWage(selectedRow.ParttimeMoney, selectedRow.TotalPartimeHours, selectedRow.TotalPartimeMinutes);
         try {
             const response = await axios.post(`${appsetting.apiUrl}/admin/paymoney`, newSalaryRequest, config);
             if (response.status === 200) {
@@ -273,6 +366,65 @@ export default function DaySalaryStaffManage() {
     useEffect(() => {
         fetchData();
     }, []); 
+
+    useEffect(() => {
+      if(salaryView) {
+        setSalaryRequest({
+          ...salaryRequest,
+          StaffIncomeAmount:Number(salaryRequest.Bonus)
+           + Number(salaryView.TotalDaysSalary)+ Number(salaryRequest.FoodSuportMoney)+ Number(salaryRequest.OverTimeMoney)
+        })
+        
+      }
+      if((salaryRequest.Bonus === 0 || !salaryRequest.Bonus) && salaryView) {
+        setSalaryRequest({
+          ...salaryRequest,
+          StaffIncomeAmount:Number(salaryView.TotalDaysSalary)+ Number(salaryRequest.FoodSuportMoney)+ Number(salaryRequest.OverTimeMoney)
+        })
+      }
+    }, [salaryRequest.Bonus]);
+
+    useEffect(() => {
+
+      if(salaryView) {
+        setSalaryRequest({
+          ...salaryRequest,
+          StaffIncomeAmount:Number(salaryRequest.Bonus)
+           + Number(salaryView.TotalDaysSalary)+ Number(salaryRequest.FoodSuportMoney)+ Number(salaryRequest.OverTimeMoney)
+        })
+        
+      }
+      if((salaryRequest.FoodSuportMoney === 0 || !salaryRequest.FoodSuportMoney) && salaryView) {
+        setSalaryRequest({
+          ...salaryRequest,
+          StaffIncomeAmount:Number(salaryView.DaySalary) + Number(salaryRequest.FoodSuportMoney)+ Number(salaryRequest.OverTimeMoney)
+        })
+      }
+    }, [salaryRequest.FoodSuportMoney]);
+
+    useEffect(() => {
+      const matchedItem = InsuranceClass.find(item => item.id === insuranceLevel);
+      
+      if (matchedItem) {
+        setSalaryRequest((prevSalaryRequest) => ({
+          ...prevSalaryRequest, // 保留原有的属性
+          HealthInsuranceFromCompany:matchedItem.HealthInsuranceCompany,
+          WorkerInsuranceFromCompany:matchedItem.WorkInsuranceCompany,
+          EmployeeRetirementFromCompany:matchedItem.Retirement,
+          HealthInsurance:matchedItem.HealthInsurance,
+          WorkerInsurance:matchedItem.WorkInsurance
+        }))
+      }
+    }, [insuranceLevel]);
+
+    useEffect(() => {
+      handleMinusTotal();
+  }, [salaryRequest.IncomeTax,salaryRequest.SupplementaryPremium,salaryRequest.EmployeeRetirement,
+    salaryRequest.EarlyOrLateAmount,salaryRequest.OutLocationAmount,salaryRequest.HealthInsurance,salaryRequest.WorkerInsurance]); 
+
+    useEffect(() => {
+      handleCompanyCostTotal();
+  }, [salaryRequest.EmployeeRetirementFromCompany,salaryRequest.WorkerInsuranceFromCompany,salaryRequest.AdvanceFundFromCompany,salaryRequest.HealthInsuranceFromCompany]); 
     
 
   return (
@@ -326,7 +478,7 @@ export default function DaySalaryStaffManage() {
               onClose={handleClose}
               TransitionComponent={Transition}
               keepMounted>
-                <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>薪資單</DialogTitle>
+                <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>{month}月薪資單</DialogTitle>
                 <DialogContent>
                     <Box
                         sx={{
@@ -354,6 +506,31 @@ export default function DaySalaryStaffManage() {
                               </Grid> 
 
                             <Grid container spacing={2} >
+                            <Grid item xs={12}>
+                                  <Typography variant="subtitle2" gutterBottom>
+                                      工作狀況
+                                  </Typography>    
+                                </Grid>                    
+                                <Grid item xs={3}>
+                                    <InputLabel shrink htmlFor="bootstrap-input">
+                                    {salaryView !== null ? salaryView.OutLocationDays:'取無資料'}
+                                    </InputLabel>  
+                                </Grid>
+                                <Grid item xs={3}>      
+                                    <InputLabel shrink htmlFor="bootstrap-input">
+                                    {salaryView !== null ? salaryView.LateOrEarlyDays:'取無資料'}
+                                    </InputLabel>       
+                                </Grid>
+                                <Grid item xs={3}>      
+                                    <InputLabel shrink htmlFor="bootstrap-input">
+                                      {salaryView !== null ? salaryView.WorkDays:'取無資料'}
+                                    </InputLabel>       
+                                </Grid>
+                                <Grid item xs={3}>      
+                                    <InputLabel shrink htmlFor="bootstrap-input">
+                                      加班時數:{salaryView !== null ? salaryView.OverTimeHours:0}小時
+                                    </InputLabel>       
+                                </Grid>
                                 <Grid item xs={12}>
                                   <Typography variant="subtitle2" gutterBottom>
                                       薪資加項
@@ -361,11 +538,11 @@ export default function DaySalaryStaffManage() {
                                 </Grid>                    
                                 <Grid item xs={3}>
                                     <InputLabel shrink htmlFor="bootstrap-input">
-                                        時薪*時數
+                                        日薪*天數
                                     </InputLabel>  
                                     <TextField id="StaffNo" 
                                         type="number" size="small"
-                                        value={selectedRow !== null ? calculateWage(selectedRow.ParttimeMoney, selectedRow.TotalPartimeHours, selectedRow.TotalPartimeMinutes):0}/>
+                                        value={salaryView !== null ? salaryView.TotalDaysSalary:0}/>
                                 </Grid>
                                 <Grid item xs={3}>      
                                     <InputLabel shrink htmlFor="bootstrap-input">
@@ -408,8 +585,8 @@ export default function DaySalaryStaffManage() {
                                     </InputLabel>       
                                     <TextField id="StaffNo" 
                                         size="small"
-                                        value={selectedRow !== null ? selectedRow.ParttimeOverTimeTotalMony:0}
-                                        onChange={(e) => handleInputChange(e, 'BasicSalary')}/>
+                                        inputProps={{ readOnly: true }}
+                                        value={salaryView !== null ? salaryView.OverTimeSalary:0}/>
                                 </Grid>
                                 <Grid item xs={3}>      
                                     <InputLabel shrink htmlFor="bootstrap-input">
@@ -467,7 +644,7 @@ export default function DaySalaryStaffManage() {
                                         value={`${salaryRequest.WorkerInsurance}`}
                                         onChange={(e) => handleInputChange(e, 'WorkerInsurance')}/>
                                 </Grid>    
-                                <Grid item xs={2}>      
+                                <Grid item xs={2}>     
                                     <InputLabel shrink htmlFor="bootstrap-input">
                                         員工勞退
                                     </InputLabel>       
@@ -476,6 +653,24 @@ export default function DaySalaryStaffManage() {
                                         value={`${salaryRequest.EmployeeRetirement}`}
                                         onChange={(e) => handleInputChange(e, 'EmployeeRetirement')}/>
                                 </Grid>  
+                                <Grid item xs={2}>      
+                                    <InputLabel shrink htmlFor="bootstrap-input">
+                                        遲到早退
+                                    </InputLabel>       
+                                    <TextField id="StaffNo" 
+                                        type="number" size="small"
+                                        value={`${salaryRequest.EarlyOrLateAmount}`}
+                                        onChange={(e) => handleInputChange(e, 'EarlyOrLateAmount')}/>
+                                </Grid>  
+                                <Grid item xs={2}>     
+                                    <InputLabel shrink htmlFor="bootstrap-input">
+                                        打卡違規
+                                    </InputLabel>       
+                                    <TextField id="StaffNo" 
+                                        type="number" size="small"
+                                        value={`${salaryRequest.OutLocationAmount}`}
+                                        onChange={(e) => handleInputChange(e, 'OutLocationAmount')}/>
+                                </Grid> 
                                 <Grid item xs={2}>      
                                     <InputLabel shrink htmlFor="bootstrap-input">
                                         總額
@@ -552,19 +747,97 @@ export default function DaySalaryStaffManage() {
                   <Button onClick={handleSalarySubmit}>送出</Button>
                 </DialogActions>
               </Dialog>
+
+
+
+    <Dialog open={excelOpen} onClose={handleExcelClose}>
+        <DialogTitle>出勤狀況Excel下載申請</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+              請選擇月份，下載該員工出勤狀況
+          </DialogContentText>
+            <Grid item xs={2} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center',width:'100%',marginTop:'5%' }}>
+
+              <FormControl variant="standard" sx={{ m: 1, minWidth: 20}}>
+                <InputLabel id="demo-simple-select-standard-label">月份</InputLabel>
+                <Select
+                  labelId="demo-simple-select-standard-label"
+                  id="demo-simple-select-standard"
+                  style={{width:'100%'}}
+                  value={month}
+                  onChange={(e)=>setMonth(e.target.value)}
+                  label="月份"
+                >
+                  <MenuItem value={1}>1月</MenuItem>
+                  <MenuItem value={2}>2月</MenuItem>
+                  <MenuItem value={3}>3月</MenuItem>
+                  <MenuItem value={4}>4月</MenuItem>
+                  <MenuItem value={5}>5月</MenuItem>
+                  <MenuItem value={6}>6月</MenuItem>
+                  <MenuItem value={7}>7月</MenuItem>
+                  <MenuItem value={8}>8月</MenuItem>
+                  <MenuItem value={9}>9月</MenuItem>
+                  <MenuItem value={10}>10月</MenuItem>
+                  <MenuItem value={11}>11月</MenuItem>
+                  <MenuItem value={12}>12月</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+          
+        </DialogContent>
+        <Grid item xs={2} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center',width:'100%',marginTop:'5%' }}>
+            <DialogActions>
+              <Button onClick={handleExcelClose}>取消</Button>
+              <Button onClick={downloadExcel}>下載EXCEL</Button>
+            </DialogActions>
+        </Grid>
+      </Dialog>
+
+      <Dialog open={salaryOpen} onClose={handleSalaryClose}>
+        <DialogTitle>薪資明細</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+              請選擇月份，下載該員工薪資明細
+          </DialogContentText>
+            <Grid item xs={2} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center',width:'100%',marginTop:'5%' }}>
+
+              <FormControl variant="standard" sx={{ m: 1, minWidth: 20}}>
+                <InputLabel id="demo-simple-select-standard-label">月份</InputLabel>
+                <Select
+                  labelId="demo-simple-select-standard-label"
+                  id="demo-simple-select-standard"
+                  style={{width:'100%'}}
+                  value={month}
+                  onChange={(e)=>setMonth(e.target.value)}
+                  label="月份"
+                >
+                  <MenuItem value={1}>1月</MenuItem>
+                  <MenuItem value={2}>2月</MenuItem>
+                  <MenuItem value={3}>3月</MenuItem>
+                  <MenuItem value={4}>4月</MenuItem>
+                  <MenuItem value={5}>5月</MenuItem>
+                  <MenuItem value={6}>6月</MenuItem>
+                  <MenuItem value={7}>7月</MenuItem>
+                  <MenuItem value={8}>8月</MenuItem>
+                  <MenuItem value={9}>9月</MenuItem>
+                  <MenuItem value={10}>10月</MenuItem>
+                  <MenuItem value={11}>11月</MenuItem>
+                  <MenuItem value={12}>12月</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+          
+        </DialogContent>
+        <Grid item xs={2} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center',width:'100%',marginTop:'5%' }}>
+            <DialogActions>
+              <Button onClick={handleSalaryClose}>取消</Button>
+              <Button onClick={handleFetchSalaryData}>打開薪資單</Button>
+            </DialogActions>
+        </Grid>
+      </Dialog>
     </>
   );
 }
 
-
-function calculateWage(hourlyRate, hours, minutes) {
-    // 每30分鐘為一個單位，超過30分鐘但未滿60分鐘算半小時
-    const totalHours = hours + Math.floor(minutes / 30) * 0.5;
-  
-    // 計算工資
-    const wage = hourlyRate * totalHours;
-  
-    return wage;
-}
 
     

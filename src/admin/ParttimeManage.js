@@ -257,6 +257,7 @@ export default function ParttimeManage() {
       setStaffId(id);
       setExcelOpen(true);
     };
+
     const handleExcelClose = () => {
       setExcelOpen(false);
     };
@@ -338,10 +339,9 @@ export default function ParttimeManage() {
       }
     }, [salaryRequest.FoodSuportMoney]);
 
-    // useEffect(() => {
-    //     fetchStaffDetailData();
-    // }, []); 
-    // const navigate = useNavigate();
+    useEffect(() => {
+      handleMinusTotal();
+  }, [salaryRequest.IncomeTax,salaryRequest.SupplementaryPremium,salaryRequest.EmployeeRetirement,salaryRequest.EarlyOrLateAmount,salaryRequest.OutLocationAmount]); 
 
     const handleInputChange = (event, propertyName) => {
       const value = event.target.value;
