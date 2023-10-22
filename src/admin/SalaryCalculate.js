@@ -65,7 +65,7 @@ export default function SalaryCalculate() {
     };
     const { id } = useParams();
     const [plusTotal,setPlusTotal]= useState(0);
-    const [insuranceLevel,setInsuranceLevel]= useState(22);
+    const [insuranceLevel,setInsuranceLevel]= useState(0);
     const [minusTotal,setMinusTotal]= useState(0);
     const [companyCostTotal,setCompanyCostTotal]= useState(0);
     const [finalTotal,setFinalResult] = useState(0);
@@ -99,7 +99,7 @@ export default function SalaryCalculate() {
       EarlyOrLateAmount:0, // C#補這欄位
       OutLocationAmount:0,
       OverTimeMoney:checked? calculateResult? calculateResult.OverTimeMoney:0 :0, // C#補這欄位
-      
+      TotalDaySalary:0
     });
 
     const handleoverTimeClickOpen = () => {

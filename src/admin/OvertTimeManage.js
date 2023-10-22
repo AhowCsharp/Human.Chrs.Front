@@ -285,8 +285,8 @@ export default function OvertTimeManage() {
             {selectedOverTimeLog !== null ? (
               <>
                 是否通過員工: {selectedOverTimeLog.StaffName} 申請的加班呢?
-                <br />
-                加班日為: {selectedOverTimeLog.OvertimeDate}
+                <br />           
+                加班日為: {`${new Date(selectedOverTimeLog.OvertimeDate).getFullYear()}-${String(new Date(selectedOverTimeLog.OvertimeDate).getMonth() + 1).padStart(2, '0')}-${String(new Date(selectedOverTimeLog.OvertimeDate).getDate()).padStart(2, '0')}`}
                 <br />
                 時數為: {selectedOverTimeLog.OverHours}
               </>

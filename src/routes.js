@@ -34,6 +34,8 @@ import DaySalaryStaffManage from './admin/DaySalaryStaffManage';
 
 import CompanyManage from './super/CompanyManage';
 import ContractManage from './super/ContractManage';
+
+import ProtectedRoute from './pages/ProtectedRoute';
 // ----------------------------------------------------------------------
 
 export default function Router() {
@@ -48,7 +50,10 @@ export default function Router() {
     },
     {
       path: '/staff',
-      element: <DashboardLayout />,
+      element:         
+      <ProtectedRoute>
+        <DashboardLayout />
+      </ProtectedRoute>,
       children: [
         { element: <Navigate to="/staff/info" />, index: true },
         // { path: 'app', element: <DashboardAppPage /> },
@@ -65,7 +70,10 @@ export default function Router() {
     },
     {
       path: '/admin',
-      element: <DashboardLayout />,
+      element:         
+      <ProtectedRoute>
+        <DashboardLayout />
+      </ProtectedRoute>,
       children: [
         { element: <Navigate to="/admin/staffmanage" />, index: true },
         { path: 'app', element: <DashboardAppPage /> },
@@ -90,7 +98,10 @@ export default function Router() {
     },
     {
       path: '/super',
-      element: <DashboardLayout />,
+      element:         
+      <ProtectedRoute>
+        <DashboardLayout />
+      </ProtectedRoute>,
       children: [
         { element: <Navigate to="/super/companylist" />, index: true },
         { path: 'app', element: <DashboardAppPage /> },

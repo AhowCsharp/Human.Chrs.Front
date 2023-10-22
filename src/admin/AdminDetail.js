@@ -92,7 +92,25 @@ export default function AdminDetail() {
                 setAdminDetail(response.data.Data);
             }
         } catch (error) {
-            console.error('Error fetching data:', error);
+            if (error.response) {
+                // 'error.response.data'通常包含服务器的错误消息。
+                // 这可能是一个字符串，也可能是一个对象，具体取决于服务器发送的内容。
+                const errorMessage = error.response.data;
+    
+                // 如果错误消息是一个字符串，直接显示它。
+                // 如果是一个对象，您可能需要找到实际的错误消息字段。
+                if (typeof errorMessage === 'string') {
+                    alert(errorMessage);
+                }
+                else {
+                    // 如果响应格式未知，您可以打印到控制台，或者显示一个通用错误消息。
+                    console.error("Unexpected error format:", errorMessage);
+                    alert('An error occurred.');
+                }
+            } else {
+                // 如果没有响应（例如网络错误），则显示通用错误消息。
+                alert('An error occurred. Please try again later.');
+            }
         } finally {
             setIsLoading(false);  // 結束加載
         }

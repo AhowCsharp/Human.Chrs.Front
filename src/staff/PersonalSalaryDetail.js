@@ -76,7 +76,7 @@ export default function PersonalSalaryDetail() {
     }
 
   return (
-    <List sx={{ width: '95%', bgcolor: 'background.paper',margin:'auto' }} style={{height:'85vh'}}>
+    <List sx={{ width: '95%', bgcolor: 'background.paper',margin:'auto',overflow:'auto' }} style={{height:'85vh'}}>
       <Button variant="text" style={{margin:'1%'}} onClick={handleBackClick}>返回</Button>
       <Typography variant="subtitle2" gutterBottom style={{ marginLeft: '5%' }}>
         {Language === 'TW' ? '實發金額' : 'Net Amount'}
@@ -106,6 +106,16 @@ export default function PersonalSalaryDetail() {
           </Avatar>
         </ListItemAvatar>
         <ListItemText primary={Language === 'TW' ? '時薪*時數' : 'Hourly Rate * Hours'} secondary={detail.ParttimeSalary} />
+      </ListItem>:null
+      }
+      {detail.TotalDaySalary !== 0 && detail.TotalDaySalary?
+      <ListItem>
+        <ListItemAvatar>
+          <Avatar>
+            <ImageIcon />
+          </Avatar>
+        </ListItemAvatar>
+        <ListItemText primary={Language === 'TW' ? '日薪*工作天數' : 'TotalDaySalary'} secondary={detail.TotalDaySalary} />
       </ListItem>:null
       }
       {detail.FullCheckInMoney !== 0?

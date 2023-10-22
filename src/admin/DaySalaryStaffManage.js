@@ -45,6 +45,7 @@ import { DataGrid } from '@mui/x-data-grid';
 import appsetting from '../Appsetting';
 import StaffSearch from './StaffSearch';
 import InsuranceClass from '../Insurance/Insurance';
+import OverTimeDetailList from './OverTimeDetailList';
 
 const Transition = React.forwardRef((props, ref) => <Slide direction="left" ref={ref} {...props} />);
 
@@ -154,7 +155,7 @@ export default function DaySalaryStaffManage() {
     const [salaryOpen, setSalaryOpen] = useState(false);
     const [overTimeopen, setOverTimeopen] = useState(false); 
     const [salaryView,setSalaryView] = useState(null);
-    const [insuranceLevel,setInsuranceLevel]= useState(22);
+    const [insuranceLevel,setInsuranceLevel]= useState(0);
     const [month,setMonth] = useState(9);
     const [salaryRequest,setSalaryRequest] = useState({
         StaffId:0,
@@ -186,6 +187,7 @@ export default function DaySalaryStaffManage() {
         StaffDeductionAmount:0,
         CompanyCostAmount:0,
         ChangeOverTimeToMoney:true,
+        TotalDaySalary:0
       });  
 
     const resetData = () => {
@@ -219,6 +221,7 @@ export default function DaySalaryStaffManage() {
         StaffDeductionAmount:0,
         CompanyCostAmount:0,
         ChangeOverTimeToMoney:true,
+        TotalDaySalary:0
       })
     }
     const handleClickOpen = () => {
@@ -247,6 +250,10 @@ export default function DaySalaryStaffManage() {
     const handleoverTimeClickOpen = (id) => {
         setStaffId(id);
         setOverTimeopen(true);
+    };
+
+    const handleoverTimeClose = () => {
+      setOverTimeopen(false);
     };
 
     const handleClose = () => {
@@ -349,6 +356,7 @@ export default function DaySalaryStaffManage() {
         
         const newSalaryRequest = { ...salaryRequest };
         newSalaryRequest.StaffActualIncomeAmount = salaryRequest.StaffIncomeAmount - salaryRequest.StaffDeductionAmount;
+        newSalaryRequest.TotalDaySalary = salaryView.TotalDaysSalary;
         newSalaryRequest.StaffId = staffId;
         // newSalaryRequest.ParttimeSalary = calculateWage(selectedRow.ParttimeMoney, selectedRow.TotalPartimeHours, selectedRow.TotalPartimeMinutes);
         try {
@@ -834,6 +842,18 @@ export default function DaySalaryStaffManage() {
               <Button onClick={handleFetchSalaryData}>打開薪資單</Button>
             </DialogActions>
         </Grid>
+      </Dialog>
+
+      <Dialog open={overTimeopen} onClose={handleoverTimeClose}>
+        <DialogTitle>{month}月加班狀況</DialogTitle>
+        <DialogContent>
+
+          <OverTimeDetailList staffId={parseInt(staffId, 10)}/>
+
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleoverTimeClose}>退出</Button>
+        </DialogActions>
       </Dialog>
     </>
   );

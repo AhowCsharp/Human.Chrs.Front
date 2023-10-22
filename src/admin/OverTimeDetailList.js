@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
+import Box from '@mui/material/Box';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
@@ -73,22 +74,29 @@ export default function OverTimeDetailList({staffId}) {
         fetchOverTimeData();
     }, []); 
     return (
-      <List sx={{ width: '100%', maxWidth: 700, bgcolor: 'background.paper' }}>
+      <List sx={{ width: '100%', minWidth: 200, bgcolor: 'background.paper' }}>
         {loading ? (
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', p: 2 }}>
             <CircularProgress />
-          </div>
+          </Box>
+        ) : overTimes.length === 0 ? (
+          <Box sx={{ p: 3 }}>
+            <Typography textAlign="center" color="text.secondary">
+              尚無加班資料
+            </Typography>
+          </Box>
         ) : (
           overTimes.map((overtime) => (
-            <>
-              <ListItem key={uuidv4()}>
+            <React.Fragment key={overtime.Id /* 如果每个overtime对象有一个唯一的Id字段，请使用它作为key */}>
+              <ListItem>
                 <ListItemAvatar>
                   <Avatar>
                     <ImageIcon />
                   </Avatar>
                 </ListItemAvatar>
-                <ListItemText primary={overtime.OvertimeDate.split("T")[0]} 
-                  secondary={`加班時數:${overtime.OverHours} `} 
+                <ListItemText
+                  primary={overtime.OvertimeDate.split("T")[0]} 
+                  secondary={`加班時數:${overtime.OverHours} `}
                 />
                 <Tooltip title={`審核者:${overtime.Inspector}--審核日:${overtime.ValidateDate.split("T")[0]}`}>
                   <IconButton>
@@ -96,9 +104,9 @@ export default function OverTimeDetailList({staffId}) {
                   </IconButton>
                 </Tooltip>
               </ListItem>
-            </>
+            </React.Fragment>
           ))
         )}
       </List>
-    );    
+    );   
 }

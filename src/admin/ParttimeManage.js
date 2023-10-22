@@ -142,7 +142,7 @@ export default function ParttimeManage() {
     ];
     const [rows,setRows] = useState([]);
     const [filterRows,setFilterRows] = useState([]);
-    const [insuranceLevel,setInsuranceLevel]= useState(22);
+    const [insuranceLevel,setInsuranceLevel]= useState(0);
     const [overTimeopen, setOverTimeopen] = useState(false);  
 
     const [month,setMonth] = useState(9);
@@ -177,6 +177,7 @@ export default function ParttimeManage() {
       StaffDeductionAmount:0,
       CompanyCostAmount:0,
       ChangeOverTimeToMoney:true,
+      TotalDaySalary:0
     }); 
 
     const [open, setOpen] = useState(false);
@@ -216,6 +217,7 @@ export default function ParttimeManage() {
           StaffDeductionAmount:0,
           CompanyCostAmount:0,
           ChangeOverTimeToMoney:true,
+          TotalDaySalary:0
         })
       }
     }, [selectedRow]); 

@@ -220,7 +220,10 @@ export default function SalaryManage() {
       const response = await axios.get(`${appsetting.apiUrl}/admin/staffs`,config);
       // 檢查響應的結果，並設置到 state
       if (response.status === 200) {
-        setStaffs(response.data)
+        const filteredStaffs = response.data.filter(staff => staff.EmploymentTypeId === 1);
+  
+        // 更新 state，只包括 DepartmentId 为 1 的员工
+        setStaffs(filteredStaffs);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -540,52 +543,3 @@ const downloadSalaryExcel = async () => {
     </>
   );
 }
-
-function formatDateToYYYYMMDD(dateString) {
-    const dateObj = new Date(dateString);
-    const year = dateObj.getFullYear();
-    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-    const day = String(dateObj.getDate()).padStart(2, '0');
-  
-    return `${year}-${month}-${day}`;
-}
-
-function getCurrentDate() {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-}
-
-function daysBetweenDates(date1Str, date2Str) {
-    // 将日期字符串转换为日期对象
-    const date1 = new Date(date1Str);
-    const date2 = new Date(date2Str);
-  
-    // 计算两个日期对象的时间戳，并找出它们之间的差异（以毫秒为单位）
-    const timeDiff = Math.abs(date2.getTime() - date1.getTime());
-  
-    // 将时间差异转换为天数
-    const diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
-  
-    return diffDays;
-}
-
-const getCurrentMonthBounds = () => {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth();
-
-  // 獲取當下月份的第一天
-  const start = new Date(year, month, 1);
-  const startDateString = `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, '0')}-${String(start.getDate()).padStart(2, '0')}`;
-
-
-  // 獲取當下月份的最後一天
-  const end = new Date(year, month + 1, 0);
-  const endDateString = `${end.getFullYear()}-${String(end.getMonth() + 1).padStart(2, '0')}-${String(end.getDate()).padStart(2, '0')}`;
-
-  return { start: startDateString, end: endDateString };
-}
-    
