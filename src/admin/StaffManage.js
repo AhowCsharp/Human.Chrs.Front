@@ -24,6 +24,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import MenuItem from '@mui/material/MenuItem';
 import FormHelperText from '@mui/material/FormHelperText';
 import FormControlLabel from '@mui/material/FormControlLabel';
+import LockResetIcon from '@mui/icons-material/LockReset';
 import FormLabel from '@mui/material/FormLabel';
 import AlertTitle from '@mui/material/AlertTitle';
 import Alert from '@mui/material/Alert';
@@ -78,7 +79,7 @@ export default function StaffManage() {
         {
             field: 'StaffName',
             headerName: '姓名',
-            width: 150,
+            width: 100,
             editable: true,
         },
         {
@@ -96,7 +97,7 @@ export default function StaffManage() {
         {
             field: 'Email',
             headerName: '信箱',
-            width: 200,
+            width: 160,
             editable: true,
         },
         {
@@ -135,7 +136,7 @@ export default function StaffManage() {
         {
             field: 'Action',
             headerName: '刪除',
-            width: 200,
+            width: 70,
             renderCell: (params) => (
                 <>
                 <IconButton aria-label="delete" onClick={() => handleSureClickOpen(params.row.id)}>
@@ -143,7 +144,20 @@ export default function StaffManage() {
                 </IconButton>
               </>
             ),
-        } 
+        },
+        {
+            field: 'Clear',
+            headerName: '綁定',
+            width: 70,
+            renderCell: (params) => (
+                <>
+                <IconButton aria-label="delete" onClick={() => handleClearPhoneSet(params.row.id)}>
+                  <LockResetIcon />
+                </IconButton>
+              </>
+            ),
+        },
+
     ];
     const [open, setOpen] = useState(false);
     const [deleteId,setDeleteId] = useState(0);
@@ -236,6 +250,30 @@ export default function StaffManage() {
         setDeleteId(id)
         setSureOpen(true);
     };
+
+
+    const handleClearPhoneSet = async (id) => {
+        try {
+            const response = await axios.put(
+                `${appsetting.apiUrl}/admin/clear`, 
+                null, // 如果你不需要傳遞body，可以設為null
+                {
+                    ...config, // 展開你的config，使其成為這個配置對象的一部分
+                    params: {
+                        id
+                    },
+                }
+            );
+            if (response.status === 200) {
+                alert('成功');
+            } 
+            
+        } catch (error) {
+            alert('系統錯誤');           
+            console.error('Error calling API:', error);
+        }
+    };
+
       const handleClose = () => {
         setStaff({
             id: 0,
