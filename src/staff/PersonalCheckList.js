@@ -45,6 +45,7 @@ export default function PersonalCheckList() {
             const response = await axios.get(`${appsetting.apiUrl}/staff/personalchecks?month=${month}`,config);
             if (response.status === 200) {
                 setList(response.data);
+                console.log(response.data)
             }
         } catch (error) {
             console.error('Error fetching data:', error);
@@ -133,10 +134,21 @@ export default function PersonalCheckList() {
             </Avatar>
           </ListItemAvatar>
           <ListItemText
-              primary={`${item.CheckInTime.split('T')[0]}`}
-              secondary={`${language === 'TW' ? '上班' : 'Work In'}: ${item.CheckInTime.split('T')[0]} ${language === 'TW' ? '下班' : 'Work Out'}: ${item.CheckOutTime.split('T')[0]}`}
+            primary={`${item.CheckInTime ? item.CheckInTime.split('T')[0] : language === 'TW' ? '未打卡' : 'Not Yet'}`}
+            secondary={`${
+              language === 'TW' ? '上班' : 'Work In'
+            }: ${
+              item.CheckInTime 
+                ? item.CheckInTime.split('T')[1].substring(0, 5) // 提取 HH:MM
+                : language === 'TW' ? '未打卡' : 'Not Yet'
+            } ${
+              language === 'TW' ? '下班' : 'Work Out'
+            }: ${
+              item.CheckOutTime 
+                ? item.CheckOutTime.split('T')[1].substring(0, 5) // 提取 HH:MM
+                : language === 'TW' ? '未打卡' : 'Not Yet'
+            }`}
           />
-
             <Tooltip title={generateTooltip(item,language)}>
                 <IconButton>
                   <WorkHistoryIcon />

@@ -7,7 +7,7 @@ export const useLanguage = () => {
 };
 
 export const LanguageProvider = ({ children }) => {
-  const [language, setLanguage] = useState('EN'); // 或其他預設語言
+  const [language, setLanguage] = useState('TW'); // 或其他預設語言
 
   const chooseLang = (value) => {
     if (value === 'tw') {
