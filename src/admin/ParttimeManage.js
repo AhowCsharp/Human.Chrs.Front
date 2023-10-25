@@ -20,6 +20,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
+import AlertTitle from '@mui/material/AlertTitle';
 import Alert from '@mui/material/Alert';
 import DialogTitle from '@mui/material/DialogTitle';
 import MenuItem from '@mui/material/MenuItem';
@@ -413,6 +414,12 @@ export default function ParttimeManage() {
                 <Typography variant="h2" component="h2">
                     部分工時人員薪資列表
                 </Typography>
+            </Grid>
+            <Grid item xs={12} style={{display:'flex',justifyContent:'center'}}>      
+                <Alert severity="warning">
+                  <AlertTitle>請注意</AlertTitle>
+                  若該員工當月沒有打卡或出席<strong>--則該員工不會出現於列表上</strong>
+                </Alert>
             </Grid>
             <Grid item xs={4} >      
                 <ParttimeSearch rows={rows} setFilterRows={setFilterRows}/>

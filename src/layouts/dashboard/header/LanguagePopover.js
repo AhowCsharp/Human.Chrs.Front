@@ -71,7 +71,7 @@ export default function LanguagePopover() {
             width: 180,
             '& .MuiMenuItem-root': {
               px: 1,
-              typography: 'body2',
+              typography: theme => theme.typography.body2, // 以正确的方式引用主题中的typography
               borderRadius: 0.75,
             },
           },
@@ -79,7 +79,7 @@ export default function LanguagePopover() {
       >
         <Stack spacing={0.75}>
           {LANGS.map((option) => (
-            <MenuItem key={option.value} selected={option.value === LANGS[0].value} onClick={() => chooseAndClose(option.value)}>
+            <MenuItem key={option.value} selected={option.value === language.toLowerCase()} onClick={() => chooseAndClose(option.value)}>
               <Box component="img" alt={option.label} src={option.icon} sx={{ width: 28, mr: 2 }} />
 
               {option.label}

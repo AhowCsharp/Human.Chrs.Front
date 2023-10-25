@@ -23,16 +23,12 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
+import { useLanguage } from '../layouts/LanguageContext'
 import PageDeviceError from '../pages/PageDeviceError';
 import appsetting from '../Appsetting';
 
 export default function PersonalOverTimeList() {
-    const [windowDimensions, setWindowDimensions] = useState({
-        width: typeof window !== 'undefined' ? window.innerWidth : 0,
-        height: typeof window !== 'undefined' ? window.innerHeight : 0,
-    });
-    
-
+    const { language, chooseLang } = useLanguage();
     const config = {
         headers: {
           'X-Ap-Token': appsetting.token,
@@ -41,16 +37,16 @@ export default function PersonalOverTimeList() {
         }
     };
     const [isLoading, setIsLoading] = useState(true); 
-    const [list,setList] = useState([]); 
-    const [month,setMonth] = useState(9); 
+    const [overTimelist,setOverTimelist] = useState([]); 
+    const [amendChecklist,setAmendChecklist] = useState([]); 
+    const [month, setMonth] = useState(new Date().getMonth() + 1);
     const [model,setModel] = useState('加班紀錄'); 
-    const Language = sessionStorage.getItem('Language');
     const fetchOvertimeListData = async () => {
         setIsLoading(true);  // 開始加載
         try {       
             const response = await axios.get(`${appsetting.apiUrl}/staff/monthovertime?month=${month}`,config);
             if (response.status === 200) {
-                setList(response.data);
+                setOverTimelist(response.data);
             }
         } catch (error) {
             console.error('Error fetching data:', error);
@@ -65,7 +61,7 @@ export default function PersonalOverTimeList() {
           const response = await axios.get(`${appsetting.apiUrl}/staff/amendchecklist`,config);
           console.log(response.data)
           if (response.status === 200) {
-              setList(response.data);
+            setAmendChecklist(response.data);
           }
       } catch (error) {
           console.error('Error fetching data:', error);
@@ -76,21 +72,14 @@ export default function PersonalOverTimeList() {
 
 
 
-    useEffect(() => {
-      if(model === '加班紀錄') {
-        fetchOvertimeListData();
-      }
-    }, [month]); 
-
-    useEffect(() => {
-      if(model === '加班紀錄') {
-        fetchOvertimeListData();
-      }
-      if(model === '補卡紀錄') {
-        fetchAmendCheckListData();
-      }
-    }, [model]); 
-
+  useEffect(() => {
+    if (model === '加班紀錄') {
+      fetchOvertimeListData();
+    } else if (model === '補卡紀錄') {
+      fetchAmendCheckListData();
+    }
+  }, [model, month]); 
+ 
 
     if(!isMobile) {
       return(
@@ -127,18 +116,18 @@ export default function PersonalOverTimeList() {
           }}
         >
           <Typography variant="h6" gutterBottom>
-              {model === '加班紀錄' ? (Language === 'TW' ? '加班紀錄' : 'Overtime Record') : ''}
-              {model === '補卡紀錄' ? (Language === 'TW' ? '加班紀錄' : 'Card Replacement Record') : ''}
+              {model === '加班紀錄' ? (language === 'TW' ? '加班紀錄' : 'Overtime Record') : ''}
+              {model === '補卡紀錄'? (language === 'TW' ? '補卡紀錄' : 'Card Replacement Record') : ''}
           </Typography>
           <ButtonGroup variant="text" aria-label="text button group">
-              <Button style={{ color: 'black' }} onClick={() => setModel(Language === 'TW' ? '加班紀錄' : 'Overtime Record')}> {Language === 'TW' ? '加班申請紀錄' : 'Overtime Application Record'}</Button>
-              <Button style={{ color: 'black' }} onClick={() => setModel(Language === 'TW' ? '補卡紀錄' : 'Card Replacement Record')}> {Language === 'TW' ? '補卡申請紀錄' : 'Card Replacement Application Record'}</Button>
+              <Button style={{ color: 'black' }} onClick={() => setModel('加班紀錄')}> {language === 'TW' ? '加班申請紀錄' : 'Overtime Application Record'}</Button>
+              <Button style={{ color: 'black' }} onClick={() => setModel('補卡紀錄')}> {language === 'TW' ? '補卡申請紀錄' : 'Card Replacement Application Record'}</Button>
 
           </ButtonGroup>
           {
             model !== '補卡紀錄' ? (
           <FormControl variant="standard" sx={{ m: 1, minWidth: 12}}>
-            <InputLabel id="demo-simple-select-standard-label">{Language === 'TW' ? '月份' : 'Month'}</InputLabel>
+            <InputLabel id="demo-simple-select-standard-label">{language === 'TW' ? '月份' : 'Month'}</InputLabel>
             <Select
               labelId="demo-simple-select-standard-label"
               id="demo-simple-select-standard"
@@ -146,47 +135,65 @@ export default function PersonalOverTimeList() {
               onChange={(e)=>setMonth(e.target.value)}
               label="月份"
             >
-                <MenuItem value={1}>{Language === 'TW' ? '1月' : 'January'}</MenuItem>
-                <MenuItem value={2}>{Language === 'TW' ? '2月' : 'February'}</MenuItem>
-                <MenuItem value={3}>{Language === 'TW' ? '3月' : 'March'}</MenuItem>
-                <MenuItem value={4}>{Language === 'TW' ? '4月' : 'April'}</MenuItem>
-                <MenuItem value={5}>{Language === 'TW' ? '5月' : 'May'}</MenuItem>
-                <MenuItem value={6}>{Language === 'TW' ? '6月' : 'June'}</MenuItem>
-                <MenuItem value={7}>{Language === 'TW' ? '7月' : 'July'}</MenuItem>
-                <MenuItem value={8}>{Language === 'TW' ? '8月' : 'August'}</MenuItem>
-                <MenuItem value={9}>{Language === 'TW' ? '9月' : 'September'}</MenuItem>
-                <MenuItem value={10}>{Language === 'TW' ? '10月' : 'October'}</MenuItem>
-                <MenuItem value={11}>{Language === 'TW' ? '11月' : 'November'}</MenuItem>
-                <MenuItem value={12}>{Language === 'TW' ? '12月' : 'December'}</MenuItem>
+                <MenuItem value={1}>{language === 'TW' ? '1月' : 'January'}</MenuItem>
+                <MenuItem value={2}>{language === 'TW' ? '2月' : 'February'}</MenuItem>
+                <MenuItem value={3}>{language === 'TW' ? '3月' : 'March'}</MenuItem>
+                <MenuItem value={4}>{language === 'TW' ? '4月' : 'April'}</MenuItem>
+                <MenuItem value={5}>{language === 'TW' ? '5月' : 'May'}</MenuItem>
+                <MenuItem value={6}>{language === 'TW' ? '6月' : 'June'}</MenuItem>
+                <MenuItem value={7}>{language === 'TW' ? '7月' : 'July'}</MenuItem>
+                <MenuItem value={8}>{language === 'TW' ? '8月' : 'August'}</MenuItem>
+                <MenuItem value={9}>{language === 'TW' ? '9月' : 'September'}</MenuItem>
+                <MenuItem value={10}>{language === 'TW' ? '10月' : 'October'}</MenuItem>
+                <MenuItem value={11}>{language === 'TW' ? '11月' : 'November'}</MenuItem>
+                <MenuItem value={12}>{language === 'TW' ? '12月' : 'December'}</MenuItem>
 
             </Select>
           </FormControl> ) : null
           }
         </Box>
 
-        {list.map((item) => (
-          <ListItem key={item.id}>
-            <ListItemAvatar>
-              <Avatar>
+        {
+  model === '加班紀錄' ? (
+    overTimelist.map((item) => (
+      <ListItem key={item.id}>
+        <ListItemAvatar>
+          <Avatar>
+            <ImageIcon />
+          </Avatar>
+        </ListItemAvatar>
+        <ListItemText
+          primary={item ? `${item.OvertimeDate.split('T')[0]}` : "N/A"}
+          secondary={`${language === 'TW' ? '時數' : 'Hours'}: ${item.OverHours} ${language === 'TW' ? '審核情況' : 'Validation Status'}: ${getValidationStatus(item.IsValidate,language)}`}
+        />
+        <Tooltip title={item.Reason}>
+          <IconButton>
+            <WorkHistoryIcon />
+          </IconButton>
+        </Tooltip>
+      </ListItem>
+          ))
+        ) : (
+          amendChecklist.map((item) => (
+            <ListItem key={item.id}>
+              <ListItemAvatar>
+                <Avatar>
                   <ImageIcon />
-              </Avatar>
-            </ListItemAvatar>
-            <ListItemText
-                primary={model === '加班紀錄' 
-                    ? (item.OvertimeDate ? `${item.OvertimeDate.split('T')[0]}` : "N/A")
-                    : (item.CheckDate ? `${item.CheckDate.split('T')[0]} ${Language === 'TW' ? '補卡類別' : 'Card Replacement Type'}: ${getCheckType(item.CheckType,Language)}` : "N/A")}
-                secondary={model === '加班紀錄' 
-                    ? `${Language === 'TW' ? '時數' : 'Hours'}: ${item.OverHours} ${Language === 'TW' ? '審核情況' : 'Validation Status'}: ${getValidationStatus(item.IsValidate)}`
-                    : `${Language === 'TW' ? '時間' : 'Time'}: ${item.CheckTime.split('T')[1]} ${Language === 'TW' ? '審核情況' : 'Validation Status'}: ${getValidationStatus(item.IsValidate,Language)}`}
-            />
-
+                </Avatar>
+              </ListItemAvatar>
+              <ListItemText
+                primary={item.CheckDate ? `${item.CheckDate.split('T')[0]} ${language === 'TW' ? '補卡類別' : 'Card Replacement Type'}: ${getCheckType(item.CheckType, language)}` : "N/A"}
+                secondary={`${language === 'TW' ? '時間' : 'Time'}: ${item.CheckTime.split('T')[1]} ${language === 'TW' ? '審核情況' : 'Validation Status'}: ${getValidationStatus(item.IsValidate, language)}`}
+              />
               <Tooltip title={item.Reason}>
-                  <IconButton>
-                    <WorkHistoryIcon />
-                  </IconButton>
+                <IconButton>
+                  <WorkHistoryIcon />
+                </IconButton>
               </Tooltip>
-          </ListItem>
-        ))}
+            </ListItem>
+          ))
+        )
+      }
 
       </List>
     </>

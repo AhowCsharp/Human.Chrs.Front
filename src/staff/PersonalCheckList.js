@@ -10,8 +10,9 @@ import Avatar from '@mui/material/Avatar';
 import ImageIcon from '@mui/icons-material/Image';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
-import BeachAccessIcon from '@mui/icons-material/BeachAccess';
+import Typography from '@mui/material/Typography';
 import DeleteIcon from '@mui/icons-material/Delete';
+import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import WorkHistoryIcon from '@mui/icons-material/WorkHistory';
@@ -20,16 +21,13 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
+import { useLanguage } from '../layouts/LanguageContext'
 import PageDeviceError from '../pages/PageDeviceError';
 import appsetting from '../Appsetting';
 
 export default function PersonalCheckList() {
-    const [windowDimensions, setWindowDimensions] = useState({
-        width: typeof window !== 'undefined' ? window.innerWidth : 0,
-        height: typeof window !== 'undefined' ? window.innerHeight : 0,
-    });
-    
-    const Language = sessionStorage.getItem('Language');
+   
+    const { language, chooseLang } = useLanguage();
     const config = {
         headers: {
           'X-Ap-Token': appsetting.token,
@@ -39,7 +37,7 @@ export default function PersonalCheckList() {
     };
     const [isLoading, setIsLoading] = useState(true); 
     const [list,setList] = useState([]); 
-    const [month,setMonth] = useState(9); 
+    const [month, setMonth] = useState(new Date().getMonth() + 1);
 
     const fetchCheckListData = async () => {
         setIsLoading(true);  // 開始加載
@@ -86,33 +84,44 @@ export default function PersonalCheckList() {
         );
     }
   return (
-    
+    <>
     <List sx={{ width: '100%', bgcolor: 'background.paper' }} style={{height:'85vh'}}>
-      <FormControl variant="standard" sx={{ m: 1, minWidth: 12,marginLeft:'3%' }}>
-        <InputLabel id="demo-simple-select-standard-label">{Language === 'TW' ? '月份' : 'Month'}</InputLabel>
-        <Select
-          labelId="demo-simple-select-standard-label"
-          id="demo-simple-select-standard"
-          value={month}
-          onChange={(e)=>setMonth(e.target.value)}
-          label="月份"
-        >
-          <MenuItem value={1}>{Language === 'TW' ? '1月' : 'January'}</MenuItem>
-          <MenuItem value={2}>{Language === 'TW' ? '2月' : 'February'}</MenuItem>
-          <MenuItem value={3}>{Language === 'TW' ? '3月' : 'March'}</MenuItem>
-          <MenuItem value={4}>{Language === 'TW' ? '4月' : 'April'}</MenuItem>
-          <MenuItem value={5}>{Language === 'TW' ? '5月' : 'May'}</MenuItem>
-          <MenuItem value={6}>{Language === 'TW' ? '6月' : 'June'}</MenuItem>
-          <MenuItem value={7}>{Language === 'TW' ? '7月' : 'July'}</MenuItem>
-          <MenuItem value={8}>{Language === 'TW' ? '8月' : 'August'}</MenuItem>
-          <MenuItem value={9}>{Language === 'TW' ? '9月' : 'September'}</MenuItem>
-          <MenuItem value={10}>{Language === 'TW' ? '10月' : 'October'}</MenuItem>
-          <MenuItem value={11}>{Language === 'TW' ? '11月' : 'November'}</MenuItem>
-          <MenuItem value={12}>{Language === 'TW' ? '12月' : 'December'}</MenuItem>
-        </Select>
-      </FormControl>
+    <Box sx={{ flexGrow: 1 }}>
+      <Grid container spacing={2}>
+        <Grid item xs={12} style={{justifyContent:'center',display:'flex' }}>
+          <Typography variant="h4" gutterBottom>
+            {language === 'TW' ? '出勤狀況' : 'Attendance Status'}
+          </Typography>
+        </Grid>
+        <Grid item xs={12} style={{justifyContent:'center',display:'flex' }}>
+        <FormControl variant="standard" sx={{ m: 1, minWidth: 12,marginLeft:'3%'}}>
+          <InputLabel id="demo-simple-select-standard-label">{language === 'TW' ? '月份' : 'Month'}</InputLabel>
+          <Select
+            labelId="demo-simple-select-standard-label"
+            id="demo-simple-select-standard"
+            value={month}
+            onChange={(e)=>setMonth(e.target.value)}
+            label="月份"
+          >
+            <MenuItem value={1}>{language === 'TW' ? '1月' : 'January'}</MenuItem>
+            <MenuItem value={2}>{language === 'TW' ? '2月' : 'February'}</MenuItem>
+            <MenuItem value={3}>{language === 'TW' ? '3月' : 'March'}</MenuItem>
+            <MenuItem value={4}>{language === 'TW' ? '4月' : 'April'}</MenuItem>
+            <MenuItem value={5}>{language === 'TW' ? '5月' : 'May'}</MenuItem>
+            <MenuItem value={6}>{language === 'TW' ? '6月' : 'June'}</MenuItem>
+            <MenuItem value={7}>{language === 'TW' ? '7月' : 'July'}</MenuItem>
+            <MenuItem value={8}>{language === 'TW' ? '8月' : 'August'}</MenuItem>
+            <MenuItem value={9}>{language === 'TW' ? '9月' : 'September'}</MenuItem>
+            <MenuItem value={10}>{language === 'TW' ? '10月' : 'October'}</MenuItem>
+            <MenuItem value={11}>{language === 'TW' ? '11月' : 'November'}</MenuItem>
+            <MenuItem value={12}>{language === 'TW' ? '12月' : 'December'}</MenuItem>
+          </Select>
+        </FormControl>
+        </Grid>
+      </Grid>
+    </Box>
       {list.length === 0?     
-      <Alert severity="success" color="info" style={{marginTop:'60%'}}>
+      <Alert severity="success" color="info" style={{marginTop:'50%'}}>
         目前還沒有資料 — 請選擇正確月份!<br/>
         There is no data available at the moment - please select the correct month!
       </Alert>:null}
@@ -125,10 +134,10 @@ export default function PersonalCheckList() {
           </ListItemAvatar>
           <ListItemText
               primary={`${item.CheckInTime.split('T')[0]}`}
-              secondary={`${Language === 'TW' ? '上班' : 'Work In'}: ${item.CheckInTime.split('T')[0]} ${Language === 'TW' ? '下班' : 'Work Out'}: ${item.CheckOutTime.split('T')[0]}`}
+              secondary={`${language === 'TW' ? '上班' : 'Work In'}: ${item.CheckInTime.split('T')[0]} ${language === 'TW' ? '下班' : 'Work Out'}: ${item.CheckOutTime.split('T')[0]}`}
           />
 
-            <Tooltip title={generateTooltip(item,Language)}>
+            <Tooltip title={generateTooltip(item,language)}>
                 <IconButton>
                   <WorkHistoryIcon />
                 </IconButton>
@@ -136,27 +145,28 @@ export default function PersonalCheckList() {
         </ListItem>
       ))}
     </List>
+    </>
   );
 }
 
 
-function generateTooltip(record, Language) {
+function generateTooltip(record, language) {
   const messages = [];
 
   if (record.IsCheckInLate === 1) {
-    messages.push(`${Language === 'TW' ? '遲到' : 'Late'} ${record.CheckInLateTimes} ${Language === 'TW' ? '分鐘' : 'minutes'}`);
+    messages.push(`${language === 'TW' ? '遲到' : 'Late'} ${record.CheckInLateTimes} ${language === 'TW' ? '分鐘' : 'minutes'}`);
   }
 
   if (record.IsCheckOutEarly === 1) {
-    messages.push(`${Language === 'TW' ? '早退' : 'Early Leave'} ${record.CheckOutEarlyTimes} ${Language === 'TW' ? '分鐘' : 'minutes'}`);
+    messages.push(`${language === 'TW' ? '早退' : 'Early Leave'} ${record.CheckOutEarlyTimes} ${language === 'TW' ? '分鐘' : 'minutes'}`);
   }
 
   if (record.IsCheckInOutLocation === 1) {
-    messages.push(`${Language === 'TW' ? '上班打卡位於定位外' : 'Check-in location outside designated area'}`);
+    messages.push(`${language === 'TW' ? '上班打卡位於定位外' : 'Check-in location outside designated area'}`);
   }
 
   if (record.IsCheckOutOutLocation === 1) {
-    messages.push(`${Language === 'TW' ? '下班打卡位於定位外' : 'Check-out location outside designated area'}`);
+    messages.push(`${language === 'TW' ? '下班打卡位於定位外' : 'Check-out location outside designated area'}`);
   }
 
   return messages.join(', ');

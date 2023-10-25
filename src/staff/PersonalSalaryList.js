@@ -10,17 +10,15 @@ import Avatar from '@mui/material/Avatar';
 import ImageIcon from '@mui/icons-material/Image';
 import WorkIcon from '@mui/icons-material/Work';
 import Box from '@mui/material/Box';
-import BeachAccessIcon from '@mui/icons-material/BeachAccess';
+import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
 import PageDeviceError from '../pages/PageDeviceError';
+import { useLanguage } from '../layouts/LanguageContext'
 import appsetting from '../Appsetting';
 
 export default function PersonalSalaryList() {
-    const [windowDimensions, setWindowDimensions] = useState({
-        width: typeof window !== 'undefined' ? window.innerWidth : 0,
-        height: typeof window !== 'undefined' ? window.innerHeight : 0,
-    });
-    const Language = sessionStorage.getItem('Language');
+
+  const { language, chooseLang } = useLanguage();
     const config = {
         headers: {
           'X-Ap-Token': appsetting.token,
@@ -75,21 +73,28 @@ export default function PersonalSalaryList() {
         );
     }
   return (
-    
-    <List sx={{ width: '100%', bgcolor: 'background.paper' }} style={{height:'85vh'}}>
-      {list.map((item) => (
-        <ListItem key={item.id}>
-          <ListItemAvatar onClick={()=>handleSalaryDetailClick(item.id)}>
-            <Avatar>
-                <ImageIcon />
-            </Avatar>
-          </ListItemAvatar>
-          <ListItemText
-            primary={`${item.SalaryOfMonth}${Language === 'TW' ? '月薪資單' : ' Monthly Salary Statement'}`}
-            secondary={`發放日期: ${item.IssueDate.split('T')[0]}`}
-          />
-        </ListItem>
-      ))}
-    </List>
+    <>
+      {list.length === 0?     
+      <Alert severity="success" color="info" style={{marginTop:'85%'}}>
+        目前還沒有資料<br/>
+        There is no data available at the moment!
+      </Alert>:null}
+      <List sx={{ width: '100%', bgcolor: 'background.paper' }} style={{height:'50vh'}}>
+        {list.map((item) => (
+          <ListItem key={item.id}>
+            <ListItemAvatar onClick={()=>handleSalaryDetailClick(item.id)}>
+              <Avatar>
+                  <ImageIcon />
+              </Avatar>
+            </ListItemAvatar>
+            <ListItemText
+              primary={`${item.SalaryOfMonth}${language === 'TW' ? '月薪資單' : ' Monthly Salary Statement'}`}
+              secondary={`發放日期: ${item.IssueDate.split('T')[0]}`}
+            />
+          </ListItem>
+        ))}
+      </List>
+    </>
+   
   );
 }

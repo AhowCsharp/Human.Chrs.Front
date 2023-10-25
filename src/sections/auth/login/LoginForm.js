@@ -282,7 +282,7 @@ export default function LoginForm() {
         <CircularProgress color="inherit" />
       </Backdrop>
       <Box       sx={{
-        marginBottom: isMobile ? '50px' : '0px',
+        marginBottom: isMobile ? '30px' : '0px',
       }}>
         <Stack spacing={3}>
           <TextField name="staff" label="Account" 
