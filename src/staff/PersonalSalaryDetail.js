@@ -76,7 +76,7 @@ export default function PersonalSalaryDetail() {
     }
 
   return (
-    <List sx={{ width: '95%', bgcolor: 'background.paper',margin:'auto',overflow:'auto' }} style={{height:'85vh'}}>
+    <List sx={{ width: '95%', bgcolor: 'background.paper',margin:'auto',overflow:'auto' }} style={{height:'80vh',marginTop:'5%'}}>
       <Button variant="text" style={{margin:'1%'}} onClick={handleBackClick}>返回</Button>
       <Typography variant="subtitle2" gutterBottom style={{ marginLeft: '5%' }}>
         {Language === 'TW' ? '實發金額' : 'Net Amount'}
@@ -301,6 +301,7 @@ export default function PersonalSalaryDetail() {
       <Typography variant="subtitle2" gutterBottom style={{ margin: '5%' }}>
         {Language === 'TW' ? '雇主負擔名細' : 'Employer Contributions Details'}
       </Typography>
+      {detail.HealthInsuranceFromCompany !== 0?
       <ListItem>
         <ListItemAvatar>
           <Avatar>
@@ -308,7 +309,9 @@ export default function PersonalSalaryDetail() {
           </Avatar>
         </ListItemAvatar>
         <ListItemText primary={Language === 'TW' ? '健保費-雇主負擔' : 'Health Insurance - Employer Contribution'} secondary={detail.HealthInsuranceFromCompany} />
-      </ListItem>
+      </ListItem>:null
+      }
+      {detail.WorkerInsuranceFromCompany !== 0?
       <ListItem>
         <ListItemAvatar>
           <Avatar>
@@ -316,7 +319,9 @@ export default function PersonalSalaryDetail() {
           </Avatar>
         </ListItemAvatar>
         <ListItemText primary={Language === 'TW' ? '勞保費-雇主負擔' : 'Worker\'s Insurance - Employer Contribution'} secondary={detail.WorkerInsuranceFromCompany} />
-      </ListItem>
+      </ListItem>:null
+      }
+      {detail.EmployeeRetirementFromCompany !== 0?
       <ListItem>
         <ListItemAvatar>
           <Avatar>
@@ -327,7 +332,9 @@ export default function PersonalSalaryDetail() {
           primary={Language === 'TW' ? '勞退提繳-雇主' : 'Employee Retirement - Employer Contribution'}
           secondary={detail.EmployeeRetirementFromCompany}
         />
-      </ListItem>
+      </ListItem>:null
+      }
+       {detail.AdvanceFundFromCompany !== 0?
       <ListItem>
         <ListItemAvatar>
           <Avatar>
@@ -338,7 +345,8 @@ export default function PersonalSalaryDetail() {
           primary={Language === 'TW' ? '墊償基金' : 'Advance Fund'}
           secondary={detail.AdvanceFundFromCompany}
         />
-      </ListItem>
+      </ListItem>:null
+      }
       <ListItem>
         <ListItemAvatar>
           <Avatar>

@@ -75,11 +75,11 @@ export default function PersonalSalaryList() {
   return (
     <>
       {list.length === 0?     
-      <Alert severity="success" color="info" style={{marginTop:'85%'}}>
+      <Alert severity="success" color="info" style={{marginTop:'80%'}}>
         目前還沒有資料<br/>
         There is no data available at the moment!
       </Alert>:null}
-      <List sx={{ width: '100%', bgcolor: 'background.paper' }} style={{height:'50vh'}}>
+      <List sx={{ width: '100%', bgcolor: 'background.paper' }} style={{height:'80vh'}}>
         {list.map((item) => (
           <ListItem key={item.id}>
             <ListItemAvatar onClick={()=>handleSalaryDetailClick(item.id)}>

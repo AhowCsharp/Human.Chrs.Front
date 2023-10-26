@@ -192,7 +192,10 @@ export default function SalaryCalculate() {
   
     const handleInputChange = (event, propertyName) => {
       const value = event.target.value;
-  
+      if(propertyName === 'FoodSuportMoney' && value > 2400) {
+        alert('伙食津貼不列入稅收，不得超過每月2400額度')
+        return;
+      }
       // 使用 Number.isNaN 代替全局的 isNaN
       if (!Number.isNaN(Number(value)) || value === '') {
           setSalaryRequest((prevData) => ({
@@ -290,22 +293,22 @@ export default function SalaryCalculate() {
     };
 
     const handlePostResult = () => {
-      if(plusTotal !== 0 && minusTotal !== 0 && companyCostTotal !== 0) {
+      // if(plusTotal !== 0 && minusTotal !== 0 && companyCostTotal !== 0) {
         setFinalResult(plusTotal-minusTotal);
-      }else {
-        alert('請將下方所有欄位填妥再計算');
-      }  
+      // }else {
+      //   alert('請將下方所有欄位填妥再計算');
+      // }  
     };
 
     const handleSalarySubmit = async () => {   
-      if(plusTotal === 0 || minusTotal === 0 || companyCostTotal === 0) {
-        alert('請將下方所有欄位填妥再送出');
-        return;
-      }   
-      if(salaryRequest.WorkerInsuranceFromCompany === 0 || salaryRequest.HealthInsuranceFromCompany === 0 || salaryRequest.EmployeeRetirementFromCompany === 0) {
-        alert('請確認雇主負擔部分是否正確  不要觸犯勞基法');
-        return;
-      }   
+      // if(plusTotal === 0 || minusTotal === 0 || companyCostTotal === 0) {
+      //   alert('請將下方所有欄位填妥再送出');
+      //   return;
+      // }   
+      // if(salaryRequest.WorkerInsuranceFromCompany === 0 || salaryRequest.HealthInsuranceFromCompany === 0 || salaryRequest.EmployeeRetirementFromCompany === 0) {
+      //   alert('請確認雇主負擔部分是否正確  不要觸犯勞基法');
+      //   return;
+      // }   
       const newSalaryRequest = { ...salaryRequest };
       newSalaryRequest.SalaryOfMonth = lastMonth;
       newSalaryRequest.StaffIncomeAmount = plusTotal;
@@ -702,7 +705,10 @@ export default function SalaryCalculate() {
                   </DialogActions>
                 </Dialog>
               </Grid>
-              <Grid item xs={6} />
+              <Grid item xs={2}>                      
+                  <Button size="small" onClick={()=>setInsuranceLevel(22)}>基本投保級距</Button>
+              </Grid>
+              <Grid item xs={4} />
 
               <Grid item xs={12} style={{display:'flex',justifyContent:'center',marginBottom:'2%'}}>
                 <FormControl variant="standard">
@@ -1280,34 +1286,4 @@ export default function SalaryCalculate() {
   );
 }
 
-function formatDateToYYYYMMDD(dateString) {
-    const dateObj = new Date(dateString);
-    const year = dateObj.getFullYear();
-    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-    const day = String(dateObj.getDate()).padStart(2, '0');
-  
-    return `${year}-${month}-${day}`;
-}
-
-function getCurrentDate() {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-}
-
-function daysBetweenDates(date1Str, date2Str) {
-    // 将日期字符串转换为日期对象
-    const date1 = new Date(date1Str);
-    const date2 = new Date(date2Str);
-  
-    // 计算两个日期对象的时间戳，并找出它们之间的差异（以毫秒为单位）
-    const timeDiff = Math.abs(date2.getTime() - date1.getTime());
-  
-    // 将时间差异转换为天数
-    const diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
-  
-    return diffDays;
-}
     

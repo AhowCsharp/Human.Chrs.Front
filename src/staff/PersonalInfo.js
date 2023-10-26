@@ -552,6 +552,10 @@ export default function PersonalInfo() {
         }
       };
       const handleOverTimeSubmit = async () => {
+        if(overTimeRequest.Hours === 0) {
+            alert('加班時數不得為0');
+            return;
+        }
         const config = {
                 headers: {
                 'X-Ap-Token': appsetting.token,

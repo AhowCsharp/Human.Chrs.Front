@@ -1064,7 +1064,7 @@ export default function StaffManage() {
         <DialogActions>
           <Button onClick={handleSureClose}>Disagree</Button>
           <Button onClick={()=>handleDeleteSubmit(deleteId)} autoFocus>
-            Agree
+            同意
           </Button>
         </DialogActions>
       </Dialog>

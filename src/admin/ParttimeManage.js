@@ -146,7 +146,7 @@ export default function ParttimeManage() {
     const [insuranceLevel,setInsuranceLevel]= useState(0);
     const [overTimeopen, setOverTimeopen] = useState(false);  
 
-    const [month,setMonth] = useState(9);
+    const [month, setMonth] = useState(new Date().getMonth() + 1);
     const [selectedRow,setSelectedRow] = useState(null);
     const [salaryRequest,setSalaryRequest] = useState({
       StaffId:0,
@@ -348,7 +348,10 @@ export default function ParttimeManage() {
 
     const handleInputChange = (event, propertyName) => {
       const value = event.target.value;
-  
+      if(propertyName === 'FoodSuportMoney' && value > 2400) {
+        alert('伙食津貼不列入稅收，不得超過每月2400額度')
+        return;
+      }
       // 使用 Number.isNaN 代替全局的 isNaN
       if (!Number.isNaN(Number(value)) || value === '') {
           setSalaryRequest((prevData) => ({
@@ -463,6 +466,9 @@ export default function ParttimeManage() {
                             height: 'auto',                    
                         }}
                         >
+                              <Grid item xs={12} style={{display:'flex',justifyContent:'center'}}>                      
+                                    <Button size="small" onClick={()=>setInsuranceLevel(22)}>基本投保級距</Button>
+                              </Grid>
                               <Grid item xs={12} style={{display:'flex',justifyContent:'center',marginBottom:'2%'}}>
                                 <FormControl variant="standard">
                                   <InputLabel id="demo-simple-select-label">投保級距</InputLabel>
@@ -493,6 +499,9 @@ export default function ParttimeManage() {
                                     </InputLabel>  
                                     <TextField id="StaffNo" 
                                         type="number" size="small"
+                                        InputProps={{
+                                          readOnly: true,
+                                        }}
                                         value={selectedRow !== null ? calculateWage(selectedRow.ParttimeMoney, selectedRow.TotalPartimeHours, selectedRow.TotalPartimeMinutes):0}/>
                                 </Grid>
                                 <Grid item xs={3}>      
@@ -536,6 +545,9 @@ export default function ParttimeManage() {
                                     </InputLabel>       
                                     <TextField id="StaffNo" 
                                         size="small"
+                                        InputProps={{
+                                          readOnly: true,
+                                        }}
                                         value={selectedRow !== null ? selectedRow.ParttimeOverTimeTotalMony:0}
                                         onChange={(e) => handleInputChange(e, 'BasicSalary')}/>
                                 </Grid>

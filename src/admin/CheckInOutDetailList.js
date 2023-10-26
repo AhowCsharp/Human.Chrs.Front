@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
+import { getDaysInMonth, getDay, format } from 'date-fns';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
@@ -17,7 +18,7 @@ import appsetting from '../Appsetting';
 
 
 // 获取当前日期
-const currentDate = new Date();
+const  currentDate = new Date();
 
 // 将当前日期设置为本月的第一天
 currentDate.setDate(1);
@@ -68,36 +69,70 @@ export default function CheckInOutDetailList({staffId}) {
       console.error('Error fetching data:', error);
       setLoading(false);
     }
-    };
+  };
+  const calculateWorkdays = (month) => {
+    console.log(month)
+    const daysInMonth = getDaysInMonth(new Date(new Date().getFullYear(), month - 1));
+    let numWorkdays = 0;
+    let numHolidays = 0;
+
+    // eslint-disable-next-line no-plusplus
+    for (let day = 1; day <= daysInMonth; day++) {
+      const currentDay = getDay(new Date(new Date().getFullYear(), month - 1, day)); // 星期天 = 0, 星期六 = 6
+      if (currentDay !== 0 && currentDay !== 6) {
+        numWorkdays += 1;
+      } else {
+        numHolidays += 1;
+      }
+    }
+
+    // 此处您可以添加检测公共假日的代码，并相应地调整numWorkdays和numHolidays
+
+    return `正常工作日: ${numWorkdays} 假日: ${numHolidays} 實際出勤天數: ${records.length}`;
+  };
+
+
     useEffect(() => {
         fetchCheckInOutData();
     }, []); 
     return (
-      <List sx={{ width: '100%', maxWidth: 700, bgcolor: 'background.paper' }}>
-        {loading ? (
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
-            <CircularProgress />
-          </div>
-        ) : (
-          records.map((record) => (
-            <ListItem key={uuidv4()}>
-              <ListItemAvatar>
-                <Avatar>
-                  <ImageIcon />
-                </Avatar>
-              </ListItemAvatar>
-              <ListItemText 
-                primary={record.CheckInTime.split("T")[0]} 
-                secondary={`上班打卡${record.CheckInTime.split("T")[1].match(/^(\d{2}:\d{2})/)[1]} 下班打卡${record.CheckOutTime.split("T")[1].match(/^(\d{2}:\d{2})/)[1]}`} 
-              />
-              <Tooltip title={generateTooltip(record)}>
-                <IconButton>
-                  <WorkHistoryIcon />
-                </IconButton>
-              </Tooltip>
-            </ListItem>
-          ))
-        )}
+      <List sx={{ width: '100%', minWidth: 300, bgcolor: 'background.paper' }}>
+        <Typography variant="button" display="block" gutterBottom>
+          {calculateWorkdays((new Date().getMonth()))} <br/>
+          假日並不包含國定假日
+        </Typography>
+        {
+          loading ? (
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
+              <CircularProgress />
+            </div>
+          ) : (
+            records.length === 0 ? (
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center',color:'red',marginTop:'20px'}}>
+                <Typography variant="subtitle1">該員工本月並未出勤</Typography>
+              </div>
+            ) : (
+              records.map((record) => (
+                <ListItem key={uuidv4()}>
+                  <ListItemAvatar>
+                    <Avatar>
+                      <ImageIcon />
+                    </Avatar>
+                  </ListItemAvatar>
+                  <ListItemText 
+                    primary={record.CheckInTime.split("T")[0]} 
+                    secondary={`上班打卡${record.CheckInTime.split("T")[1].match(/^(\d{2}:\d{2})/)[1]} 下班打卡${record.CheckOutTime.split("T")[1].match(/^(\d{2}:\d{2})/)[1]}`} 
+                  />
+                  <Tooltip title={generateTooltip(record)}>
+                    <IconButton>
+                      <WorkHistoryIcon />
+                    </IconButton>
+                  </Tooltip>
+                </ListItem>
+              ))
+            )
+          )
+        }
       </List>
     );    
 }

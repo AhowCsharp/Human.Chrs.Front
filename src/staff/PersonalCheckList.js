@@ -86,7 +86,7 @@ export default function PersonalCheckList() {
     }
   return (
     <>
-    <List sx={{ width: '100%', bgcolor: 'background.paper' }} style={{height:'85vh'}}>
+    <List sx={{ width: '100%', bgcolor: 'background.paper' }} style={{height:'80vh',marginTop:'5%'}}>
     <Box sx={{ flexGrow: 1 }}>
       <Grid container spacing={2}>
         <Grid item xs={12} style={{justifyContent:'center',display:'flex' }}>

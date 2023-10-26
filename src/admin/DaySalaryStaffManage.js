@@ -156,7 +156,7 @@ export default function DaySalaryStaffManage() {
     const [overTimeopen, setOverTimeopen] = useState(false); 
     const [salaryView,setSalaryView] = useState(null);
     const [insuranceLevel,setInsuranceLevel]= useState(0);
-    const [month,setMonth] = useState(9);
+    const [month, setMonth] = useState(new Date().getMonth() + 1);
     const [salaryRequest,setSalaryRequest] = useState({
         StaffId:0,
         BasicSalary:0,
@@ -214,7 +214,7 @@ export default function DaySalaryStaffManage() {
         AdvanceFundFromCompany:0,
         EarlyOrLateAmount:0, 
         OutLocationAmount:0,
-        OverTimeMoney:0,
+        OverTimeMoney:salaryView !== null ? salaryView.OverTimeSalary:0,
         SalaryOfMonth:month,
         StaffIncomeAmount:0 ,
         StaffActualIncomeAmount:0,
@@ -275,19 +275,11 @@ export default function DaySalaryStaffManage() {
     };
 
     const handleFetchSalaryData = async () => {
-
-
-
       try {       
         const response = await axios.get(`${appsetting.apiUrl}/admin/daystaff?staffId=${staffId}&month=${month}`,config);
         // 檢查響應的結果，並設置到 state
         if (response.status === 200) {
-          setSalaryView(response.data)
-          setSalaryRequest({
-            ...salaryRequest,
-            OverTimeMoney: response.data.OverTimeSalary
-          });
-        
+          setSalaryView(response.data)      
           handleSalaryClose();
           handleClickOpen();          
         }
@@ -318,7 +310,10 @@ export default function DaySalaryStaffManage() {
 
     const handleInputChange = (event, propertyName) => {
         const value = event.target.value;
-    
+        if(propertyName === 'FoodSuportMoney' && value > 2400) {
+          alert('伙食津貼不列入稅收，不得超過每月2400額度')
+          return;
+        }
         // 使用 Number.isNaN 代替全局的 isNaN
         if (!Number.isNaN(Number(value)) || value === '') {
             setSalaryRequest((prevData) => ({
@@ -345,20 +340,20 @@ export default function DaySalaryStaffManage() {
           + Number(salaryRequest.EmployeeRetirementFromCompany) + Number(salaryRequest.AdvanceFundFromCompany)
         })
     }
-    
+    const handleStaffIncomeAmount = () => {
+      setSalaryRequest({
+        ...salaryRequest,
+        StaffIncomeAmount:Number(salaryRequest.Bonus)
+         + Number(salaryView.TotalDaysSalary)+ Number(salaryRequest.FoodSuportMoney)+ Number(salaryView.OverTimeSalary)
+      })
+  }
 
     const handleSalarySubmit = async () => {   
-        if(salaryRequest.WorkerInsuranceFromCompany === 0 || salaryRequest.HealthInsuranceFromCompany === 0 
-          || salaryRequest.EmployeeRetirementFromCompany === 0 || salaryRequest.CompanyCostAmount === 0) {
-          alert('請確認雇主負擔部分是否正確  不要觸犯勞基法');
-          return;
-        }
         
         const newSalaryRequest = { ...salaryRequest };
-        newSalaryRequest.StaffActualIncomeAmount = salaryRequest.StaffIncomeAmount - salaryRequest.StaffDeductionAmount;
+        newSalaryRequest.StaffActualIncomeAmount = salaryRequest.StaffIncomeAmount - salaryRequest.StaffDeductionAmount;      
         newSalaryRequest.TotalDaySalary = salaryView.TotalDaysSalary;
         newSalaryRequest.StaffId = staffId;
-        // newSalaryRequest.ParttimeSalary = calculateWage(selectedRow.ParttimeMoney, selectedRow.TotalPartimeHours, selectedRow.TotalPartimeMinutes);
         try {
             const response = await axios.post(`${appsetting.apiUrl}/admin/paymoney`, newSalaryRequest, config);
             if (response.status === 200) {
@@ -380,32 +375,32 @@ export default function DaySalaryStaffManage() {
         setSalaryRequest({
           ...salaryRequest,
           StaffIncomeAmount:Number(salaryRequest.Bonus)
-           + Number(salaryView.TotalDaysSalary)+ Number(salaryRequest.FoodSuportMoney)+ Number(salaryRequest.OverTimeMoney)
+           + Number(salaryView.TotalDaysSalary)+ Number(salaryRequest.FoodSuportMoney)+ Number(salaryView.OverTimeSalary)
         })
         
       }
       if((salaryRequest.Bonus === 0 || !salaryRequest.Bonus) && salaryView) {
         setSalaryRequest({
           ...salaryRequest,
-          StaffIncomeAmount:Number(salaryView.TotalDaysSalary)+ Number(salaryRequest.FoodSuportMoney)+ Number(salaryRequest.OverTimeMoney)
+          StaffIncomeAmount:Number(salaryView.TotalDaysSalary)+ Number(salaryRequest.FoodSuportMoney)+ Number(salaryView.OverTimeSalary)
         })
       }
     }, [salaryRequest.Bonus]);
-
+    
     useEffect(() => {
 
       if(salaryView) {
         setSalaryRequest({
           ...salaryRequest,
           StaffIncomeAmount:Number(salaryRequest.Bonus)
-           + Number(salaryView.TotalDaysSalary)+ Number(salaryRequest.FoodSuportMoney)+ Number(salaryRequest.OverTimeMoney)
+           + Number(salaryView.TotalDaysSalary)+ Number(salaryRequest.FoodSuportMoney)+ Number(salaryView.OverTimeSalary)
         })
         
       }
       if((salaryRequest.FoodSuportMoney === 0 || !salaryRequest.FoodSuportMoney) && salaryView) {
         setSalaryRequest({
           ...salaryRequest,
-          StaffIncomeAmount:Number(salaryView.DaySalary) + Number(salaryRequest.FoodSuportMoney)+ Number(salaryRequest.OverTimeMoney)
+          StaffIncomeAmount:Number(salaryView.DaySalary) + Number(salaryRequest.FoodSuportMoney)+ Number(salaryView.OverTimeSalary)
         })
       }
     }, [salaryRequest.FoodSuportMoney]);
@@ -451,12 +446,6 @@ export default function DaySalaryStaffManage() {
                     日薪制員工發放系統
                 </Typography>
             </Grid>
-            <Grid item xs={12} style={{display:'flex',justifyContent:'center'}}>      
-                <Alert severity="warning">
-                  <AlertTitle>請注意</AlertTitle>
-                  員工信箱請填寫正確 若填寫不正確 則無法啟用忘記密碼功能<strong>--若需要修改 請雙擊該列</strong>
-                </Alert>
-            </Grid>
             <Grid item xs={6} >      
                 <StaffSearch rows={rows} setFilterRows={setFilterRows}/>
             </Grid>
@@ -495,6 +484,9 @@ export default function DaySalaryStaffManage() {
                             height: 'auto',                    
                         }}
                         >
+                              <Grid item xs={12} style={{display:'flex',justifyContent:'center'}}>                      
+                                    <Button size="small" onClick={()=>setInsuranceLevel(22)}>基本投保級距</Button>
+                              </Grid>
                               <Grid item xs={12} style={{display:'flex',justifyContent:'center',marginBottom:'2%'}}>
                                 <FormControl variant="standard">
                                   <InputLabel id="demo-simple-select-label">投保級距</InputLabel>
@@ -543,7 +535,10 @@ export default function DaySalaryStaffManage() {
                                   <Typography variant="subtitle2" gutterBottom>
                                       薪資加項
                                   </Typography>    
-                                </Grid>                    
+                                </Grid>     
+                                <Grid item xs={12}>
+                                    <Button variant="text" onClick={handleStaffIncomeAmount}>計算加項總額</Button>    
+                                </Grid>               
                                 <Grid item xs={3}>
                                     <InputLabel shrink htmlFor="bootstrap-input">
                                         日薪*天數
