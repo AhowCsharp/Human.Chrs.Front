@@ -31,6 +31,7 @@ import AmendRecordsManage from './admin/AmendRecordsManage';
 import ParttimeWorkManage from './admin/ParttimeWorkManage';
 import MeetManage from './admin/MeetManage';
 import DaySalaryStaffManage from './admin/DaySalaryStaffManage';
+import ShiftWorkManage from './admin/ShiftWorkManage';
 
 import CompanyManage from './super/CompanyManage';
 import ContractManage from './super/ContractManage';
@@ -94,6 +95,7 @@ export default function Router() {
         { path: 'detail', element: <AdminDetail /> },
         { path: 'details/:id', element: <StaffDetail /> },
         { path: 'calculatesalary/:id', element: <SalaryCalculate /> },
+        { path: 'shiftworkmanage', element: <ShiftWorkManage /> },
       ],
     },
     {

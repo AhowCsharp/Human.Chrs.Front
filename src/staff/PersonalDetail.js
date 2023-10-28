@@ -25,6 +25,8 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import PageDeviceError from '../pages/PageDeviceError';
 import PageDetailInfoError from '../pages/PageDetailInfoError';
 import appsetting from '../Appsetting';
+import ErrorAlert from '../errorView/ErrorAlert';
+import FinishedAlert from '../finishView/FinishedAlert';
 
 const Item = styled(Paper)(({ theme }) => ({
   backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
@@ -69,6 +71,17 @@ export default function PersonalDetail() {
         Password:'',
         NewPassword:'',
     });
+    const [errOpen,setErropen] = useState(false);
+    const [errMsg ,setErrMsg]= useState('');
+    const [okOpen,setOkopen] = useState(false);
+    const handleOkOpen = () => {
+      setOkopen(true);
+    }		
+
+    const handleErrOpen = () => {
+      setErropen(true);
+    }
+
 
     const handleClickOpen = () => {
       setOpen(true);
@@ -115,6 +128,13 @@ export default function PersonalDetail() {
             }
         } catch (error) {
             console.error('Error fetching data:', error);
+            if (error.response) {         
+                console.error('Server Response', error.response);
+                const serverMessage = error.response.data;
+        
+                handleErrOpen();
+                setErrMsg(serverMessage);
+            }
         } finally {
             setIsLoading(false);  // 結束加載
         }
@@ -153,7 +173,17 @@ export default function PersonalDetail() {
                 setAvatarUrl(newAvatarUrl); // 這行會觸發組件重新渲染
             }
         } catch (error) {
-            alert('圖片檔案過大 請選擇畫素較低之圖檔')
+            if (error.response) {         
+                console.error('Server Response', error.response);
+                const serverMessage = error.response.data;
+        
+                handleErrOpen();
+                setErrMsg(serverMessage);
+            }else {
+                handleErrOpen();
+                setErrMsg('請選擇畫質較低之圖檔');
+            }
+            
             console.error('Error uploading avatar:', error);
         }
     };
@@ -168,12 +198,18 @@ export default function PersonalDetail() {
               }
           );
           if (response.status === 200) {
-              alert('修改成功')
+              handleOkOpen();
               handleClose();
           } 
 
       } catch (error) {
-          alert('修改失敗 原先密碼輸入錯誤');
+          if (error.response) {         
+            console.error('Server Response', error.response);
+            const serverMessage = error.response.data;
+    
+            handleErrOpen();
+            setErrMsg(serverMessage);
+          }
           console.error('Error calling API:', error);
       }
     };
@@ -234,7 +270,6 @@ export default function PersonalDetail() {
                                     alt={sessionStorage.getItem('StaffName')}
                                     src={avatarUrl}
                                     sx={{ width: 48, height: 48 }}
-                                    onClick={()=>alert(6)}
                                 /> 
                                 <Typography variant="h3" gutterBottom style={{color:'white',marginLeft:'5%'}}>
                                     {staffDetail.Name}'s {Language === 'TW' ? '個人資料' : 'Personal Information'}
@@ -440,7 +475,8 @@ export default function PersonalDetail() {
             </Box>
             )}
 
-            
+            <ErrorAlert errorOpen={errOpen} handleErrClose={()=>setErropen(false)} errMsg={errMsg} />
+            <FinishedAlert okOpen={okOpen} handleOkClose={()=>setOkopen(false)}/>
         </>
     );
 }

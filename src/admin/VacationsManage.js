@@ -36,15 +36,19 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { MobileDatePicker } from '@mui/x-date-pickers/MobileDatePicker';
 import { DesktopDatePicker } from '@mui/x-date-pickers/DesktopDatePicker';
+import { MobileDateTimePicker } from '@mui/x-date-pickers/MobileDateTimePicker';
 import { DateField } from '@mui/x-date-pickers/DateField';
 import { TimeField } from '@mui/x-date-pickers/TimeField';
 import { DateTimeField } from '@mui/x-date-pickers/DateTimeField';
 import { StaticDatePicker } from '@mui/x-date-pickers/StaticDatePicker';
 import Select from '@mui/material/Select';
+import PostAddIcon from '@mui/icons-material/PostAdd';
 import Slide from '@mui/material/Slide';
 import { DataGrid } from '@mui/x-data-grid';
 import appsetting from '../Appsetting';
 import VacationSearch from './VacationSearch';
+import ErrorAlert from '../errorView/ErrorAlert';
+import FinishedAlert from '../finishView/FinishedAlert';
 
 const Transition = React.forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />);
 
@@ -152,15 +156,47 @@ export default function VacationsManage() {
       },
     ];
     const [rows,setRows] = useState([]);
+    const [errOpen,setErropen] = useState(false);
+    const [errMsg ,setErrMsg]= useState('');
     const [filterRows,setFilterRows] = useState([]);
     const [timePeriod,setTimePeriod] = useState(getCurrentMonthBounds());
     const [selectedStaff,setSelectedStaff] = useState(null);
     const [open, setOpen] = useState(false);
+    const [hourModel,setHourModel] = useState(true);
+    const [staffs,setStaffs] = useState([]);
+    const [vacationRequest, setVacationRequest] = useState({
+      Hours:0,
+      StartDate:dayjs().millisecond(0),
+      EndDate:dayjs().millisecond(0),
+      Type:0,
+      Reason:'',
+      StaffId:0
+    })
+    const startDate = vacationRequest.StartDate.clone().millisecond(0).second(0);
+    const endDate = vacationRequest.EndDate.clone().millisecond(0).second(0);
+    const durationInMinutes = endDate.diff(startDate, 'minutes');
+    const durationInDays = endDate.diff(startDate, 'days');
+   const [vacationOpen, setVacationOpen] = useState(false);
+   const [okOpen,setOkopen] = useState(false);
+   const handleOkOpen = () => {
+     setOkopen(true);
+   }
+
+    const handleErrOpen = () => {
+      setErropen(true);
+    }
 
     const handleClickOpen = (params) => {
       setSelectedStaff(params.row);
-      console.log(params.row);
       setOpen(true);
+    };
+
+    const handleVacationClickOpen = () => {
+      setVacationOpen(true);
+    };
+
+    const handleVacationClose = () => {
+      setVacationOpen(false);
     };
   
     const handleClose = () => {
@@ -178,12 +214,161 @@ export default function VacationsManage() {
         }
       } catch (error) {
         console.error('Error fetching data:', error);
+        if (error.response) {         
+          console.error('Server Response', error.response);
+          const serverMessage = error.response.data;
+  
+          handleErrOpen();
+          setErrMsg(serverMessage);
+        }
       }
   };
 
+  const fetchStaffsData = async () => {
+    try {       
+      const response = await axios.get(`${appsetting.apiUrl}/admin/staffs`,config);
+      // 檢查響應的結果，並設置到 state
+      if (response.status === 200) {
+        setStaffs(response.data);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      if (error.response) {         
+        console.error('Server Response', error.response);
+        const serverMessage = error.response.data;
+
+        handleErrOpen();
+        setErrMsg(serverMessage);
+      }
+    }
+  };
+
+  const handleVacationSubmit = async () => {
+    console.log(vacationRequest)
+    const request = {
+        Hours:vacationRequest.Hours,
+        StartDate:vacationRequest.StartDate.format(`YYYY-MM-DDTHH:mm:00`) ,
+        EndDate:vacationRequest.EndDate.format(`YYYY-MM-DDTHH:mm:00`) ,
+        Type:vacationRequest.Type,
+        Reason:vacationRequest.Reason,
+        StaffId:vacationRequest.StaffId
+    }
+    
+    if (vacationRequest.StaffId === 0) {
+      handleErrOpen();
+      setErrMsg('尚未選擇員工');
+      return;
+  } 
+    if (endDate.isBefore(startDate)) {
+        handleErrOpen();
+        setErrMsg('起始時間不能大於終止時間');
+        return;
+    } 
+
+    if (durationInMinutes < 60) {       
+      handleErrOpen();
+      setErrMsg('請假時數至少1小時');
+      return;
+    }    
+    try {
+        const response = await axios.post(`${appsetting.apiUrl}/admin/vacation`, request, config);
+        if (response.status === 200) {
+          handleOkOpen();
+          fetchData();
+        }
+        handleVacationClose();
+    } catch (error) {
+        console.error("Error logging in:", error);
+        if (error.response) {         
+          console.error('Server Response', error.response);
+          const serverMessage = error.response.data;
+  
+          handleErrOpen();
+          setErrMsg(serverMessage);
+      }
+    }                    
+  }
+  const handleVacationInputChange = (value, fieldName) => {   
+    if (fieldName === 'StartDate') {
+        setVacationRequest((prevRequest) => ({
+          ...prevRequest,
+          StartDate: value // directly use the value if it's a dayjs object
+        }));
+    }else if(fieldName === 'EndDate') {
+        setVacationRequest((prevRequest) => ({
+            ...prevRequest,
+            EndDate: value // directly use the value if it's a dayjs object
+          }));
+    }else {
+        setVacationRequest((prevRequest) => ({
+            ...prevRequest,
+            [fieldName]: value.target ? value.target.value : value, 
+        }));  
+    }               
+};
+
     useEffect(() => {
       fetchData();
+      fetchStaffsData();
     }, []); 
+
+    useEffect(() => {
+      setVacationRequest({
+          Hours:0,
+          StartDate:dayjs().millisecond(0),
+          EndDate:dayjs().millisecond(0),
+          Type:0,
+          Reason:'',
+          StaffId:0
+      })
+  }, [hourModel]);
+
+  useEffect(() => {
+      if(endDate.isBefore(startDate)) {
+          setVacationRequest((prevRequest) => ({
+              ...prevRequest,
+              Hours: 0, 
+          })); 
+      }
+      if(!endDate.isBefore(startDate)) {
+          if(hourModel) {
+              if(durationInMinutes < 60) {
+                  setVacationRequest((prevRequest) => ({
+                      ...prevRequest,
+                      Hours: 0, 
+                  })); 
+              }
+              if(durationInMinutes % 60 === 0 && durationInMinutes > 0) {
+                  setVacationRequest((prevRequest) => ({
+                      ...prevRequest,
+                      Hours: (durationInMinutes/60), 
+                  })); 
+              }
+              if(durationInMinutes % 60 !== 0 && durationInMinutes > 60) {
+                  setVacationRequest((prevRequest) => ({
+                      ...prevRequest,
+                      Hours: Math.ceil(durationInMinutes/60), 
+                  })); 
+              }
+          }   
+          if(!hourModel) {
+              if(durationInDays === 0) {
+                  setVacationRequest((prevRequest) => ({
+                      ...prevRequest,
+                      Hours: 8, 
+                  })); 
+              }
+  
+              if(durationInDays !== 0) {
+                  setVacationRequest((prevRequest) => ({
+                      ...prevRequest,
+                      Hours: (durationInDays*8+8), 
+                  })); 
+              }
+          }
+      }       
+  }, [vacationRequest.StartDate, vacationRequest.EndDate]);
+
     const handleVerify = async (isPass) => {     
         const request = {
           VacationId : selectedStaff.id,
@@ -199,36 +384,15 @@ export default function VacationsManage() {
           console.error("Error logging in:", error);
           fetchData();
           handleClose();
-          alert('該員工之請假額度已到，故系統審核未通過2');
+          if (error.response) {         
+            console.error('Server Response', error.response);
+            const serverMessage = error.response.data;
+    
+            handleErrOpen();
+            setErrMsg(serverMessage);
+          }
         }          
     }
-    // useEffect(() => {
-    //     fetchStaffDetailData();
-    // }, []); 
-    // const navigate = useNavigate();
-
-
-    // const handleInputChange = (event, propertyName) => {
-    //   const value = event.target ? event.target.value : event;
-    //   if(propertyName === 'HasCrimeRecord') {
-    //       // eslint-disable-next-line no-restricted-globals
-    //       if(!isNaN(value)) {
-    //         setStaffInfo((prevData) => ({
-    //           ...prevData,
-    //           [propertyName]: Number(value),
-    //         })); 
-    //       }else {
-    //         alert('請輸入數字')
-    //       }
- 
-    //   }else {
-    //     setStaffInfo((prevData) => ({
-    //       ...prevData,
-    //       [propertyName]: value,
-    //   }));
-    //   }
-    // };
-  
 
   return (
     <>
@@ -272,19 +436,19 @@ export default function VacationsManage() {
                 </DemoContainer>
               </LocalizationProvider>
             </Grid>
-            <Grid item xs={2} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center',paddingTop:'4%' }}>
+            <Grid item xs={1} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center',paddingTop:'4%' }}>
               <Button variant="contained" endIcon={<SearchIcon />} onClick={fetchData}>
                   Search
+              </Button>
+            </Grid>
+            <Grid item xs={2} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center',paddingTop:'4%' }}>
+              <Button variant="contained" endIcon={<PostAddIcon />} onClick={handleVacationClickOpen}>
+                  Add Vacation
               </Button>
             </Grid>
             <Grid item xs={12}>      
                 <VacationSearch rows={rows} setFilterRows={setFilterRows}/>
             </Grid>
-
-
-            {/* <Grid item xs={2}>      
-                <Button variant="outlined" endIcon={<PersonAddIcon/>} onClick={()=>handleClickOpen(true)}>新增員工</Button>
-            </Grid>      */}
         </Grid>
         <DataGrid
             rows={filterRows}
@@ -329,39 +493,166 @@ export default function VacationsManage() {
         </DialogActions>
       </Dialog>
 
+
+      <Dialog open={vacationOpen} onClose={handleVacationClose}>
+                <DialogTitle>休假申請</DialogTitle>
+                <DialogContent>
+                    <FormControl>
+                    <FormLabel id="demo-row-radio-buttons-group-label">申請模式</FormLabel>
+                        <RadioGroup
+                            row
+                            aria-labelledby="demo-row-radio-buttons-group-label"
+                            name="row-radio-buttons-group"
+                            value={hourModel}
+                            onChange={()=>setHourModel(!hourModel)}
+                        >
+                            <FormControlLabel value='true' control={<Radio />} label='小時' />
+                            <FormControlLabel value='false' control={<Radio />} label='天數'/>
+                        </RadioGroup>
+                    </FormControl>
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    {hourModel === true ?
+                        <DemoContainer components={['MobileDatePicker']}>
+                            <MobileDateTimePicker 
+                                label='起始日'
+                                value={vacationRequest.StartDate}
+                                onChange={(e) => {
+                                    const formattedDate = e.clone().millisecond(0).second(0); // 將毫秒和秒設為 0
+                                    handleVacationInputChange(formattedDate, 'StartDate');
+                                }}
+                                format="YYYY-MM-DD HH:mm" // 指定日期格式为 YYYY-MM-DD
+                            />
+                            <MobileDateTimePicker 
+                                label='截止日'
+                                value={vacationRequest.EndDate}
+                                onChange={(e) => {
+                                    const formattedDate = e.clone().millisecond(0).second(0); // 將毫秒和秒設為 0
+                                    handleVacationInputChange(formattedDate, 'EndDate');
+                                }}
+                                format="YYYY-MM-DD HH:mm" // 指定日期格式为 YYYY-MM-DD
+                            />
+                        </DemoContainer>
+                        :                         
+                        <DemoContainer components={['MobileDatePicker']}>
+                            <MobileDatePicker 
+                                label='起始日'
+                                value={vacationRequest.StartDate}
+                                onChange={(e) => {
+                                    const formattedDate = e.clone().millisecond(0).second(0); // 將毫秒和秒設為 0
+                                    handleVacationInputChange(formattedDate, 'StartDate');
+                                }}
+                                format="YYYY-MM-DD" // 指定日期格式为 YYYY-MM-DD
+                            />
+                            <MobileDatePicker 
+                                label='截止日'
+                                value={vacationRequest.EndDate}
+                                onChange={(e) => {
+                                    const formattedDate = e.clone().millisecond(0).second(0); // 將毫秒和秒設為 0
+                                    handleVacationInputChange(formattedDate, 'EndDate');
+                                }}
+                                format="YYYY-MM-DD" // 指定日期格式为 YYYY-MM-DD
+                            />
+                        </DemoContainer>
+                    }
+                      
+                    </LocalizationProvider>
+                    <TextField
+                        id="outlined-multiline-static"
+                        label='時數'
+                        style={{marginTop:'5%',width:'30%',marginRight:'10px'}}
+                        value={vacationRequest.Hours}
+                        size='small'
+                        InputProps={{
+                            readOnly: true,
+                        }}
+                    />
+                    <FormControl required style={{width:'30%',marginTop:'5%',marginRight:'10px'}} size="small">
+                        <InputLabel id="demo-simple-select-required-label">休假員工</InputLabel>
+                        <Select
+                        labelId="demo-simple-select-required-label"
+                        id="demo-simple-select-required"
+                        value={vacationRequest.StaffId}
+                        label="休假員工"
+                        onChange={(e) => handleVacationInputChange(e.target.value, 'StaffId')}
+                        >
+                          <MenuItem key={0} value={0}>
+                          尚未選擇
+                          </MenuItem>
+                          {
+                            staffs.map((staff) => (
+                              <MenuItem key={staff.id} value={staff.id}>
+                                {staff.StaffName}
+                              </MenuItem>
+                            ))
+                          }
+                        </Select>
+                    </FormControl>               
+                    <FormControl required style={{width:'30%',marginTop:'5%',marginRight:'10px'}} size="small">
+                        <InputLabel id="demo-simple-select-required-label">休假類別</InputLabel>
+                        <Select
+                        labelId="demo-simple-select-required-label"
+                        id="demo-simple-select-required"
+                        value={vacationRequest.Type}
+                        label="休假類別"
+                        onChange={(e) => handleVacationInputChange(e.target.value, 'Type')}
+                        >
+                        <MenuItem value={0}>
+                        特休
+                        </MenuItem>
+                        <MenuItem value={1}>
+                        病假
+                        </MenuItem>
+                        <MenuItem value={2}>
+                        事假
+                        </MenuItem>
+                        <MenuItem value={3}>
+                        生育假
+                        </MenuItem>
+                        <MenuItem value={4}>
+                        喪假
+                        </MenuItem>
+                        <MenuItem value={5}>
+                        婚假
+                        </MenuItem>
+                        <MenuItem value={6}>
+                        公假
+                        </MenuItem>
+                        <MenuItem value={7}>
+                        工傷病假
+                        </MenuItem>
+                        <MenuItem value={8}>
+                        生理假
+                        </MenuItem>
+                        <MenuItem value={9}>
+                        育嬰留職停薪假
+                        </MenuItem>
+                        <MenuItem value={10}>
+                        安胎假
+                        </MenuItem>
+                        <MenuItem value={11}>
+                        產檢假
+                        </MenuItem>
+                        </Select>
+                    </FormControl>
+                    <TextField
+                        id="outlined-multiline-static"
+                        label='請假原因'
+                        multiline
+                        rows={2}
+                        style={{marginTop:'5%',width:'100%'}}
+                        value={vacationRequest.Reason}
+                        onChange={(e) => handleVacationInputChange(e.target.value, 'Reason')}
+                        />
+                </DialogContent>
+                <DialogActions>
+                <Button onClick={handleVacationClose}>取消</Button>
+                <Button onClick={handleVacationSubmit}>申請</Button>
+                </DialogActions>
+            </Dialog>
+            <ErrorAlert errorOpen={errOpen} handleErrClose={()=>setErropen(false)} errMsg={errMsg} />
+            <FinishedAlert okOpen={okOpen} handleOkClose={()=>setOkopen(false)}/>
     </>
   );
-}
-
-function formatDateToYYYYMMDD(dateString) {
-    const dateObj = new Date(dateString);
-    const year = dateObj.getFullYear();
-    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-    const day = String(dateObj.getDate()).padStart(2, '0');
-  
-    return `${year}-${month}-${day}`;
-}
-
-function getCurrentDate() {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-}
-
-function daysBetweenDates(date1Str, date2Str) {
-    // 将日期字符串转换为日期对象
-    const date1 = new Date(date1Str);
-    const date2 = new Date(date2Str);
-  
-    // 计算两个日期对象的时间戳，并找出它们之间的差异（以毫秒为单位）
-    const timeDiff = Math.abs(date2.getTime() - date1.getTime());
-  
-    // 将时间差异转换为天数
-    const diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
-  
-    return diffDays;
 }
 
 const getCurrentMonthBounds = () => {

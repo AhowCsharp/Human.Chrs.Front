@@ -9,25 +9,30 @@ import Slide from '@mui/material/Slide';
 
 const Transition = React.forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />);
 
-export default function ErrorAlert({errorOpen, handleErrClose, errMsg}) {
+export default function FinishedAlert({okOpen, handleOkClose}) {
   return (
     <div>
       <Dialog
-        open={errorOpen}
+        open={okOpen}
         TransitionComponent={Transition}
         keepMounted
-        onClose={handleErrClose}
+        onClose={handleOkClose}
         aria-describedby="alert-dialog-slide-description"
-        sx={{ zIndex: (theme) => theme.zIndex.modal + 1 }} // 设置更高的z-index
+        sx={{ 
+          zIndex: (theme) => theme.zIndex.modal + 1, // 设置更高的z-index
+          '& .MuiDialog-paper': { minWidth: '200px' } // 设置对话框的最小宽度
+        }} // 设置更高的z-index
       >
-        <DialogTitle>發生錯誤</DialogTitle>
+        <DialogTitle id="alert-dialog-title">
+          通知
+        </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-slide-description">
-            錯誤原因 : {errMsg}
+            操作成功
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleErrClose}>Ok</Button>
+          <Button onClick={handleOkClose}>Ok</Button>
         </DialogActions>
       </Dialog>
     </div>

@@ -49,6 +49,8 @@ import SalaryDetailList from './SalaryDetailList';
 import CheckInOutDetailList from './CheckInOutDetailList';
 import OverTimeDetailList from './OverTimeDetailList';
 import InsuranceClass from '../Insurance/Insurance';
+import ErrorAlert from '../errorView/ErrorAlert';
+import FinishedAlert from '../finishView/FinishedAlert';
 
 const currentDate = new Date();      // 获取当前日期
 currentDate.setMonth(currentDate.getMonth() - 1);   // 将日期设置为上个月
@@ -101,6 +103,19 @@ export default function SalaryCalculate() {
       OverTimeMoney:checked? calculateResult? calculateResult.OverTimeMoney:0 :0, // C#補這欄位
       TotalDaySalary:0
     });
+    const [errOpen,setErropen] = useState(false);
+    const [errMsg ,setErrMsg]= useState('');	
+    const [okOpen,setOkopen] = useState(false);
+
+
+
+    const handleOkOpen = () => {
+      setOkopen(true);
+    }	
+
+    const handleErrOpen = () => {
+      setErropen(true);
+    }
 
     const handleoverTimeClickOpen = () => {
       setOverTimeopen(true);
@@ -123,7 +138,7 @@ export default function SalaryCalculate() {
     };
     const fetchStaffSalaryData = async () => {
         try {       
-          const response = await axios.get(`${appsetting.apiUrl}/admin/paymoeny?id=${id}`,config);
+          const response = await axios.get(`${appsetting.apiUrl}/admin/paymoney?id=${id}`,config);
           // 檢查響應的結果，並設置到 state
           if (response.status === 200) {
             setCalculateResult(response.data.Data);
@@ -144,6 +159,13 @@ export default function SalaryCalculate() {
 
         } catch (error) {
           console.error('Error fetching data:', error);
+          if (error.response) {         
+            console.error('Server Response', error.response);
+            const serverMessage = error.response.data;
+    
+            handleErrOpen();
+            setErrMsg(serverMessage);
+          }
         }
     };
     useEffect(() => {
@@ -193,7 +215,8 @@ export default function SalaryCalculate() {
     const handleInputChange = (event, propertyName) => {
       const value = event.target.value;
       if(propertyName === 'FoodSuportMoney' && value > 2400) {
-        alert('伙食津貼不列入稅收，不得超過每月2400額度')
+        handleErrOpen();
+        setErrMsg('伙食津貼不列入稅收，不得超過每月2400額度');
         return;
       }
       // 使用 Number.isNaN 代替全局的 isNaN
@@ -203,7 +226,8 @@ export default function SalaryCalculate() {
               [propertyName]: value === '' ? '' : Number(value),
           }));
       } else {
-          alert('請輸入數字');
+        handleErrOpen();
+        setErrMsg('請輸入數字');
       }
   };
     const returnToZero = () => {
@@ -328,12 +352,18 @@ export default function SalaryCalculate() {
       try {
           const response = await axios.post(`${appsetting.apiUrl}/admin/paymoney`, newSalaryRequest, config);
           if (response.status === 200) {
-              alert('成功');
+              handleOkOpen();
               handleClose();
           }
       } catch (error) {
           console.error("Error logging in:", error);
-          alert('失敗 已重複發放該月薪資');
+          if (error.response) {         
+            console.error('Server Response', error.response);
+            const serverMessage = error.response.data;
+    
+            handleErrOpen();
+            setErrMsg(serverMessage);
+          }
       }
   }
   
@@ -1126,7 +1156,6 @@ export default function SalaryCalculate() {
                   id="outlined-helperText"
                   style={{width:'100px',marginTop:'3%'}}
                   required
-                  helperText="必填"
                   label="健保費"
                   value={salaryRequest.HealthInsuranceFromCompany}
                   InputProps={{
@@ -1149,7 +1178,6 @@ export default function SalaryCalculate() {
                   id="outlined-helperText"
                   style={{marginTop:'3%'}}
                   required
-                  helperText="必填"
                   label="勞保費"
                   value={salaryRequest.WorkerInsuranceFromCompany}
                   InputProps={{
@@ -1172,7 +1200,6 @@ export default function SalaryCalculate() {
                   id="outlined-helperText"
                   style={{width:'100px',marginTop:'3%'}}
                   required
-                  helperText="必填"
                   label="勞退提繳"
                   value={salaryRequest.EmployeeRetirementFromCompany}
                   InputProps={{
@@ -1281,7 +1308,8 @@ export default function SalaryCalculate() {
           :null}
           
       </Box>
-
+      <ErrorAlert errorOpen={errOpen} handleErrClose={()=>setErropen(false)} errMsg={errMsg} />
+      <FinishedAlert okOpen={okOpen} handleOkClose={()=>setOkopen(false)}/>
     </>
   );
 }

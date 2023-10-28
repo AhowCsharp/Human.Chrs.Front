@@ -40,7 +40,8 @@ import Select from '@mui/material/Select';
 import Slide from '@mui/material/Slide';
 import { DataGrid } from '@mui/x-data-grid';
 import appsetting from '../Appsetting';
-import StaffSearch from './StaffSearch';
+import ErrorAlert from '../errorView/ErrorAlert';
+import FinishedAlert from '../finishView/FinishedAlert';
 
 
 
@@ -70,6 +71,17 @@ export default function StaffDetail() {
       HasCrimeRecord:0,
       Memo:''
     });
+    const [errOpen,setErropen] = useState(false);
+    const [errMsg ,setErrMsg]= useState('');		
+    const [okOpen,setOkopen] = useState(false);
+    const handleOkOpen = () => {
+      setOkopen(true);
+    }
+
+
+    const handleErrOpen = () => {
+      setErropen(true);
+    }
 
 
     const fetchStaffDetailData = async () => {
@@ -90,6 +102,13 @@ export default function StaffDetail() {
 
         } catch (error) {
           console.error('Error fetching data:', error);
+          if (error.response) {         
+            console.error('Server Response', error.response);
+            const serverMessage = error.response.data;
+    
+            handleErrOpen();
+            setErrMsg(serverMessage);
+          }
         }
     };
     useEffect(() => {
@@ -112,7 +131,8 @@ export default function StaffDetail() {
               [propertyName]: Number(value),
             })); 
           }else {
-            alert('請輸入數字')
+            handleErrOpen();
+            setErrMsg('請輸入數字');
           }
  
       }else {
@@ -125,19 +145,26 @@ export default function StaffDetail() {
     const handleSubmit = async () => {   
       console.log(staffInfo)
       if (staffInfo.HasCrimeRecord !== 0 && staffInfo.HasCrimeRecord !== 1) {
-        alert("無效的值！只允許0或1。");
+        handleErrOpen();
+        setErrMsg('只允許0或1 0代表無 1代表有');
         return ;
       }
        
       try {
         const response = await axios.post(`${appsetting.apiUrl}/admin/details`, staffInfo ,config);
         if (response.status === 200) {
-        alert('成功');
+        handleOkOpen();
         fetchStaffDetailData();
         }
     } catch (error) {
         console.error("Error logging in:", error);
-        alert('失敗 欄位有誤');
+        if (error.response) {         
+          console.error('Server Response', error.response);
+          const serverMessage = error.response.data;
+  
+          handleErrOpen();
+          setErrMsg(serverMessage);
+        }
     } 
     }
   
@@ -317,41 +344,12 @@ export default function StaffDetail() {
             </Grid>
           </Box>
       </Box>
-
+      <ErrorAlert errorOpen={errOpen} handleErrClose={()=>setErropen(false)} errMsg={errMsg} />
+      <FinishedAlert okOpen={okOpen} handleOkClose={()=>setOkopen(false)}/>
     </>
   );
 }
 
-function formatDateToYYYYMMDD(dateString) {
-    const dateObj = new Date(dateString);
-    const year = dateObj.getFullYear();
-    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-    const day = String(dateObj.getDate()).padStart(2, '0');
-  
-    return `${year}-${month}-${day}`;
-}
-
-function getCurrentDate() {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-}
-
-function daysBetweenDates(date1Str, date2Str) {
-    // 将日期字符串转换为日期对象
-    const date1 = new Date(date1Str);
-    const date2 = new Date(date2Str);
-  
-    // 计算两个日期对象的时间戳，并找出它们之间的差异（以毫秒为单位）
-    const timeDiff = Math.abs(date2.getTime() - date1.getTime());
-  
-    // 将时间差异转换为天数
-    const diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
-  
-    return diffDays;
-}
 
 function calculateAge(birthdate) {
   const today = new Date();

@@ -44,6 +44,8 @@ import Iconify from '../components/iconify';
 import Scrollbar from '../components/scrollbar';
 // sections
 import { UserListHead, UserListToolbar } from '../sections/@dashboard/user';
+
+import ErrorAlert from '../errorView/ErrorAlert';
 import appsetting from '../Appsetting';
 
 
@@ -133,6 +135,13 @@ export default function AdminPage() {
     Status:true
   });
 
+  const [errOpen,setErropen] = useState(false);
+  const [errMsg ,setErrMsg]= useState('');		
+
+  const handleErrOpen = () => {
+    setErropen(true);
+  }
+
   const Auth = parseInt(sessionStorage.getItem('Auth'), 10);
   const nowAdminId = parseInt(sessionStorage.getItem('UserId').split(',')[0],10);
 
@@ -179,6 +188,13 @@ export default function AdminPage() {
         }
     } catch (error) {
         console.error('Error fetching data:', error);
+        if (error.response) {         
+          console.error('Server Response', error.response);
+          const serverMessage = error.response.data;
+  
+          handleErrOpen();
+          setErrMsg(serverMessage);
+        }
     } finally {
         setIsLoading(false);  // 結束加載
     }
@@ -206,17 +222,26 @@ export default function AdminPage() {
       }
     } catch (error) {
       console.error('Error fetching data:', error);
+      if (error.response) {         
+        console.error('Server Response', error.response);
+        const serverMessage = error.response.data;
+
+        handleErrOpen();
+        setErrMsg(serverMessage);
+      }
     }
 };
 
   const submitNewAdmin = async () => {
-    if(adminRequest.Auth > Auth)  {
-      alert('權限不足 新增的管理員權限最高只能等於自身');
+    if(adminRequest.Auth > Auth)  {    
+      handleErrOpen();
+      setErrMsg('權限不足 新增的管理員權限最高只能等於自身');
       return;
     }
 
     if(adminRequest.Auth > 10)  {
-      alert('權限最高為10');
+      handleErrOpen();
+      setErrMsg('最高權限為10');
       return;
     }
     try {       
@@ -228,6 +253,13 @@ export default function AdminPage() {
       }
     } catch (error) {
       console.error('Error fetching data:', error);
+      if (error.response) {         
+        console.error('Server Response', error.response);
+        const serverMessage = error.response.data;
+
+        handleErrOpen();
+        setErrMsg(serverMessage);
+      }
     }
   };
 
@@ -253,12 +285,14 @@ export default function AdminPage() {
 
 
     if(Auth > 10)  {
-      alert('權限不足 新增的管理員權限最高只能等於自身');
+      handleErrOpen();
+      setErrMsg('權限不足 新增的管理員權限最高只能等於自身');
       return;
     }
 
     if(adminRequest.Auth > Auth)  {
-      alert('權限不足 新增的管理員權限最高只能等於自身');
+      handleErrOpen();
+      setErrMsg('權限不足 新增的管理員權限最高只能等於自身');
       return;
     }
 
@@ -271,7 +305,13 @@ export default function AdminPage() {
       }
     } catch (error) {
       console.error('Error fetching data:', error);
-      alert('先前密碼錯誤')
+      if (error.response) {         
+        console.error('Server Response', error.response);
+        const serverMessage = error.response.data;
+
+        handleErrOpen();
+        setErrMsg(serverMessage);
+      }
     }
   };
   useEffect(() => {
@@ -302,8 +342,14 @@ export default function AdminPage() {
           handleCloseMenu();
         } 
     } catch (error) {
-        alert('系統錯誤')
         console.error('Error calling API:', error);
+        if (error.response) {         
+          console.error('Server Response', error.response);
+          const serverMessage = error.response.data;
+  
+          handleErrOpen();
+          setErrMsg(serverMessage);
+        }
         handleCloseMenu();
     }
   };
@@ -325,9 +371,15 @@ export default function AdminPage() {
       } 
       handleCloseMenu();
   } catch (error) {
-      alert('系統錯誤');
       handleCloseMenu();
       console.error('Error calling API:', error);
+      if (error.response) {         
+        console.error('Server Response', error.response);
+        const serverMessage = error.response.data;
+
+        handleErrOpen();
+        setErrMsg(serverMessage);
+      }
   }
 };
 
@@ -695,6 +747,7 @@ export default function AdminPage() {
       </MenuItem>
 
       </Popover>
+      <ErrorAlert errorOpen={errOpen} handleErrClose={()=>setErropen(false)} errMsg={errMsg} />
     </>
   );
 }

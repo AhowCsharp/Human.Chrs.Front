@@ -15,6 +15,7 @@ import FactCheckIcon from '@mui/icons-material/FactCheck';
 import Avatar from '@mui/material/Avatar';
 import CircularProgress from '@mui/material/CircularProgress';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import ErrorAlert from '../errorView/ErrorAlert';
 import appsetting from '../Appsetting';
 
 const Item = styled(Paper)(({ theme }) => ({
@@ -56,6 +57,12 @@ export default function AdminDetail() {
     const [adminDetail,setAdminDetail] = useState(null);
     const [isLoading, setIsLoading] = useState(true); 
     const [avatarUrl, setAvatarUrl] = useState(sessionStorage.getItem('AvatarUrl'));
+    const [errOpen,setErropen] = useState(false);
+    const [errMsg ,setErrMsg]= useState('');	
+
+    const handleErrOpen = () => {
+        setErropen(true);
+      }
 
     useEffect(() => {
         // 監聽 sessionStorage 中 AvatarUrl 的變化
@@ -92,24 +99,12 @@ export default function AdminDetail() {
                 setAdminDetail(response.data.Data);
             }
         } catch (error) {
-            if (error.response) {
-                // 'error.response.data'通常包含服务器的错误消息。
-                // 这可能是一个字符串，也可能是一个对象，具体取决于服务器发送的内容。
-                const errorMessage = error.response.data;
-    
-                // 如果错误消息是一个字符串，直接显示它。
-                // 如果是一个对象，您可能需要找到实际的错误消息字段。
-                if (typeof errorMessage === 'string') {
-                    alert(errorMessage);
-                }
-                else {
-                    // 如果响应格式未知，您可以打印到控制台，或者显示一个通用错误消息。
-                    console.error("Unexpected error format:", errorMessage);
-                    alert('An error occurred.');
-                }
-            } else {
-                // 如果没有响应（例如网络错误），则显示通用错误消息。
-                alert('An error occurred. Please try again later.');
+            if (error.response) {         
+                console.error('Server Response', error.response);
+                const serverMessage = error.response.data;
+        
+                handleErrOpen();
+                setErrMsg(serverMessage);
             }
         } finally {
             setIsLoading(false);  // 結束加載
@@ -145,7 +140,13 @@ export default function AdminDetail() {
                 setAvatarUrl(newAvatarUrl); // 這行會觸發組件重新渲染
             }
         } catch (error) {
-            console.error('Error uploading avatar:', error);
+            console.error('Error uploading avatar:', error);           
+            if (error.response) {         
+                console.error('Server Response', error.response);
+                const serverMessage = error.response.data;      
+                handleErrOpen();
+                setErrMsg(serverMessage);
+            }
         }
     };
     
@@ -311,6 +312,8 @@ export default function AdminDetail() {
                 </Box>
             </Box>
             )}
+
+            <ErrorAlert errorOpen={errOpen} handleErrClose={()=>setErropen(false)} errMsg={errMsg} />
         </>
     );
 }

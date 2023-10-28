@@ -45,6 +45,7 @@ import Slide from '@mui/material/Slide';
 import { DataGrid } from '@mui/x-data-grid';
 import appsetting from '../Appsetting';
 import OverTimeSearch from './OverTimeSearch';
+import ErrorAlert from '../errorView/ErrorAlert';
 
 const Transition = React.forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />);
 
@@ -128,6 +129,12 @@ export default function OvertTimeManage() {
     const [timePeriod,setTimePeriod] = useState(getCurrentMonthBounds());
     const [selectedOverTimeLog,setSelectedOverTimeLog] = useState(null);
     const [open, setOpen] = useState(false);
+    const [errOpen,setErropen] = useState(false);
+    const [errMsg ,setErrMsg]= useState('');		
+
+    const handleErrOpen = () => {
+      setErropen(true);
+    }
 
     const handleClickOpen = (params) => {
       setSelectedOverTimeLog(params.row);
@@ -150,6 +157,13 @@ export default function OvertTimeManage() {
         }
       } catch (error) {
         console.error('Error fetching data:', error);
+        if (error.response) {         
+          console.error('Server Response', error.response);
+          const serverMessage = error.response.data;
+  
+          handleErrOpen();
+          setErrMsg(serverMessage);
+        }
       }
   };
 
@@ -171,36 +185,15 @@ export default function OvertTimeManage() {
           console.error("Error logging in:", error);
           fetchData();
           handleClose();
-          alert('找不到該加班申請，故系統審核未通過');
+          if (error.response) {         
+            console.error('Server Response', error.response);
+            const serverMessage = error.response.data;
+    
+            handleErrOpen();
+            setErrMsg(serverMessage);
+          }
         }          
     }
-    // useEffect(() => {
-    //     fetchStaffDetailData();
-    // }, []); 
-    // const navigate = useNavigate();
-
-
-    // const handleInputChange = (event, propertyName) => {
-    //   const value = event.target ? event.target.value : event;
-    //   if(propertyName === 'HasCrimeRecord') {
-    //       // eslint-disable-next-line no-restricted-globals
-    //       if(!isNaN(value)) {
-    //         setStaffInfo((prevData) => ({
-    //           ...prevData,
-    //           [propertyName]: Number(value),
-    //         })); 
-    //       }else {
-    //         alert('請輸入數字')
-    //       }
- 
-    //   }else {
-    //     setStaffInfo((prevData) => ({
-    //       ...prevData,
-    //       [propertyName]: value,
-    //   }));
-    //   }
-    // };
-  
 
   return (
     <>
@@ -299,41 +292,11 @@ export default function OvertTimeManage() {
           <Button onClick={()=>handleVerify(false)}>不同意</Button>
         </DialogActions>
       </Dialog>
-
+      <ErrorAlert errorOpen={errOpen} handleErrClose={()=>setErropen(false)} errMsg={errMsg} />
     </>
   );
 }
 
-function formatDateToYYYYMMDD(dateString) {
-    const dateObj = new Date(dateString);
-    const year = dateObj.getFullYear();
-    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-    const day = String(dateObj.getDate()).padStart(2, '0');
-  
-    return `${year}-${month}-${day}`;
-}
-
-function getCurrentDate() {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-}
-
-function daysBetweenDates(date1Str, date2Str) {
-    // 将日期字符串转换为日期对象
-    const date1 = new Date(date1Str);
-    const date2 = new Date(date2Str);
-  
-    // 计算两个日期对象的时间戳，并找出它们之间的差异（以毫秒为单位）
-    const timeDiff = Math.abs(date2.getTime() - date1.getTime());
-  
-    // 将时间差异转换为天数
-    const diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
-  
-    return diffDays;
-}
 
 const getCurrentMonthBounds = () => {
   const now = new Date();

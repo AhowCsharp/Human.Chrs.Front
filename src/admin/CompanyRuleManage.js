@@ -47,7 +47,9 @@ import Select from '@mui/material/Select';
 import Slide from '@mui/material/Slide';
 import { DataGrid } from '@mui/x-data-grid';
 import appsetting from '../Appsetting';
-import SalarySettingSearch from './SalarySettingSearch';
+import ErrorAlert from '../errorView/ErrorAlert';
+import FinishedAlert from '../finishView/FinishedAlert';
+
 
 const Transition = React.forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />);
 
@@ -155,6 +157,16 @@ export default function CompanyRuleManage() {
     });
     const [departments,setDepartments] = useState([]);
     const [open, setOpen] = useState(false);
+    const [errOpen,setErropen] = useState(false);
+    const [okOpen,setOkopen] = useState(false);
+    const [errMsg ,setErrMsg]= useState('');		
+    const handleErrOpen = () => {
+      setErropen(true);
+    }
+    const handleOkOpen = () => {
+      setOkopen(true);
+    }
+
     const isDisabled = editedRows.length === 0;
 
     const handleRuleUpdateSave = async () => {
@@ -169,21 +181,28 @@ export default function CompanyRuleManage() {
       );
 
       if (!allTimesValid) {
-          alert('請確認所有的時間格式是否正確 (HH:MM:SS)');
+          handleErrOpen();
+          setErrMsg('請確認所有的時間格式是否正確 (HH:MM:SS)');
           return;
       }
 
         try {
           const response = await axios.post(`${appsetting.apiUrl}/admin/modifyrule`, modifiedRows,config);
           if(response.status === 200) {     
-            alert('修改成功');
+            handleOkOpen();
             fetchData();
             setEditedRows([]);
           }
    
         } catch (error) {
           console.error('Failed to fetch user data:', error);
-          alert('修改失敗 請確認地址及其他欄位是否正確');
+          if (error.response) {         
+            console.error('Server Response', error.response);
+            const serverMessage = error.response.data;
+    
+            handleErrOpen();
+            setErrMsg(serverMessage);
+          }
         }
     };
 
@@ -230,6 +249,13 @@ export default function CompanyRuleManage() {
         }
       } catch (error) {
         console.error('Error fetching data:', error);
+        if (error.response) {         
+          console.error('Server Response', error.response);
+          const serverMessage = error.response.data;
+  
+          handleErrOpen();
+          setErrMsg(serverMessage);
+        }
       }
   };
 
@@ -243,6 +269,13 @@ export default function CompanyRuleManage() {
       }
     } catch (error) {
       console.error('Error fetching data:', error);
+      if (error.response) {         
+        console.error('Server Response', error.response);
+        const serverMessage = error.response.data;
+
+        handleErrOpen();
+        setErrMsg(serverMessage);
+      }
     }
 };
 
@@ -257,25 +290,33 @@ export default function CompanyRuleManage() {
          !isValidTime(ruleRequest.CheckInEndTime) || 
          !isValidTime(ruleRequest.CheckOutStartTime) || 
          !isValidTime(ruleRequest.CheckOutEndTime)) {
-          alert('請確認時間格式是否正確 (HH:MM:SS)');
+          handleErrOpen();
+          setErrMsg('請確認所有的時間格式是否正確 (HH:MM:SS)');
           return;
       }
   
       if(ruleRequest.WorkAddress.length < 5) {
-          alert('請確認地址部分輸入是否正確');
+          handleErrOpen();
+          setErrMsg('請確認地址部分輸入是否正確');
           return;
       }   
   
       try {
           const response = await axios.patch(`${appsetting.apiUrl}/admin/newrule`, ruleRequest, config);
           if (response.status === 200) {
-              alert('新增成功');
+              handleOkOpen();
               fetchData();
               handleClose();
           }
       } catch (error) {
           console.error("Error logging in:", error);
-          alert('請確認該部門是否已有規定/或是地址部分輸入是否正確');
+          if (error.response) {         
+            console.error('Server Response', error.response);
+            const serverMessage = error.response.data;
+    
+            handleErrOpen();
+            setErrMsg(serverMessage);
+          }
       }          
   }
     const handleInputChange = (event, propertyName) => {
@@ -455,55 +496,9 @@ export default function CompanyRuleManage() {
             }}
         />
       </Box>
+      <ErrorAlert errorOpen={errOpen} handleErrClose={()=>setErropen(false)} errMsg={errMsg} />
+      <FinishedAlert okOpen={okOpen} handleOkClose={()=>setOkopen(false)}/>
     </>
   );
-}
-
-function formatDateToYYYYMMDD(dateString) {
-    const dateObj = new Date(dateString);
-    const year = dateObj.getFullYear();
-    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-    const day = String(dateObj.getDate()).padStart(2, '0');
-  
-    return `${year}-${month}-${day}`;
-}
-
-function getCurrentDate() {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-}
-
-function daysBetweenDates(date1Str, date2Str) {
-    // 将日期字符串转换为日期对象
-    const date1 = new Date(date1Str);
-    const date2 = new Date(date2Str);
-  
-    // 计算两个日期对象的时间戳，并找出它们之间的差异（以毫秒为单位）
-    const timeDiff = Math.abs(date2.getTime() - date1.getTime());
-  
-    // 将时间差异转换为天数
-    const diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
-  
-    return diffDays;
-}
-
-const getCurrentMonthBounds = () => {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth();
-
-  // 獲取當下月份的第一天
-  const start = new Date(year, month, 1);
-  const startDateString = `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, '0')}-${String(start.getDate()).padStart(2, '0')}`;
-
-
-  // 獲取當下月份的最後一天
-  const end = new Date(year, month + 1, 0);
-  const endDateString = `${end.getFullYear()}-${String(end.getMonth() + 1).padStart(2, '0')}-${String(end.getDate()).padStart(2, '0')}`;
-
-  return { start: startDateString, end: endDateString };
 }
     

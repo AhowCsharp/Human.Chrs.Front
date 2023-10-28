@@ -56,6 +56,8 @@ import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'moment/locale/zh-cn';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
+import ErrorAlert from '../errorView/ErrorAlert';
+import FinishedAlert from '../finishView/FinishedAlert';
 import appsetting from '../Appsetting';
 
 const eventStyles = {
@@ -96,6 +98,19 @@ export default function MeetManage () {
         EndTime: dayjs().millisecond(0), 
         Detail:''
     })
+    const [errOpen,setErropen] = useState(false);
+    const [errMsg ,setErrMsg]= useState('');		
+    const [okOpen,setOkopen] = useState(false);
+
+
+
+    const handleOkOpen = () => {
+      setOkopen(true);
+    }
+
+    const handleErrOpen = () => {
+      setErropen(true);
+    }
 
 useEffect(() => {
     fetchStaffsData();
@@ -112,6 +127,13 @@ useEffect(() => {
       }
     } catch (error) {
       console.error('Error fetching data:', error);
+      if (error.response) {         
+        console.error('Server Response', error.response);
+        const serverMessage = error.response.data;
+
+        handleErrOpen();
+        setErrMsg(serverMessage);
+      }
     }
 };
 
@@ -124,6 +146,13 @@ const fetchDepartmentData = async () => {
       }
     } catch (error) {
       console.error('Error fetching data:', error);
+      if (error.response) {         
+        console.error('Server Response', error.response);
+        const serverMessage = error.response.data;
+
+        handleErrOpen();
+        setErrMsg(serverMessage);
+      }
     }
 };
 
@@ -143,11 +172,17 @@ const handleDeleteMeet = async (id) => {
                 }));
                 setEvents(transformedEvents);
                 setSelectEvent(null);
-                alert('成功');
+                handleOkOpen();
             }
         } catch (error) {
             console.error("Error logging in:", error);
-            alert('失敗');
+            if (error.response) {         
+                console.error('Server Response', error.response);
+                const serverMessage = error.response.data;
+        
+                handleErrOpen();
+                setErrMsg(serverMessage);
+              }
         }          
 }
 
@@ -171,6 +206,13 @@ const fetchEventData = async () => {
         }
     } catch (error) {
       console.error('An error occurred while fetching data:', error);
+      if (error.response) {         
+        console.error('Server Response', error.response);
+        const serverMessage = error.response.data;
+
+        handleErrOpen();
+        setErrMsg(serverMessage);
+      }
     }
 }; 
 
@@ -219,35 +261,45 @@ const handleMeetSubmit = async () => {
     }
 
     if(eventRequest.StaffId === 0 && eventRequest.MeetType === 3) {
-        alert('尚未選擇員工');
+        handleErrOpen();
+        setErrMsg('尚未選擇員工');
         return;
     }
 
     if(eventRequest.DepartmentId === 0 && eventRequest.MeetType === 2) {
-        alert('尚未選擇部門');
+        handleErrOpen();
+        setErrMsg('尚未選擇部門');
         return;
     }
 
     if(eventRequest.Title.trim() === "") {
-        alert('標題不得為空');
+        handleErrOpen();
+        setErrMsg('標題不得為空');
         return;
     }
 
     if (eventRequest.EndTime.isBefore(eventRequest.StartTime)) {
-        alert('起始時間不能大於終止時間');
+        handleErrOpen();
+        setErrMsg('起始時間不能大於終止時間');
         return;
     } 
 
     try {
         const response = await axios.post(`${appsetting.apiUrl}/admin/meet`, request, config);
         if (response.status === 200) {
-        alert('新增成功');
+        handleOkOpen();
         fetchEventData();
         }
         setMeetAddOpen(false);
     } catch (error) {
         console.error("Error logging in:", error);
-        alert('發生錯誤');
+        if (error.response) {         
+            console.error('Server Response', error.response);
+            const serverMessage = error.response.data;
+    
+            handleErrOpen();
+            setErrMsg(serverMessage);
+          }
     }                    
 }
 
@@ -494,7 +546,8 @@ const handleMeetSubmit = async () => {
             <Button onClick={handleMeetSubmit}>新增</Button>
             </DialogActions>
         </Dialog>
-    
+        <ErrorAlert errorOpen={errOpen} handleErrClose={()=>setErropen(false)} errMsg={errMsg} />
+        <FinishedAlert okOpen={okOpen} handleOkClose={()=>setOkopen(false)}/>
     </>
 
   );

@@ -46,6 +46,8 @@ import appsetting from '../Appsetting';
 import StaffSearch from './StaffSearch';
 import InsuranceClass from '../Insurance/Insurance';
 import OverTimeDetailList from './OverTimeDetailList';
+import ErrorAlert from '../errorView/ErrorAlert';
+import FinishedAlert from '../finishView/FinishedAlert';
 
 const Transition = React.forwardRef((props, ref) => <Slide direction="left" ref={ref} {...props} />);
 
@@ -188,7 +190,21 @@ export default function DaySalaryStaffManage() {
         CompanyCostAmount:0,
         ChangeOverTimeToMoney:true,
         TotalDaySalary:0
-      });  
+    });  
+    const [errOpen,setErropen] = useState(false);
+    const [errMsg ,setErrMsg]= useState('');	
+    const [okOpen,setOkopen] = useState(false);
+
+
+
+    const handleOkOpen = () => {
+      setOkopen(true);
+    }	
+
+    const handleErrOpen = () => {
+      setErropen(true);
+    }
+
 
     const resetData = () => {
       setSalaryRequest({
@@ -271,6 +287,13 @@ export default function DaySalaryStaffManage() {
           }
         } catch (error) {
           console.error('Error fetching data:', error);
+          if (error.response) {         
+            console.error('Server Response', error.response);
+            const serverMessage = error.response.data;
+    
+            handleErrOpen();
+            setErrMsg(serverMessage);
+          }
         }
     };
 
@@ -285,6 +308,13 @@ export default function DaySalaryStaffManage() {
         }
       } catch (error) {
         console.error('Error fetching data:', error);
+        if (error.response) {         
+          console.error('Server Response', error.response);
+          const serverMessage = error.response.data;
+  
+          handleErrOpen();
+          setErrMsg(serverMessage);
+        }
       }
   };
 
@@ -305,13 +335,21 @@ export default function DaySalaryStaffManage() {
           handleExcelClose();
       } catch (error) {
           console.error("Error downloading the file:", error);
+          if (error.response) {         
+            console.error('Server Response', error.response);
+            const serverMessage = error.response.data;
+    
+            handleErrOpen();
+            setErrMsg(serverMessage);
+          }
       }
     }
 
     const handleInputChange = (event, propertyName) => {
         const value = event.target.value;
         if(propertyName === 'FoodSuportMoney' && value > 2400) {
-          alert('伙食津貼不列入稅收，不得超過每月2400額度')
+          handleErrOpen();
+          setErrMsg('伙食津貼不列入稅收，不得超過每月2400額度');
           return;
         }
         // 使用 Number.isNaN 代替全局的 isNaN
@@ -321,7 +359,8 @@ export default function DaySalaryStaffManage() {
                 [propertyName]: value === '' ? '' : Number(value),
             }));
         } else {
-            alert('請輸入數字');
+            handleErrOpen();
+            setErrMsg('請輸入數字');
         }
     };
 
@@ -344,7 +383,7 @@ export default function DaySalaryStaffManage() {
       setSalaryRequest({
         ...salaryRequest,
         StaffIncomeAmount:Number(salaryRequest.Bonus)
-         + Number(salaryView.TotalDaysSalary)+ Number(salaryRequest.FoodSuportMoney)+ Number(salaryView.OverTimeSalary)
+         + Number(salaryView.TotalDaysSalary)+ Number(salaryRequest.FoodSuportMoney)+ Number(salaryRequest.OverTimeMoney)
       })
   }
 
@@ -357,12 +396,18 @@ export default function DaySalaryStaffManage() {
         try {
             const response = await axios.post(`${appsetting.apiUrl}/admin/paymoney`, newSalaryRequest, config);
             if (response.status === 200) {
-                alert('成功');
+                handleOkOpen();
                 handleClose();
             }
         } catch (error) {
             console.error("Error logging in:", error);
-            alert('失敗 已重複發放該月薪資');
+            if (error.response) {         
+              console.error('Server Response', error.response);
+              const serverMessage = error.response.data;
+      
+              handleErrOpen();
+              setErrMsg(serverMessage);
+            }
         }
     }
 
@@ -374,36 +419,29 @@ export default function DaySalaryStaffManage() {
       if(salaryView) {
         setSalaryRequest({
           ...salaryRequest,
+          OverTimeMoney:salaryView.OverTimeSalary
+        })
+      }
+  }, [salaryView]);
+
+    useEffect(() => {
+      if(salaryView) {
+        setSalaryRequest({
+          ...salaryRequest,
           StaffIncomeAmount:Number(salaryRequest.Bonus)
-           + Number(salaryView.TotalDaysSalary)+ Number(salaryRequest.FoodSuportMoney)+ Number(salaryView.OverTimeSalary)
+           + Number(salaryView.TotalDaysSalary)+ Number(salaryRequest.FoodSuportMoney)+ Number(salaryRequest.OverTimeMoney)
         })
         
       }
       if((salaryRequest.Bonus === 0 || !salaryRequest.Bonus) && salaryView) {
         setSalaryRequest({
           ...salaryRequest,
-          StaffIncomeAmount:Number(salaryView.TotalDaysSalary)+ Number(salaryRequest.FoodSuportMoney)+ Number(salaryView.OverTimeSalary)
+          StaffIncomeAmount:Number(salaryView.TotalDaysSalary)+ Number(salaryRequest.FoodSuportMoney)+ Number(salaryRequest.OverTimeMoney)
         })
       }
-    }, [salaryRequest.Bonus]);
+    }, [salaryRequest.Bonus,salaryRequest.FoodSuportMoney,salaryRequest.OverTimeMoney]);
     
-    useEffect(() => {
 
-      if(salaryView) {
-        setSalaryRequest({
-          ...salaryRequest,
-          StaffIncomeAmount:Number(salaryRequest.Bonus)
-           + Number(salaryView.TotalDaysSalary)+ Number(salaryRequest.FoodSuportMoney)+ Number(salaryView.OverTimeSalary)
-        })
-        
-      }
-      if((salaryRequest.FoodSuportMoney === 0 || !salaryRequest.FoodSuportMoney) && salaryView) {
-        setSalaryRequest({
-          ...salaryRequest,
-          StaffIncomeAmount:Number(salaryView.DaySalary) + Number(salaryRequest.FoodSuportMoney)+ Number(salaryView.OverTimeSalary)
-        })
-      }
-    }, [salaryRequest.FoodSuportMoney]);
 
     useEffect(() => {
       const matchedItem = InsuranceClass.find(item => item.id === insuranceLevel);
@@ -588,8 +626,16 @@ export default function DaySalaryStaffManage() {
                                     </InputLabel>       
                                     <TextField id="StaffNo" 
                                         size="small"
-                                        inputProps={{ readOnly: true }}
-                                        value={salaryView !== null ? salaryView.OverTimeSalary:0}/>
+                                        value={salaryRequest.OverTimeMoney}
+                                        onChange={(e) => handleInputChange(e, 'OverTimeMoney')}
+                                        onBlur={(e) => {
+                                          if(e.target.value === "" || e.target.value === null) {
+                                            setSalaryRequest({
+                                              ...salaryRequest,
+                                              OverTimeMoney:0
+                                            })
+                                          }
+                                      }} />
                                 </Grid>
                                 <Grid item xs={3}>      
                                     <InputLabel shrink htmlFor="bootstrap-input">
@@ -850,6 +896,8 @@ export default function DaySalaryStaffManage() {
           <Button onClick={handleoverTimeClose}>退出</Button>
         </DialogActions>
       </Dialog>
+      <ErrorAlert errorOpen={errOpen} handleErrClose={()=>setErropen(false)} errMsg={errMsg} />
+      <FinishedAlert okOpen={okOpen} handleOkClose={()=>setOkopen(false)}/>
     </>
   );
 }

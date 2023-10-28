@@ -36,6 +36,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { MobileDatePicker } from '@mui/x-date-pickers/MobileDatePicker';
 import { DesktopDatePicker } from '@mui/x-date-pickers/DesktopDatePicker';
 import { StaticDatePicker } from '@mui/x-date-pickers/StaticDatePicker';
+import Chip from '@mui/material/Chip';
 import Select from '@mui/material/Select';
 import Slide from '@mui/material/Slide';
 import IconButton from '@mui/material/IconButton';
@@ -44,6 +45,8 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { DataGrid } from '@mui/x-data-grid';
 import appsetting from '../Appsetting';
 import StaffSearch from './StaffSearch';
+import ErrorAlert from '../errorView/ErrorAlert';
+import FinishedAlert from '../finishView/FinishedAlert';
 
 const Transition = React.forwardRef((props, ref) => <Slide direction="left" ref={ref} {...props} />);
 
@@ -85,7 +88,7 @@ export default function StaffManage() {
         {
             field: 'Department',
             headerName: '部門',
-            width: 100,
+            width: 130,
             editable: true,
         },
         {
@@ -157,7 +160,40 @@ export default function StaffManage() {
               </>
             ),
         },
+        {
+            field: 'IsCheckin',
+            headerName: '今日簽到',
+            width: 100, // 可能需要更多的空间来适应Chip组件
+            renderCell: (params) => {
+              if (params.row.IsCheckin) {
 
+                return <Chip label="已簽到" size="small"
+                color="success" variant="outlined" style={{fontWeight: 'bold'}}/>;
+              } 
+
+              return (
+                <>
+                  <Chip label="未簽到" size="small" color="error" variant="outlined"style={{fontWeight: 'bold'}} />
+                </>
+              );
+            },
+        },
+        {
+            field: 'IsCheckOut',
+            headerName: '昨日簽退',
+            width: 100, // 可能需要更多的空间来适应Chip组件
+            renderCell: (params) => {
+              if (params.row.IsCheckOut) {
+                // 如果是 true，显示已打卡
+                return <Chip label="已簽退" size="small" color="success" variant="outlined" style={{fontWeight: 'bold'}}/>;
+              } 
+              return (
+                <>
+                  <Chip label="未簽退" size="small" color="error" variant="outlined" style={{fontWeight: 'bold'}}/>
+                </>
+              );
+            },
+        },        
     ];
     const [open, setOpen] = useState(false);
     const [deleteId,setDeleteId] = useState(0);
@@ -212,6 +248,17 @@ export default function StaffManage() {
         ParttimeMoney:0,
         Gender: gender,
     });
+    const [errOpen,setErropen] = useState(false);
+    const [errMsg ,setErrMsg]= useState('');	
+    const [okOpen,setOkopen] = useState(false);
+    const handleOkOpen = () => {
+      setOkopen(true);
+    }
+	
+
+    const handleErrOpen = () => {
+      setErropen(true);
+    }
     const navigate = useNavigate();
 
     const handleDetailsClick = (id) => {
@@ -232,13 +279,19 @@ export default function StaffManage() {
             });
     
             if (response.status === 200) {
-                alert('成功');
+                handleOkOpen();
                 fetchData();
                 handleSureClose();
             }
         } catch (error) {
             console.error("Error deleting record:", error);
-            alert('系統錯誤 權限不足');
+            if (error.response) {         
+                console.error('Server Response', error.response);
+                const serverMessage = error.response.data;
+        
+                handleErrOpen();
+                setErrMsg(serverMessage);
+            }
             handleSureClose();
         }
     }
@@ -265,12 +318,19 @@ export default function StaffManage() {
                 }
             );
             if (response.status === 200) {
-                alert('成功');
+                handleOkOpen();
+
             } 
             
-        } catch (error) {
-            alert('系統錯誤');           
+        } catch (error) {                 
             console.error('Error calling API:', error);
+            if (error.response) {         
+                console.error('Server Response', error.response);
+                const serverMessage = error.response.data;
+        
+                handleErrOpen();
+                setErrMsg(serverMessage);
+            }
         }
     };
 
@@ -332,6 +392,13 @@ export default function StaffManage() {
           }
         } catch (error) {
           console.error('Error fetching data:', error);
+          if (error.response) {         
+            console.error('Server Response', error.response);
+            const serverMessage = error.response.data;
+    
+            handleErrOpen();
+            setErrMsg(serverMessage);
+          }
         }
     };
     const fetchDepartmentsData = async () => {
@@ -343,6 +410,13 @@ export default function StaffManage() {
           }
         } catch (error) {
           console.error('Error fetching data:', error);
+          if (error.response) {         
+            console.error('Server Response', error.response);
+            const serverMessage = error.response.data;
+    
+            handleErrOpen();
+            setErrMsg(serverMessage);
+          }
         }
     };
     useEffect(() => {
@@ -469,12 +543,14 @@ export default function StaffManage() {
 
     const handleSubmit = async () => {
         if(staff.DepartmentId === 0) {
-            alert('部門尚未選擇');
+            handleErrOpen();
+            setErrMsg('部門尚未選擇');
             return
         }
 
         if(staff.StaffAccount.length <= 5 || staff.StaffPassWord.length <= 5) {
-            alert('帳號及密碼長度需大於5');
+            handleErrOpen();
+            setErrMsg('帳號及密碼長度需大於5');
             return
         }
 
@@ -487,34 +563,22 @@ export default function StaffManage() {
         try {
             const response = await axios.post(`${appsetting.apiUrl}/admin/newstaff`, staffRequest,config);
             if (response.status === 200) {
-            alert('成功');
-            fetchData();
-            handleClose();
+                handleOkOpen();
+                fetchData();
+                handleClose();
             }
         } catch (error) {
             console.error("Error logging in:", error);
-            alert('失敗 資料型態有誤/該帳號已有人註冊');
+            if (error.response) {         
+                console.error('Server Response', error.response);
+                const serverMessage = error.response.data;
+        
+                handleErrOpen();
+                setErrMsg(serverMessage);
+            }
         }          
     }
-    // const destorySubmit = async (seq) => {
-    //     // const config = {
-    //     //         headers: {
-    //     //         'X-Ap-Token': appsetting.token,
-    //     //         'X-Ap-CompanyId': sessionStorage.getItem('CompanyId'),
-    //     //         'X-Ap-UserId': sessionStorage.getItem('UserId'),
-    //     //         }
-    //     //     };     
-    //         try {
-    //           const response = await axios.get(`${apiUrl}/Manufacturer/delete/${seq}`);
-    //           if (response.status === 200) {
-    //             alert('成功');
-    //             fetchData();
-    //           }
-    //         } catch (error) {
-    //           console.error("Error logging in:", error);
-    //           alert('失敗 欄位有誤');
-    //         }          
-    // }
+
 
   return (
     <>
@@ -734,7 +798,7 @@ export default function StaffManage() {
                                 value={staff.LevelPosition}
                                 onChange={(e) => handleInputChange(e, 'LevelPosition')}/>
                         </Grid>                        
-                        <Grid item xs={3}>
+                        <Grid item xs={2}>
                             <InputLabel shrink htmlFor="bootstrap-input">
                                 是否在職
                             </InputLabel>       
@@ -743,7 +807,7 @@ export default function StaffManage() {
                                 value={staff.Status}
                                 onChange={(e) => handleInputChange(e, 'Status')}/>
                         </Grid>
-                        <Grid item xs={3}>
+                        <Grid item xs={4}>
                             <InputLabel shrink htmlFor="bootstrap-input">
                                 雇用類型
                             </InputLabel>  
@@ -756,9 +820,10 @@ export default function StaffManage() {
                             style={{width:'100%'}}
                             onChange={(e) => handleInputChange(e, 'EmploymentTypeId')}
                             >
-                                <MenuItem value={1}>全職</MenuItem>
+                                <MenuItem value={1}>固定班全職</MenuItem>
                                 <MenuItem value={2}>部分工時</MenuItem>
                                 <MenuItem value={3}>日薪制</MenuItem>
+                                <MenuItem value={4}>輪班制全職</MenuItem>
                             </Select>
                         </Grid>
                         <Grid item xs={3}>
@@ -1062,12 +1127,15 @@ export default function StaffManage() {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleSureClose}>Disagree</Button>
+          <Button onClick={handleSureClose}>取消</Button>
           <Button onClick={()=>handleDeleteSubmit(deleteId)} autoFocus>
             同意
           </Button>
         </DialogActions>
       </Dialog>
+
+      <ErrorAlert errorOpen={errOpen} handleErrClose={()=>setErropen(false)} errMsg={errMsg} />
+      <FinishedAlert okOpen={okOpen} handleOkClose={()=>setOkopen(false)}/>
     </>
   );
 }

@@ -50,7 +50,8 @@ import Select from '@mui/material/Select';
 import Slide from '@mui/material/Slide';
 import { DataGrid } from '@mui/x-data-grid';
 import appsetting from '../Appsetting';
-import SalarySettingSearch from './SalarySettingSearch';
+import ErrorAlert from '../errorView/ErrorAlert';
+import FinishedAlert from '../finishView/FinishedAlert';
 
 const Transition = React.forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />);
 
@@ -119,6 +120,17 @@ export default function DepartmentManage() {
     const [open, setOpen] = useState(false);
     const [rmOpen, setRmOpen] = useState(false);
     const [departmentName,setDepartmentName] = useState('');
+    const [errOpen,setErropen] = useState(false);
+    const [errMsg ,setErrMsg]= useState('');		
+    const [okOpen,setOkopen] = useState(false);
+
+    const handleOkOpen = () => {
+      setOkopen(true);
+    }
+
+    const handleErrOpen = () => {
+      setErropen(true);
+    }
     const isDisabled = editedRows.length === 0;
 
     const handleClickOpen = () => {
@@ -159,11 +171,19 @@ export default function DepartmentManage() {
         }
       } catch (error) {
         console.error('Error fetching data:', error);
+        if (error.response) {         
+          console.error('Server Response', error.response);
+          const serverMessage = error.response.data;
+  
+          handleErrOpen();
+          setErrMsg(serverMessage);
+        }
       }
   };
   const deleteDepartment = async () => {
     if(rmRequest.OtherDepartmentId === 0) {
-      alert('尚未選擇替補部門')
+      handleErrOpen();
+      setErrMsg('尚未選擇替補部門');
       return;
     }
 
@@ -175,15 +195,22 @@ export default function DepartmentManage() {
   
       // 检查响应状态
       if (response.status === 200) {
-        alert('刪除成功 請注意替補部門是否有設置規定')
+        handleOkOpen();
         handleRmClose();
         fetchData();
       } else {
-        alert('刪除失敗')
+        handleErrOpen();
+        setErrMsg('刪除失敗');
       }
     } catch (error) {
-      alert('刪除失敗')
       console.error('Error deleting department:', error);
+      if (error.response) {         
+        console.error('Server Response', error.response);
+        const serverMessage = error.response.data;
+
+        handleErrOpen();
+        setErrMsg(serverMessage);
+      }
     }
   };
 
@@ -200,12 +227,18 @@ export default function DepartmentManage() {
           if (response.status === 200) {
             setRows(response.data);
             setFilterRows(response.data);
-            alert('新增成功')
+            handleOkOpen();
             handleClose();
           }
         } catch (error) {
           console.error("Error logging in:", error);
-          alert('新增失敗');
+          if (error.response) {         
+            console.error('Server Response', error.response);
+            const serverMessage = error.response.data;
+    
+            handleErrOpen();
+            setErrMsg(serverMessage);
+          }
         }          
     }
     const processRowUpdate = (newRow, oldRow) => {
@@ -238,7 +271,7 @@ export default function DepartmentManage() {
         const response = await axios.patch(`${appsetting.apiUrl}/admin/modifydepartment`, modifiedRows,config);
         if(response.status === 200) {     
 
-          alert('修改成功');
+          handleOkOpen();
           setRows(response.data);
           setFilterRows(response.data);
           setEditedRows([]);
@@ -246,7 +279,13 @@ export default function DepartmentManage() {
   
       } catch (error) {
         console.error('Failed to fetch user data:', error);
-        alert('修改失敗');
+        if (error.response) {         
+          console.error('Server Response', error.response);
+          const serverMessage = error.response.data;
+  
+          handleErrOpen();
+          setErrMsg(serverMessage);
+        }
       }
   };
 
@@ -369,55 +408,10 @@ export default function DepartmentManage() {
             }}
         />
       </Box>
+      <ErrorAlert errorOpen={errOpen} handleErrClose={()=>setErropen(false)} errMsg={errMsg} />
+      <FinishedAlert okOpen={okOpen} handleOkClose={()=>setOkopen(false)}/>
     </>
   );
 }
 
-function formatDateToYYYYMMDD(dateString) {
-    const dateObj = new Date(dateString);
-    const year = dateObj.getFullYear();
-    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-    const day = String(dateObj.getDate()).padStart(2, '0');
-  
-    return `${year}-${month}-${day}`;
-}
-
-function getCurrentDate() {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-}
-
-function daysBetweenDates(date1Str, date2Str) {
-    // 将日期字符串转换为日期对象
-    const date1 = new Date(date1Str);
-    const date2 = new Date(date2Str);
-  
-    // 计算两个日期对象的时间戳，并找出它们之间的差异（以毫秒为单位）
-    const timeDiff = Math.abs(date2.getTime() - date1.getTime());
-  
-    // 将时间差异转换为天数
-    const diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
-  
-    return diffDays;
-}
-
-const getCurrentMonthBounds = () => {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth();
-
-  // 獲取當下月份的第一天
-  const start = new Date(year, month, 1);
-  const startDateString = `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, '0')}-${String(start.getDate()).padStart(2, '0')}`;
-
-
-  // 獲取當下月份的最後一天
-  const end = new Date(year, month + 1, 0);
-  const endDateString = `${end.getFullYear()}-${String(end.getMonth() + 1).padStart(2, '0')}-${String(end.getDate()).padStart(2, '0')}`;
-
-  return { start: startDateString, end: endDateString };
-}
     

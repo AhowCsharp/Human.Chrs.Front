@@ -21,6 +21,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Backdrop from '@mui/material/Backdrop';
 // components
 import Iconify from '../../../components/iconify';
+import ErrorAlert from '../../../errorView/ErrorAlert';
 import appsetting from '../../../Appsetting';
 
 // ----------------------------------------------------------------------
@@ -46,6 +47,12 @@ export default function LoginForm() {
     Email:'',
     Account:''
   })
+  const [errOpen,setErropen] = useState(false);
+  const [errMsg ,setErrMsg]= useState('');		
+
+  const handleErrOpen = () => {
+    setErropen(true);
+  }
   const isSuperAdmin = sessionStorage.getItem('SuperToken')!== null;
 
   const handleResetClickOpen = () => {
@@ -143,6 +150,14 @@ export default function LoginForm() {
     } catch (error) {
       setOpen(true);
       console.error("Error logging in:", error);
+      
+      if (error.response) {         
+        console.error('Server Response', error.response);
+        const serverMessage = error.response.data;
+
+        handleErrOpen();
+        setErrMsg(serverMessage);
+      }
     }
   };
 
@@ -184,6 +199,14 @@ export default function LoginForm() {
       }
     } catch (error) {
       console.error("Error logging in:", error);
+      
+      if (error.response) {         
+        console.error('Server Response', error.response);
+        const serverMessage = error.response.data;
+
+        handleErrOpen();
+        setErrMsg(serverMessage);
+      }
     }
   };
 
@@ -206,9 +229,16 @@ export default function LoginForm() {
           handleDeviceClose();
       }
     } catch (error) {
-      alert('綁定失敗')
       handleDeviceClose();
       console.error("Error logging in:", error);
+      
+      if (error.response) {         
+        console.error('Server Response', error.response);
+        const serverMessage = error.response.data;
+
+        handleErrOpen();
+        setErrMsg(serverMessage);
+      }
     }
   };
 
@@ -231,8 +261,16 @@ export default function LoginForm() {
     } catch (error) {
       setResetOpen(false)
       console.error("Error logging in:", error);
+      
+      if (error.response) {         
+        console.error('Server Response', error.response);
+        const serverMessage = error.response.data;
+
+        handleErrOpen();
+        setErrMsg(serverMessage);
+      }
     }finally {
-      setIsLoading(false);  // 關閉過場動畫
+      setIsLoading(false);  
     }
   };
 
@@ -254,7 +292,14 @@ export default function LoginForm() {
       // TODO: 可以选择将此 fingerprint 发送到服务器
       // 或进行其他操作
     } catch (error) {
-      console.error("Failed to generate fingerprint", error);
+      console.error("Failed to generate fingerprint", error);   
+      if (error.response) {         
+        console.error('Server Response', error.response);
+        const serverMessage = error.response.data;
+
+        handleErrOpen();
+        setErrMsg(serverMessage);
+      }
     }
   }, []);
 
@@ -377,6 +422,7 @@ export default function LoginForm() {
           <Button onClick={RegisterDeviceIdSubmit}>送出</Button>
         </DialogActions>
       </Dialog>
+      <ErrorAlert errorOpen={errOpen} handleErrClose={()=>setErropen(false)} errMsg={errMsg} />
     </>
   );
 }

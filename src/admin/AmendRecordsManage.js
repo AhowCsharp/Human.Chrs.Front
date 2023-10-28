@@ -45,6 +45,7 @@ import Slide from '@mui/material/Slide';
 import { DataGrid } from '@mui/x-data-grid';
 import appsetting from '../Appsetting';
 import AmendRecordSearch from './AmendRecordSearch';
+import ErrorAlert from '../errorView/ErrorAlert';
 
 const Transition = React.forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />);
 
@@ -142,6 +143,8 @@ export default function AmendRecordsManage() {
     const [timePeriod,setTimePeriod] = useState(getCurrentMonthBounds());
     const [selectedRecord,setSelectedAmendRecord] = useState(null);
     const [open, setOpen] = useState(false);
+    const [errOpen,setErropen] = useState(false);
+    const [errMsg ,setErrMsg]= useState('');	
 
     const handleClickOpen = (params) => {
       if(params.row.IsValidate === 1) {
@@ -151,6 +154,10 @@ export default function AmendRecordsManage() {
       console.log(params.row);
       setOpen(true);
     };
+
+    const handleErrOpen = () => {
+      setErropen(true);
+    }
   
     const handleClose = () => {
       setSelectedAmendRecord(null);
@@ -167,6 +174,13 @@ export default function AmendRecordsManage() {
         }
       } catch (error) {
         console.error('Error fetching data:', error);
+        if (error.response) {         
+          console.error('Server Response', error.response);
+          const serverMessage = error.response.data;
+  
+          handleErrOpen();
+          setErrMsg(serverMessage);
+        }
       }
   };
 
@@ -188,35 +202,16 @@ export default function AmendRecordsManage() {
           console.error("Error logging in:", error);
           fetchData();
           handleClose();
-          alert('找不到該加班申請，故系統審核未通過');
+          if (error.response) {         
+            console.error('Server Response', error.response);
+            const serverMessage = error.response.data;
+    
+            handleErrOpen();
+            setErrMsg(serverMessage);
+          }
         }          
     }
-    // useEffect(() => {
-    //     fetchStaffDetailData();
-    // }, []); 
-    // const navigate = useNavigate();
 
-
-    // const handleInputChange = (event, propertyName) => {
-    //   const value = event.target ? event.target.value : event;
-    //   if(propertyName === 'HasCrimeRecord') {
-    //       // eslint-disable-next-line no-restricted-globals
-    //       if(!isNaN(value)) {
-    //         setStaffInfo((prevData) => ({
-    //           ...prevData,
-    //           [propertyName]: Number(value),
-    //         })); 
-    //       }else {
-    //         alert('請輸入數字')
-    //       }
- 
-    //   }else {
-    //     setStaffInfo((prevData) => ({
-    //       ...prevData,
-    //       [propertyName]: value,
-    //   }));
-    //   }
-    // };
   
 
   return (
@@ -347,7 +342,7 @@ export default function AmendRecordsManage() {
           <Button onClick={()=>handleVerify(false)}>不同意</Button>
         </DialogActions>
       </Dialog>
-
+      <ErrorAlert errorOpen={errOpen} handleErrClose={()=>setErropen(false)} errMsg={errMsg} />
     </>
   );
 }

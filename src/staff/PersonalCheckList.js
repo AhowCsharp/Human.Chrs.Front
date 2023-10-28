@@ -23,6 +23,7 @@ import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import { useLanguage } from '../layouts/LanguageContext'
 import PageDeviceError from '../pages/PageDeviceError';
+import ErrorAlert from '../errorView/ErrorAlert';
 import appsetting from '../Appsetting';
 
 export default function PersonalCheckList() {
@@ -38,6 +39,12 @@ export default function PersonalCheckList() {
     const [isLoading, setIsLoading] = useState(true); 
     const [list,setList] = useState([]); 
     const [month, setMonth] = useState(new Date().getMonth() + 1);
+    const [errOpen,setErropen] = useState(false);
+    const [errMsg ,setErrMsg]= useState('');		
+
+    const handleErrOpen = () => {
+      setErropen(true);
+    }
 
     const fetchCheckListData = async () => {
         setIsLoading(true);  // 開始加載
@@ -49,6 +56,13 @@ export default function PersonalCheckList() {
             }
         } catch (error) {
             console.error('Error fetching data:', error);
+            if (error.response) {         
+              console.error('Server Response', error.response);
+              const serverMessage = error.response.data;
+      
+              handleErrOpen();
+              setErrMsg(serverMessage);
+            }
         } finally {
             setIsLoading(false);  // 結束加載
         }
@@ -157,6 +171,7 @@ export default function PersonalCheckList() {
         </ListItem>
       ))}
     </List>
+    <ErrorAlert errorOpen={errOpen} handleErrClose={()=>setErropen(false)} errMsg={errMsg} />
     </>
   );
 }

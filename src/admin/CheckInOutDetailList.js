@@ -14,6 +14,7 @@ import Tooltip from '@mui/material/Tooltip';
 import WorkHistoryIcon from '@mui/icons-material/WorkHistory';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
+import ErrorAlert from '../errorView/ErrorAlert';
 import appsetting from '../Appsetting';
 
 
@@ -47,6 +48,13 @@ const lastDayString = formatDate(lastDayOfLastMonth);
 export default function CheckInOutDetailList({staffId}) {
   const [records,setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [errOpen,setErropen] = useState(false);
+  const [errMsg ,setErrMsg]= useState('');		
+
+  const handleErrOpen = () => {
+    setErropen(true);
+  }
+
 
   const config = {
     headers: {
@@ -67,6 +75,13 @@ export default function CheckInOutDetailList({staffId}) {
 
     } catch (error) {
       console.error('Error fetching data:', error);
+      if (error.response) {         
+        console.error('Server Response', error.response);
+        const serverMessage = error.response.data;
+
+        handleErrOpen();
+        setErrMsg(serverMessage);
+      }
       setLoading(false);
     }
   };
@@ -96,6 +111,7 @@ export default function CheckInOutDetailList({staffId}) {
         fetchCheckInOutData();
     }, []); 
     return (
+      <>
       <List sx={{ width: '100%', minWidth: 300, bgcolor: 'background.paper' }}>
         <Typography variant="button" display="block" gutterBottom>
           {calculateWorkdays((new Date().getMonth()))} <br/>
@@ -134,6 +150,8 @@ export default function CheckInOutDetailList({staffId}) {
           )
         }
       </List>
+      <ErrorAlert errorOpen={errOpen} handleErrClose={()=>setErropen(false)} errMsg={errMsg} />
+      </>
     );    
 }
 

@@ -14,8 +14,9 @@ import SendIcon from '@mui/icons-material/Send';
 import FormControl from '@mui/material/FormControl';
 import Radio from '@mui/material/Radio';
 import Typography from '@mui/material/Typography';
-import RadioGroup from '@mui/material/RadioGroup';
-import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import FormGroup from '@mui/material/FormGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Switch from '@mui/material/Switch';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -25,7 +26,6 @@ import Alert from '@mui/material/Alert';
 import DialogTitle from '@mui/material/DialogTitle';
 import MenuItem from '@mui/material/MenuItem';
 import FormHelperText from '@mui/material/FormHelperText';
-import FormControlLabel from '@mui/material/FormControlLabel';
 import SearchIcon from '@mui/icons-material/Search';
 import FormLabel from '@mui/material/FormLabel';
 import Stack from '@mui/material/Stack';
@@ -53,6 +53,8 @@ import appsetting from '../Appsetting';
 import ParttimeSearch from './ParttimeSearch';
 import InsuranceClass from '../Insurance/Insurance';
 import OverTimeDetailList from './OverTimeDetailList';
+import ErrorAlert from '../errorView/ErrorAlert';
+import FinishedAlert from '../finishView/FinishedAlert';
 
 const Transition = React.forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />);
 
@@ -184,6 +186,20 @@ export default function ParttimeManage() {
     const [open, setOpen] = useState(false);
     const [excelOpen, setExcelOpen] = useState(false);
     const [staffId,setStaffId] = useState(0);
+    const [errOpen,setErropen] = useState(false);
+    const [errMsg ,setErrMsg]= useState('');		
+    const [okOpen,setOkopen] = useState(false);
+
+
+
+    const handleOkOpen = () => {
+      setOkopen(true);
+    }
+
+    const handleErrOpen = () => {
+      setErropen(true);
+    }
+
     useEffect(() => {
       const matchedItem = InsuranceClass.find(item => item.id === insuranceLevel);
       if(selectedRow) {
@@ -282,6 +298,13 @@ export default function ParttimeManage() {
           handleExcelClose();
       } catch (error) {
           console.error("Error downloading the file:", error);
+          if (error.response) {         
+            console.error('Server Response', error.response);
+            const serverMessage = error.response.data;
+    
+            handleErrOpen();
+            setErrMsg(serverMessage);
+          }
       }
     }
 
@@ -295,6 +318,13 @@ export default function ParttimeManage() {
         }
       } catch (error) {
         console.error('Error fetching data:', error);
+        if (error.response) {         
+          console.error('Server Response', error.response);
+          const serverMessage = error.response.data;
+  
+          handleErrOpen();
+          setErrMsg(serverMessage);
+        }
       }
   };
     useEffect(() => {
@@ -306,30 +336,12 @@ export default function ParttimeManage() {
     }, [month]);
 
     useEffect(() => {
-      if(selectedRow) {
-        setSalaryRequest({
-          ...salaryRequest,
-          StaffIncomeAmount:calculateWage(selectedRow.ParttimeMoney,selectedRow.TotalPartimeHours,selectedRow.TotalPartimeMinutes) + Number(salaryRequest.Bonus)
-           + Number(selectedRow.ParttimeOverTimeTotalMony)+ Number(salaryRequest.FoodSuportMoney)
-        })
-        
-      }
-      if((salaryRequest.Bonus === 0 || !salaryRequest.Bonus) && selectedRow) {
-        setSalaryRequest({
-          ...salaryRequest,
-          StaffIncomeAmount:calculateWage(selectedRow.ParttimeMoney,selectedRow.TotalPartimeHours,selectedRow.TotalPartimeMinutes)
-          +Number(selectedRow.ParttimeOverTimeTotalMony)+ Number(salaryRequest.FoodSuportMoney)
-        })
-      }
-    }, [salaryRequest.Bonus]);
-
-    useEffect(() => {
       console.log(salaryRequest)
       if(selectedRow) {
         setSalaryRequest({
           ...salaryRequest,
           StaffIncomeAmount:calculateWage(selectedRow.ParttimeMoney,selectedRow.TotalPartimeHours,selectedRow.TotalPartimeMinutes) + Number(salaryRequest.Bonus)
-           + Number(selectedRow.ParttimeOverTimeTotalMony)+ Number(salaryRequest.FoodSuportMoney)
+           + Number(salaryRequest.OverTimeMoney)+ Number(salaryRequest.FoodSuportMoney)
         })
         
       }
@@ -337,10 +349,10 @@ export default function ParttimeManage() {
         setSalaryRequest({
           ...salaryRequest,
           StaffIncomeAmount:calculateWage(selectedRow.ParttimeMoney,selectedRow.TotalPartimeHours,selectedRow.TotalPartimeMinutes)
-          +Number(selectedRow.ParttimeOverTimeTotalMony)+ Number(salaryRequest.FoodSuportMoney)
+          +Number(salaryRequest.OverTimeMoney)+ Number(salaryRequest.FoodSuportMoney)
         })
       }
-    }, [salaryRequest.FoodSuportMoney]);
+    }, [salaryRequest.FoodSuportMoney,salaryRequest.Bonus,salaryRequest.OverTimeMoney]);
 
     useEffect(() => {
       handleMinusTotal();
@@ -349,7 +361,8 @@ export default function ParttimeManage() {
     const handleInputChange = (event, propertyName) => {
       const value = event.target.value;
       if(propertyName === 'FoodSuportMoney' && value > 2400) {
-        alert('伙食津貼不列入稅收，不得超過每月2400額度')
+        handleErrOpen();
+        setErrMsg('伙食津貼不列入稅收，不得超過每月2400額度');    
         return;
       }
       // 使用 Number.isNaN 代替全局的 isNaN
@@ -359,7 +372,8 @@ export default function ParttimeManage() {
               [propertyName]: value === '' ? '' : Number(value),
           }));
       } else {
-          alert('請輸入數字');
+        handleErrOpen();
+        setErrMsg('請輸入數字');
       }
   };
   
@@ -382,11 +396,12 @@ export default function ParttimeManage() {
 
 
   const handleSalarySubmit = async () => {   
-    if(salaryRequest.WorkerInsuranceFromCompany === 0 || salaryRequest.HealthInsuranceFromCompany === 0 
-      || salaryRequest.EmployeeRetirementFromCompany === 0 || salaryRequest.CompanyCostAmount === 0) {
-      alert('請確認雇主負擔部分是否正確  不要觸犯勞基法');
-      return;
-    }
+    // if(salaryRequest.WorkerInsuranceFromCompany === 0 || salaryRequest.HealthInsuranceFromCompany === 0 
+    //   || salaryRequest.EmployeeRetirementFromCompany === 0 || salaryRequest.CompanyCostAmount === 0) {
+    //   handleErrOpen();
+    //   setErrMsg('請確認雇主負擔部分是否正確  不要觸犯勞基法');
+    //   return;
+    // }
     
     const newSalaryRequest = { ...salaryRequest };
     newSalaryRequest.StaffActualIncomeAmount = salaryRequest.StaffIncomeAmount - salaryRequest.StaffDeductionAmount;
@@ -394,12 +409,18 @@ export default function ParttimeManage() {
     try {
         const response = await axios.post(`${appsetting.apiUrl}/admin/paymoney`, newSalaryRequest, config);
         if (response.status === 200) {
-            alert('成功');
+            handleOkOpen();
             handleClose();
         }
     } catch (error) {
         console.error("Error logging in:", error);
-        alert('失敗 已重複發放該月薪資');
+        if (error.response) {         
+          console.error('Server Response', error.response);
+          const serverMessage = error.response.data;
+  
+          handleErrOpen();
+          setErrMsg(serverMessage);
+        }
     }
 }
 
@@ -492,7 +513,7 @@ export default function ParttimeManage() {
                                   <Typography variant="subtitle2" gutterBottom>
                                       薪資加項
                                   </Typography>    
-                                </Grid>                    
+                                </Grid>              
                                 <Grid item xs={3}>
                                     <InputLabel shrink htmlFor="bootstrap-input">
                                         時薪*時數
@@ -545,11 +566,16 @@ export default function ParttimeManage() {
                                     </InputLabel>       
                                     <TextField id="StaffNo" 
                                         size="small"
-                                        InputProps={{
-                                          readOnly: true,
-                                        }}
-                                        value={selectedRow !== null ? selectedRow.ParttimeOverTimeTotalMony:0}
-                                        onChange={(e) => handleInputChange(e, 'BasicSalary')}/>
+                                        value={salaryRequest.OverTimeMoney}
+                                        onChange={(e) => handleInputChange(e, 'OverTimeMoney')}
+                                        onBlur={(e) => {
+                                          if(e.target.value === "" || e.target.value === null) {
+                                            setSalaryRequest({
+                                              ...salaryRequest,
+                                              OverTimeMoney:0
+                                            })
+                                          }
+                                      }} />
                                 </Grid>
                                 <Grid item xs={3}>      
                                     <InputLabel shrink htmlFor="bootstrap-input">
@@ -765,57 +791,12 @@ export default function ParttimeManage() {
           <Button onClick={handleoverTimeClose}>退出</Button>
         </DialogActions>
       </Dialog>
+      <ErrorAlert errorOpen={errOpen} handleErrClose={()=>setErropen(false)} errMsg={errMsg} />
+      <FinishedAlert okOpen={okOpen} handleOkClose={()=>setOkopen(false)}/>
     </>
   );
 }
 
-function formatDateToYYYYMMDD(dateString) {
-    const dateObj = new Date(dateString);
-    const year = dateObj.getFullYear();
-    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-    const day = String(dateObj.getDate()).padStart(2, '0');
-  
-    return `${year}-${month}-${day}`;
-}
-
-function getCurrentDate() {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-}
-
-function daysBetweenDates(date1Str, date2Str) {
-    // 将日期字符串转换为日期对象
-    const date1 = new Date(date1Str);
-    const date2 = new Date(date2Str);
-  
-    // 计算两个日期对象的时间戳，并找出它们之间的差异（以毫秒为单位）
-    const timeDiff = Math.abs(date2.getTime() - date1.getTime());
-  
-    // 将时间差异转换为天数
-    const diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
-  
-    return diffDays;
-}
-
-const getCurrentMonthBounds = () => {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth();
-
-  // 獲取當下月份的第一天
-  const start = new Date(year, month, 1);
-  const startDateString = `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, '0')}-${String(start.getDate()).padStart(2, '0')}`;
-
-
-  // 獲取當下月份的最後一天
-  const end = new Date(year, month + 1, 0);
-  const endDateString = `${end.getFullYear()}-${String(end.getMonth() + 1).padStart(2, '0')}-${String(end.getDate()).padStart(2, '0')}`;
-
-  return { start: startDateString, end: endDateString };
-}
 
 function calculateWage(hourlyRate, hours, minutes) {
   // 每30分鐘為一個單位，超過30分鐘但未滿60分鐘算半小時

@@ -50,6 +50,8 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { DataGrid } from '@mui/x-data-grid';
 import appsetting from '../Appsetting';
 import SalarySettingSearch from './SalarySettingSearch';
+import ErrorAlert from '../errorView/ErrorAlert';
+import FinishedAlert from '../finishView/FinishedAlert';
 
 const Transition = React.forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />);
 
@@ -160,6 +162,16 @@ export default function SalaryManage() {
     const [excelOpen, setExcelOpen] = useState(false);
     const [salaryExcelOpen, setSalaryExcelOpen] = useState(false);
     const [staffId,setStaffId] = useState(0);
+    const [errOpen,setErropen] = useState(false);
+    const [errMsg ,setErrMsg]= useState('');
+    const [okOpen,setOkopen] = useState(false);
+    const handleOkOpen = () => {
+      setOkopen(true);
+    }		
+
+    const handleErrOpen = () => {
+      setErropen(true);
+    }
 
     const handleClickOpen = (status) => {
       setRequest({
@@ -212,6 +224,13 @@ export default function SalaryManage() {
         }
       } catch (error) {
         console.error('Error fetching data:', error);
+        if (error.response) {         
+          console.error('Server Response', error.response);
+          const serverMessage = error.response.data;
+  
+          handleErrOpen();
+          setErrMsg(serverMessage);
+        }
       }
   };
 
@@ -227,8 +246,15 @@ export default function SalaryManage() {
       }
     } catch (error) {
       console.error('Error fetching data:', error);
+      if (error.response) {         
+        console.error('Server Response', error.response);
+        const serverMessage = error.response.data;
+
+        handleErrOpen();
+        setErrMsg(serverMessage);
+      }
     }
-};
+  };
 
     useEffect(() => {
       fetchStaffsData();
@@ -243,7 +269,8 @@ export default function SalaryManage() {
     const handleInputChange = (event, propertyName) => {
       const value = event.target ? event.target.value : event;
       if(propertyName === 'FoodSuportMoney' && value > 2400) {
-        alert('伙食津貼不列入稅收，不得超過每月2400額度')
+        handleErrOpen();
+        setErrMsg('伙食津貼不列入稅收，不得超過每月2400額度');
         return;
       }
       
@@ -257,13 +284,19 @@ export default function SalaryManage() {
     try {
         const response = await axios.post(`${appsetting.apiUrl}/admin/salarysetting`, request ,config);
         if (response.status === 200) {
-        alert('成功');
+        handleOkOpen();
         fetchData();
         handleClose();
         }
     } catch (error) {
         console.error("Error logging in:", error);
-        alert('失敗 該員工已有薪資設定/該員工雇用類別不為全職');
+        if (error.response) {         
+          console.error('Server Response', error.response);
+          const serverMessage = error.response.data;
+  
+          handleErrOpen();
+          setErrMsg(serverMessage);
+        }
     }          
 }
 
@@ -276,12 +309,18 @@ const handleDeleteSubmit = async (id) => {
       });
 
       if (response.status === 200) {
-          alert('成功');
+          handleOkOpen();
           fetchData();
       }
   } catch (error) {
       console.error("Error deleting record:", error);
-      alert('請先更改該員工就職狀態');
+      if (error.response) {         
+        console.error('Server Response', error.response);
+        const serverMessage = error.response.data;
+
+        handleErrOpen();
+        setErrMsg(serverMessage);
+      }
   }          
 }
 
@@ -302,6 +341,13 @@ const downloadExcel = async () => {
       handleExcelClose();
   } catch (error) {
       console.error("Error downloading the file:", error);
+      if (error.response) {         
+        console.error('Server Response', error.response);
+        const serverMessage = error.response.data;
+
+        handleErrOpen();
+        setErrMsg(serverMessage);
+      }
   }
 }
 
@@ -322,6 +368,13 @@ const downloadSalaryExcel = async () => {
       handleSalaryExcelClose();
   } catch (error) {
       console.error("Error downloading the file:", error);
+      if (error.response) {         
+        console.error('Server Response', error.response);
+        const serverMessage = error.response.data;
+
+        handleErrOpen();
+        setErrMsg(serverMessage);
+      }
   }
 }
 
@@ -540,6 +593,8 @@ const downloadSalaryExcel = async () => {
             </DialogActions>
         </Grid>
       </Dialog>
+      <ErrorAlert errorOpen={errOpen} handleErrClose={()=>setErropen(false)} errMsg={errMsg} />
+      <FinishedAlert okOpen={okOpen} handleOkClose={()=>setOkopen(false)}/>
     </>
   );
 }

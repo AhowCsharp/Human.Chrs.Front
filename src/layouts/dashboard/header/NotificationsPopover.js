@@ -28,11 +28,18 @@ import { fToNow } from '../../../utils/formatTime';
 import Iconify from '../../../components/iconify';
 import Scrollbar from '../../../components/scrollbar';
 
+import ErrorAlert from '../../../errorView/ErrorAlert';
 import appsetting from '../../../Appsetting';
 // ----------------------------------------------------------------------
 
 export default function NotificationsPopover() {
   const [notifications, setNotifications] = useState([]);
+  const [errOpen,setErropen] = useState(false);
+  const [errMsg ,setErrMsg]= useState('');		
+
+  const handleErrOpen = () => {
+    setErropen(true);
+  }
     const adminToken = sessionStorage.getItem('AdminToken');
     const isStaff = !adminToken;
     const baseHeaders = {
@@ -125,7 +132,13 @@ export default function NotificationsPopover() {
         }
     } catch (error) {
         console.error("Error updating notification read status:", error);
-        alert('发生错误：无法更改通知读取状态');
+        if (error.response) {         
+          console.error('Server Response', error.response);
+          const serverMessage = error.response.data;
+  
+          handleErrOpen();
+          setErrMsg(serverMessage);
+        }
     }
 }
 
@@ -213,6 +226,7 @@ export default function NotificationsPopover() {
           </Button>
         </Box>
       </Popover>
+      <ErrorAlert errorOpen={errOpen} handleErrClose={()=>setErropen(false)} errMsg={errMsg} />
     </>
   );
 }
@@ -263,7 +277,7 @@ function NotificationItem({ notification,isStaff }) {
         }
     } catch (error) {
         console.error("Error updating notification read status:", error);
-        alert('发生错误：无法更改通知读取状态');
+        alert('發生錯誤');
     }
 }
 

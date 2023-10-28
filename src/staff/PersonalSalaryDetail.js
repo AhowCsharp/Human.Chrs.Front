@@ -15,6 +15,7 @@ import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import PageDeviceError from '../pages/PageDeviceError';
+import ErrorAlert from '../errorView/ErrorAlert';
 import appsetting from '../Appsetting';
 
 export default function PersonalSalaryDetail() {
@@ -30,6 +31,12 @@ export default function PersonalSalaryDetail() {
   const [isLoading, setIsLoading] = useState(true); 
   const [detail,setDetail] = useState([]); 
   const Language = sessionStorage.getItem('Language');
+  const [errOpen,setErropen] = useState(false);
+  const [errMsg ,setErrMsg]= useState('');		
+
+  const handleErrOpen = () => {
+    setErropen(true);
+  }
   const fetchSalaryDetailData = async () => {
     setIsLoading(true);  // 開始加載
     try {       
@@ -39,6 +46,13 @@ export default function PersonalSalaryDetail() {
         }
     } catch (error) {
         console.error('Error fetching data:', error);
+        if (error.response) {         
+          console.error('Server Response', error.response);
+          const serverMessage = error.response.data;
+  
+          handleErrOpen();
+          setErrMsg(serverMessage);
+        }
     } finally {
         setIsLoading(false);  // 結束加載
     }
@@ -76,6 +90,7 @@ export default function PersonalSalaryDetail() {
     }
 
   return (
+    <>
     <List sx={{ width: '95%', bgcolor: 'background.paper',margin:'auto',overflow:'auto' }} style={{height:'80vh',marginTop:'5%'}}>
       <Button variant="text" style={{margin:'1%'}} onClick={handleBackClick}>返回</Button>
       <Typography variant="subtitle2" gutterBottom style={{ marginLeft: '5%' }}>
@@ -298,7 +313,7 @@ export default function PersonalSalaryDetail() {
         </ListItemAvatar>
         <ListItemText primary={Language === 'TW' ? '減項總額' : 'Total Deductions'} secondary={detail.StaffDeductionAmount} />
       </ListItem>
-      <Typography variant="subtitle2" gutterBottom style={{ margin: '5%' }}>
+      {/* <Typography variant="subtitle2" gutterBottom style={{ margin: '5%' }}>
         {Language === 'TW' ? '雇主負擔名細' : 'Employer Contributions Details'}
       </Typography>
       {detail.HealthInsuranceFromCompany !== 0?
@@ -357,7 +372,9 @@ export default function PersonalSalaryDetail() {
           primary={Language === 'TW' ? '雇主負擔總額' : 'Total Employer Contributions'}
           secondary={detail.CompanyCostAmount}
         />
-      </ListItem>
+      </ListItem> */}
     </List>
+    <ErrorAlert errorOpen={errOpen} handleErrClose={()=>setErropen(false)} errMsg={errMsg} />
+    </>
   );
 }

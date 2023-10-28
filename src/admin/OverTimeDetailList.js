@@ -15,6 +15,7 @@ import WorkHistoryIcon from '@mui/icons-material/WorkHistory';
 import BeachAccessIcon from '@mui/icons-material/BeachAccess';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
+import ErrorAlert from '../errorView/ErrorAlert';
 import appsetting from '../Appsetting';
 
 
@@ -48,6 +49,12 @@ const lastDayString = formatDate(lastDayOfLastMonth);
 export default function OverTimeDetailList({staffId}) {
   const [overTimes,setOverTimes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [errOpen,setErropen] = useState(false);
+  const [errMsg ,setErrMsg]= useState('');		
+
+  const handleErrOpen = () => {
+    setErropen(true);
+  }
   const config = {
     headers: {
       'X-Ap-Token': appsetting.token,
@@ -67,6 +74,13 @@ export default function OverTimeDetailList({staffId}) {
 
     } catch (error) {
       console.error('Error fetching data:', error);
+      if (error.response) {         
+        console.error('Server Response', error.response);
+        const serverMessage = error.response.data;
+
+        handleErrOpen();
+        setErrMsg(serverMessage);
+      }
       setLoading(false);
     }
     };
@@ -74,6 +88,7 @@ export default function OverTimeDetailList({staffId}) {
         fetchOverTimeData();
     }, []); 
     return (
+      <>
       <List sx={{ width: '100%', minWidth: 200, bgcolor: 'background.paper' }}>
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', p: 2 }}>
@@ -108,5 +123,7 @@ export default function OverTimeDetailList({staffId}) {
           ))
         )}
       </List>
+      <ErrorAlert errorOpen={errOpen} handleErrClose={()=>setErropen(false)} errMsg={errMsg} />
+      </>
     );   
 }

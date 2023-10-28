@@ -58,6 +58,8 @@ import {AppTasks} from '../sections/@dashboard/app';
 import Map from '../googleMap/Map'
 import PageDeviceError from '../pages/PageDeviceError';
 import { useLanguage } from '../layouts/LanguageContext'
+import ErrorAlert from '../errorView/ErrorAlert';
+import FinishedAlert from '../finishView/FinishedAlert';
 import appsetting from '../Appsetting';
 
 const eventStyles = {
@@ -72,16 +74,7 @@ const views = {
     day: true,   // 顯示日視圖
     month: true, // 顯示月視圖
 };
-// const myEventsList = [
-//     {
-//       title: 'Birthday Party',
-//       start: moment().toDate(),
-//       end: moment().add(25, 'hours').toDate(),
-//       allDay: false,
-//     },
-// ];
-  
-// console.log(myEventsList)
+
 const gradientTextStyle = {
     backgroundImage: 'linear-gradient(to right, pink, blue)',
     WebkitBackgroundClip: 'text', /* WebKit browsers */
@@ -151,6 +144,16 @@ export default function PersonalInfo() {
     const [center, setCenter] = useState({lat: 41.3851, lng: 2.1734 });
     const [hourModel,setHourModel] = useState(true);
     const { language, chooseLang } = useLanguage();
+    const [errOpen,setErropen] = useState(false);
+    const [errMsg ,setErrMsg]= useState('');
+    const [okOpen,setOkopen] = useState(false);
+    const handleOkOpen = () => {
+      setOkopen(true);
+    }		
+
+    const handleErrOpen = () => {
+      setErropen(true);
+    }
 
     const navigate = useNavigate();
 
@@ -326,6 +329,13 @@ export default function PersonalInfo() {
             }
         } catch (error) {
           console.error('An error occurred while fetching data:', error);
+          if (error.response) {         
+            console.error('Server Response', error.response);
+            const serverMessage = error.response.data;
+    
+            handleErrOpen();
+            setErrMsg(serverMessage);
+          }
         }
     }; 
     const fetchData = async () => {
@@ -371,6 +381,13 @@ export default function PersonalInfo() {
             }
         } catch (error) {
           console.error('An error occurred while fetching data:', error);
+          if (error.response) {         
+            console.error('Server Response', error.response);
+            const serverMessage = error.response.data;
+    
+            handleErrOpen();
+            setErrMsg(serverMessage);
+          }
         }
       }; 
     useEffect(() => {
@@ -533,27 +550,34 @@ export default function PersonalInfo() {
             try {
               const response = await axios.post(`${appsetting.apiUrl}/staff/checkinout`, checkRequest, config);
               if (response.status === 200) {
-                alert('打卡成功');
+                handleOkOpen();
                 fetchData();
               }
             } catch (error) {
               console.error("Error logging in:", error);
-              alert('打卡失敗 發生未知錯誤');
+              if (error.response) {         
+                console.error('Server Response', error.response);
+                const serverMessage = error.response.data;
+        
+                handleErrOpen();
+                setErrMsg(serverMessage);
+              }
             }
             
             handleClose('check');
           }, () => {
-            // 用户拒绝了地理位置权限，您可以在这里进行相应的处理
-            alert('您未允許地理位置權限，請允許以繼續操作。');
+            handleErrOpen();
+            setErrMsg('您未允許地理位置權限，請允許以繼續操作');
           });
         } else {
-          // 浏览器不支持地理位置功能
-          alert('您的瀏覽器不支持地理位置功能。');
+            handleErrOpen();
+            setErrMsg('您的瀏覽器不支援定位功能');
         }
       };
       const handleOverTimeSubmit = async () => {
         if(overTimeRequest.Hours === 0) {
-            alert('加班時數不得為0');
+            handleErrOpen();
+            setErrMsg('加班時數不得為0');
             return;
         }
         const config = {
@@ -566,12 +590,18 @@ export default function PersonalInfo() {
             try {
               const response = await axios.post(`${appsetting.apiUrl}/staff/overtime`, overTimeRequest, config);
               if (response.status === 200) {
-                alert('申報成功');
+                handleOkOpen();
                 fetchData();
               }
             } catch (error) {
               console.error("Error logging in:", error);
-              alert('申報失敗 已重複申報');
+              if (error.response) {         
+                console.error('Server Response', error.response);
+                const serverMessage = error.response.data;
+        
+                handleErrOpen();
+                setErrMsg(serverMessage);
+              }
             }          
             handleClose('overTime')
         }
@@ -587,12 +617,14 @@ export default function PersonalInfo() {
             }
 
             if (endDate.isBefore(startDate)) {
-                alert('起始時間不能大於終止時間');
+                handleErrOpen();
+                setErrMsg('起始時間不能大於終止時間');
                 return;
             } 
 
             if (durationInMinutes < 60) {               
-                alert('請假時數至少1小時');
+                handleErrOpen();
+                setErrMsg('請假時數至少1小時為單位');
                 return;
             }
             const config = {
@@ -605,13 +637,19 @@ export default function PersonalInfo() {
             try {
                 const response = await axios.post(`${appsetting.apiUrl}/staff/vacation`, request, config);
                 if (response.status === 200) {
-                alert('申請成功');
+                handleOkOpen();
                 fetchData();
                 }
                 handleClose('vacation')
             } catch (error) {
                 console.error("Error logging in:", error);
-                alert('申請失敗 已重複申請 或是超過該假別上限');
+                if (error.response) {         
+                    console.error('Server Response', error.response);
+                    const serverMessage = error.response.data;
+            
+                    handleErrOpen();
+                    setErrMsg(serverMessage);
+                  }
             }                    
         }
 
@@ -634,13 +672,19 @@ export default function PersonalInfo() {
             try {
                 const response = await axios.post(`${appsetting.apiUrl}/staff/amendcheck`, request, config);
                 if (response.status === 200) {
-                    alert('申請成功');
+                    handleOkOpen();
                     fetchData();
                 }
                 handleClose('amendCheck')
             } catch (error) {
                 console.error("Error logging in:", error);
-                alert('申請失敗 欄位有問題');
+                if (error.response) {         
+                    console.error('Server Response', error.response);
+                    const serverMessage = error.response.data;
+            
+                    handleErrOpen();
+                    setErrMsg(serverMessage);
+                  }
             }                    
         }
 
@@ -656,12 +700,14 @@ export default function PersonalInfo() {
             }
 
             if(eventRequest.Title.trim() === "") {
-                alert('標題不得為空');
+                handleErrOpen();
+                setErrMsg('標題不得為空');
                 return;
             }
             
             if (eventRequest.EventEndDate.isBefore(eventRequest.EventStartDate)) {
-                alert('起始時間不能大於終止時間');
+                handleErrOpen();
+                setErrMsg('起始時間不能大於終止時間');
                 return;
             } 
             const config = {
@@ -674,13 +720,19 @@ export default function PersonalInfo() {
             try {
                 const response = await axios.post(`${appsetting.apiUrl}/staff/event`, request, config);
                 if (response.status === 200) {
-                alert('新增成功');
+                    handleOkOpen();
                 }
                 fetchEventData();
                 setThingAddOpen(false);
             } catch (error) {
                 console.error("Error logging in:", error);
-                alert('發生錯誤');
+                if (error.response) {         
+                    console.error('Server Response', error.response);
+                    const serverMessage = error.response.data;
+            
+                    handleErrOpen();
+                    setErrMsg(serverMessage);
+                  }
             }                    
         }
       
@@ -782,11 +834,17 @@ export default function PersonalInfo() {
                     }));
                     setEvents(transformedEvents);
                     setSelectEvent(null);
-                    alert('成功');
+                    handleOkOpen();
                 }
             } catch (error) {
                 console.error("Error logging in:", error);
-                alert('失敗');
+                if (error.response) {         
+                    console.error('Server Response', error.response);
+                    const serverMessage = error.response.data;
+            
+                    handleErrOpen();
+                    setErrMsg(serverMessage);
+                  }
             }          
         }
           
@@ -1518,6 +1576,8 @@ export default function PersonalInfo() {
                 </Dialog>
           </>
         )}
+        <ErrorAlert errorOpen={errOpen} handleErrClose={()=>setErropen(false)} errMsg={errMsg} />
+        <FinishedAlert okOpen={okOpen} handleOkClose={()=>setOkopen(false)}/>
         </>
     );
 }
